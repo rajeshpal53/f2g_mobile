@@ -1,8 +1,11 @@
 import React from "react";
+import { View, StyleSheet,Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "../Screens/BottomScreens/HomeScreen";
 import ProfileScreen from "../Screens/BottomScreens/ProfileScreen";
-import { Ionicons } from "@expo/vector-icons";
+import BookingScreen from "../Screens/BottomScreens/BookingScreen";
+import ReferralForm from "../Screens/BottomScreens/ReferScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -11,18 +14,86 @@ export default function BottomNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ color, size }) => {
-          let iconName;
-          if (route.name === "Home") iconName = "home";
-          else if (route.name === "Profile") iconName = "person";
-          return <Ionicons name={iconName} size={size} color={color} />;
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          height: 60,
+          backgroundColor: "#304FFF", // light blue background
+          borderTopWidth: 0,
+          elevation: 10,
+          paddingBottom: 10,
+        textAlign: "bottom",  
         },
-        tabBarActiveTintColor: "#007AFF",
-        tabBarInactiveTintColor: "gray",
+        tabBarHideOnKeyboard: true,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+             let label;
+          if (route.name === "Home") {
+            iconName = "home";
+            label = "Home";
+          } else if (route.name === "Profile") {
+            iconName = "person";
+            label = "Profile";
+          } else if (route.name === "Booking") {
+            iconName = "calendar";
+            label = "Booking";
+          } else if (route.name === "Refer") {
+            iconName = "send";
+            label = "Referral";
+          }
+
+          // Active icon with blue circle slightly above the tab
+          return (
+              <View
+                style={[
+                  styles.iconWrapper,
+                  focused && { backgroundColor: "#fff" },
+                ]}
+              >
+                <Ionicons
+                  name={iconName}
+                  size={focused ? size + 2 : size}
+                  color={focused ? "#304FFF" : "#fff"}
+                />
+                <Text
+                style={[
+                  styles.label,
+                  { color: focused ? "#304FFF" : "#fff" },
+                ]}
+              >
+                {label}
+              </Text>
+              </View>
+              
+
+          );
+        },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Refer" component={ReferralForm} />
+      <Tab.Screen name="Booking" component={BookingScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  iconWrapper: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    top: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative", // allow moving up
+  },
+   label: {
+    fontSize: 10,
+    textAlign: "center",
+  },
+    iconContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+
+  },
+});
