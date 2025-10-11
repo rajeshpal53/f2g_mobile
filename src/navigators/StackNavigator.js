@@ -1,44 +1,62 @@
 import {createStackNavigator} from "@react-navigation/stack";
-
 import BottomNavigator from "./BottomNavigator";
 import WelcomeScreen from "../Screens/stackscreens/WelcomeScreen";
+
+// Import the EnterNumberScreen so it can be navigated to
+import EnterNumberScreen from "../Screens/stackscreens/EnterNumberScreen"; 
 import { useTheme } from "../Constants/Theme.js";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 import AdminSectionScreen from "../Screens/stackscreens/AdminSectionScreen.js";
 import { Text } from "react-native-paper";
+
 export default function StackNavigator() {
     const {colors} = useTheme();
 
-      const Stack = createStackNavigator();
+    const Stack = createStackNavigator();
     return(
-          <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors?.background }}>
+        <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors?.background }}>
 
-         <Stack.Navigator
-        // initialRouteName={userData ? "Passcode" : "login"}
-         initialRouteName={"welcome"}
-       screenOptions={{
-    headerStyle: {
-      backgroundColor: colors?.background, // 🔹 applies to all screens
-    },
-    headerTintColor: colors?.text, // optional: text/icon color
-    headerTitleStyle: {
-      fontWeight: "bold", // optional: styling for header title
-    },
-  }}
-
-      >
-         <Stack.Screen
-          name="Bottom"
-          options={{
-            headerShown: false,
-            cardStyle: { backgroundColor: "#fff" },
-          }}
+        <Stack.Navigator
+            initialRouteName={"welcome"}
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: colors?.background,
+                },
+                headerTintColor: colors?.text,
+                headerTitleStyle: {
+                    fontWeight: "bold",
+                },
+            }}
         >
-          {({ navigation }) => (
-            <BottomNavigator navigation={navigation} />
-          )}
-        </Stack.Screen>
+            <Stack.Screen
+                name="Bottom"
+                options={{
+                    headerShown: false,
+                    cardStyle: { backgroundColor: "#fff" },
+                }}
+            >
+                {({ navigation }) => (
+                    <BottomNavigator navigation={navigation} />
+                )}
+            </Stack.Screen>
+            
+            <Stack.Screen 
+                name="welcome"
+                component={WelcomeScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            
+            {/* 💡 FIX: Registering the destination screen for the Sign up button */}
+            <Stack.Screen 
+                name="EnterNumberScreen" 
+                component={EnterNumberScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
         
         <Stack.Screen   name="welcome"
           component={WelcomeScreen}
@@ -71,5 +89,5 @@ export default function StackNavigator() {
         </Stack.Navigator>
         </SafeAreaView>
     
-    )   
+    ) 
 }
