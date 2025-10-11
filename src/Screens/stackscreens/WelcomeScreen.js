@@ -2,25 +2,35 @@ import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+// NOTE: Assuming the theme file is one directory up from stackscreens
+import { useTheme } from "../../Constants/Theme";
 
 const screenHeight = Dimensions.get('window').height;
 
-// --- Design Constants ---
-const PRIMARY_BLUE = '#4e54f9';      // Main Button Color
-const ACCENT_BLUE = '#6c63ff';      // Link/Accent Blue
-const GRAY_TEXT = '#5c5c5c';         // Body Text Color
-const HEADER_BLACK = '#1a1a1a';      // Main Heading Color
-const LIGHT_BACKGROUND = '#fcfcfc';  // Primary background
-const SOFT_GRAY_BG = '#f5f5f5';      // Used for the subtle background tint
+// Styles that don't depend on the theme (MOVED HERE to ensure availability)
+const localStyles = StyleSheet.create({
+    // --- Illustration Styling ---
+    illustrationContainer: {
+        width: '100%',
+        height: screenHeight * 0.35, 
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10, 
+    },
+    illustrationImage: {
+        width: '120%',
+        height: '110%',
+    },
+});
 
 // --- Illustration Component ---
 const IllustrationPlaceholder = () => (
-    <View style={styles.illustrationContainer}>
+    <View style={localStyles.illustrationContainer}>
         {/* Path for the credit card/coin illustration */}
-        {/* Ensure this path is correct for your project structure */}
+        {/* NOTE: Ensure 'coinpay_credit_cards.png' is available in your assets folder */}
         <Image
             source={require('../../../assets/coinpay_credit_cards.png')} 
-            style={styles.illustrationImage}
+            style={localStyles.illustrationImage}
             resizeMode="contain"
         />
     </View>
@@ -28,31 +38,151 @@ const IllustrationPlaceholder = () => (
 // ------------------------------------
 
 export default function WelcomeScreen({ navigation }) {
-    
+    // 1. Use the theme hook to get dynamic colors and scheme
+    const { colors, isDark } = useTheme(); 
+
     const handleSignUp = () => {
-        // Correct navigation to start the sign-up flow
         console.log("Navigating to EnterNumberScreen for Sign Up...");
+        // This is a common pattern for navigating to a specific stack screen
         navigation.navigate("EnterNumberScreen");
     };
 
     const handleLogIn = () => {
-        // Correct navigation to the Home screen inside the Bottom tab navigator
         console.log("Navigating to Home Screen for Log In...");
+        // Assuming "Bottom" is the name of your Tab Navigator
         navigation.navigate("Bottom", { screen: "Home" });
     };
 
+    // 2. Define dynamic styles using the theme colors
+    const styles = StyleSheet.create({
+        safeArea: {
+            flex: 1,
+            backgroundColor: colors.background, // Themed background
+        },
+        softBackgroundLayer: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: colors.surface, // Themed soft background/surface
+        },
+        header: {
+            paddingHorizontal: 20, 
+            paddingTop: 15,
+            height: 60,
+            backgroundColor: 'transparent', 
+        },
+        contentContainer: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            paddingHorizontal: 10,
+        },
+        // --- Text Styling ---
+        mainHeading: {
+            fontSize: 30, 
+            fontWeight: '900', 
+            textAlign: 'center',
+            color: colors.text, // Themed main heading color
+            lineHeight: 40,
+        },
+        iconTitleRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 20, 
+        },
+        mainHeadingText: {
+            fontSize: 30, 
+            fontWeight: '900', 
+            color: colors.text, // Themed main heading color
+            lineHeight: 40,
+            textAlign: 'center',
+        },
+        titleIcon: {
+            marginLeft: 8,
+            transform: [{ translateY: 2 }] 
+        },
+        subText: {
+            fontSize: 15, 
+            color: colors.textSecondary, // Themed body text color
+            textAlign: 'center',
+            lineHeight: 24, 
+            fontWeight: '400',
+            paddingHorizontal: 15,
+        },
+        // --- Button Wrapper and Styling ---
+        buttonWrapper: {
+            paddingHorizontal: 30,
+            paddingBottom: 40,
+            width: '100%',
+        },
+        actionButton: {
+            height: 55,
+            borderRadius: 10, 
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 15, 
+            width: '100%',
+        },
+        primaryButton: {
+            backgroundColor: colors.accent, // Themed primary action color
+            // Dynamic shadow color
+            shadowColor: isDark ? colors.accent : colors.primary, 
+            shadowOffset: { width: 0, height: 5 },
+            shadowOpacity: 0.3,
+            shadowRadius: 10,
+            elevation: 8,
+        },
+        primaryButtonText: {
+            fontSize: 17,
+            color: colors.card, // White/Card text on button
+            fontWeight: '600',
+        },
+        secondaryButton: {
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderColor: colors.accent, // Themed border color
+        },
+        secondaryButtonText: {
+            fontSize: 17,
+            color: colors.accent, // Themed text color for outline button
+            fontWeight: '600',
+        },
+        // --- Terms Text Styling ---
+        termsText: {
+            fontSize: 12,
+            color: colors.muted, // Themed muted text color
+            textAlign: 'center',
+            marginTop: 10,
+            lineHeight: 18,
+        },
+        linkText: {
+            color: colors.accent, // Themed link color
+            fontWeight: '600',
+            textDecorationLine: 'underline',
+        },
+    });
+
     return (
         <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="dark-content" backgroundColor={LIGHT_BACKGROUND} />
+            {/* Dynamic Status Bar */}
+            <StatusBar 
+                barStyle={isDark ? "light-content" : "dark-content"} 
+                backgroundColor={colors.background} 
+            />
             
             {/* Soft Gray Background Layer */}
+            {/* This adds a visual effect, but can be removed if a simpler background is desired */}
             <View style={styles.softBackgroundLayer} />
             
             {/* Header: Back Arrow */}
             <View style={styles.header}>
-                {/* Assuming this back button navigates back in the stack, e.g., to an initial splash screen */}
+                {/* Note: In a typical Welcome/Onboarding screen, a back button might navigate 
+                to a previous screen or be absent entirely. */}
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <MaterialIcons name="arrow-back-ios" size={24} color="#000" />
+                    <MaterialIcons name="arrow-back-ios" size={24} color={colors.text} />
                 </TouchableOpacity>
             </View>
 
@@ -62,12 +192,12 @@ export default function WelcomeScreen({ navigation }) {
                 {/* Illustration */}
                 <IllustrationPlaceholder />
 
-                {/* Text Section (FIXED ALIGNMENT) */}
+                {/* Text Section */}
                 <Text style={[styles.mainHeading, {marginBottom: 0}]}>
                     Create your
                 </Text>
                 
-                {/* 💡 FIX: Container for the second line and icon */}
+                {/* Row for the second line and icon */}
                 <View style={styles.iconTitleRow}>
                     <Text style={styles.mainHeadingText}>
                         F2G account
@@ -75,7 +205,7 @@ export default function WelcomeScreen({ navigation }) {
                     <FontAwesome5 
                         name="medal" 
                         size={28} 
-                        color={PRIMARY_BLUE} 
+                        color={colors.accent} // Themed icon color
                         style={styles.titleIcon} 
                     />
                 </View>
@@ -88,7 +218,7 @@ export default function WelcomeScreen({ navigation }) {
 
             {/* Button Container */}
             <View style={styles.buttonWrapper}>
-                {/* Sign Up Button (Primary) -> NAVIGATES TO EnterNumberScreen */}
+                {/* Sign Up Button (Primary) */}
                 <TouchableOpacity 
                     style={[styles.actionButton, styles.primaryButton]}
                     activeOpacity={0.8}
@@ -97,7 +227,7 @@ export default function WelcomeScreen({ navigation }) {
                     <Text style={styles.primaryButtonText}>Sign up</Text>
                 </TouchableOpacity>
 
-                {/* Log In Button (Secondary/Outline) -> NAVIGATES TO HOME SCREEN */}
+                {/* Log In Button (Secondary/Outline) */}
                 <TouchableOpacity 
                     style={[styles.actionButton, styles.secondaryButton]}
                     activeOpacity={0.8}
@@ -117,131 +247,3 @@ export default function WelcomeScreen({ navigation }) {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: LIGHT_BACKGROUND,
-    },
-    softBackgroundLayer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: LIGHT_BACKGROUND,
-    },
-    header: {
-        paddingHorizontal: 20, 
-        paddingTop: 15,
-        height: 60,
-        backgroundColor: 'transparent', 
-    },
-    contentContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        paddingHorizontal: 10,
-    },
-    // --- Illustration Styling ---
-    illustrationContainer: {
-        width: '100%',
-        height: screenHeight * 0.35, 
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 10, 
-    },
-    illustrationImage: {
-        width: '120%',
-        height: '110%',
-    },
-    // --- Text Styling ---
-    mainHeading: {
-        // Style for the first line ("Create your")
-        fontSize: 30, 
-        fontWeight: '900', 
-        textAlign: 'center',
-        color: HEADER_BLACK, 
-        lineHeight: 40,
-        // Resetting the bottom margin here
-    },
-    iconTitleRow: {
-        // View to hold the second line of text and the icon horizontally
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 20, // Add spacing after the entire title
-    },
-    mainHeadingText: {
-        // Style for the second line ("F2G account")
-        fontSize: 30, 
-        fontWeight: '900', 
-        color: HEADER_BLACK, 
-        lineHeight: 40,
-        textAlign: 'center',
-    },
-    titleIcon: {
-        // Style for the icon to add slight spacing
-        marginLeft: 8,
-        // Vertical adjustment to align icon better with text baseline
-        transform: [{ translateY: 2 }] 
-    },
-    subText: {
-        fontSize: 15, 
-        color: GRAY_TEXT, 
-        textAlign: 'center',
-        lineHeight: 24, 
-        fontWeight: '400',
-        paddingHorizontal: 15,
-    },
-    // --- Button Wrapper and Styling ---
-    buttonWrapper: {
-        paddingHorizontal: 30,
-        paddingBottom: 40,
-        width: '100%',
-    },
-    actionButton: {
-        height: 55,
-        borderRadius: 10, 
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 15, 
-        width: '100%',
-    },
-    primaryButton: {
-        backgroundColor: PRIMARY_BLUE, 
-        shadowColor: PRIMARY_BLUE, 
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-        elevation: 8,
-    },
-    primaryButtonText: {
-        fontSize: 17,
-        color: '#fff',
-        fontWeight: '600',
-    },
-    secondaryButton: {
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        borderColor: PRIMARY_BLUE,
-    },
-    secondaryButtonText: {
-        fontSize: 17,
-        color: PRIMARY_BLUE,
-        fontWeight: '600',
-    },
-    // --- Terms Text Styling ---
-    termsText: {
-        fontSize: 12,
-        color: '#888',
-        textAlign: 'center',
-        marginTop: 10,
-        lineHeight: 18,
-    },
-    linkText: {
-        color: ACCENT_BLUE,
-        fontWeight: '600',
-        textDecorationLine: 'underline',
-    },
-});
