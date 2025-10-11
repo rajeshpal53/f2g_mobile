@@ -1,7 +1,8 @@
-import React from 'react';
+import React,{useContext, useEffect}from 'react';
 import { StyleSheet, Text, View, Image, StatusBar, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import UserDataContext from '../../Store/UserDataContext';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -25,6 +26,40 @@ const IllustrationPlaceholder = () => (
 // ------------------------------------
 
 export default function WelcomeScreen() {
+    const {saveUserData,userData}=useContext(UserDataContext)
+    useEffect(()=>{
+        saveUserData({
+    "message": "Login successful",
+    "user": {
+        "id": 1,
+        "mobile": 9340950360,
+        "whatsappnumber": null,
+        "aadharCard": null,
+        "aadharCardFronturl": null,
+        "aadharCardBackurl": null,
+        "profilePicurl": "assets/profilepics/profile-Faizan-9340950360.jpeg",
+        "name": "Faizan",
+        "dob": "13 September 2001",
+        "gender": "Female",
+        "email": "Gg@gmail.com",
+        "address": "Indore ",
+        "pincode": null,
+        "password": "$2a$10$YagV6KNcTc0Rq0Fr/4lvIO3fNfOqaNk57arIx928opBWA1tt5D2tu",
+        "token_validity": "2025-10-10T06:44:39.000Z",
+        "latitude": null,
+        "longitude": null,
+        "fcmtokens": [
+            null
+        ],
+        "roles": "admin",
+        "createdAt": "2025-09-13T07:45:51.000Z",
+        "updatedAt": "2025-10-11T09:31:21.215Z"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibW9iaWxlIjo5MzQwOTUwMzYwLCJpYXQiOjE3NjAxNzUwODEsImV4cCI6MTc3NTcyNzA4MX0.2Hjwp_EKrT8JMB5oHYjqdOcUwjpuLqoPvxj_Src5TDY"
+})
+    },[])
+
+    console.log(userData,"userData")
     return (
         <SafeAreaView style={styles.safeArea}>
             <StatusBar barStyle="dark-content" backgroundColor={LIGHT_BACKGROUND} />
