@@ -1,44 +1,54 @@
-
-
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-const GenericDropdown = ({ label, dropDownlabelStyle, options, selectedValue, onValueChange, containerStyle, pickerContainerStyle, pickerStyle, fontStyles }) => {
+const GenericDropdown = ({
+  label,
+  dropDownlabelStyle,
+  options,
+  selectedValue,
+  onValueChange,
+  containerStyle,
+  pickerContainerStyle,
+  pickerStyle,
+  fontStyles,
+  placeholder = "Select an option", // added placeholder prop
+}) => {
   return (
     <View style={containerStyle}>
-{label && (
-  <Text style={[styles.label, dropDownlabelStyle]}>
-    {typeof label === 'string' && label.includes('*') ? (
-      <>
-        {label.replace('*', '')}
-        <Text>*</Text>
-      </>
-    ) : (
-      label
-    )}
-  </Text>
-)}
-      <View style={
-        [
-          // styles.container, 
-          // containerStyle
-          pickerContainerStyle
-          ]
-          }>
+      {label && (
+        <Text style={[styles.label, dropDownlabelStyle]}>
+          {typeof label === 'string' && label.includes('*') ? (
+            <>
+              {label.replace('*', '')}
+              <Text>*</Text>
+            </>
+          ) : (
+            label
+          )}
+        </Text>
+      )}
+
+      <View style={[styles.outlineContainer, pickerContainerStyle]}>
         <Picker
           mode="dropdown"
           selectedValue={selectedValue}
           onValueChange={(itemValue) => {
-            console.log("setItem , ", itemValue );
-            onValueChange(itemValue)
+            console.log("setItem , ", itemValue);
+            onValueChange(itemValue);
           }}
-          style={pickerStyle}
+          style={[styles.picker, pickerStyle]}
           dropdownIconColor={pickerStyle?.color || "black"}
-          
         >
+          {/* Placeholder option */}
+          <Picker.Item label={placeholder} value="" style={fontStyles} />
           {options.map((option, index) => (
-            <Picker.Item style={fontStyles} key={index} label={option.label} value={option.value} />
+            <Picker.Item
+              style={fontStyles}
+              key={index}
+              label={option.label}
+              value={option.value}
+            />
           ))}
         </Picker>
       </View>
@@ -47,13 +57,14 @@ const GenericDropdown = ({ label, dropDownlabelStyle, options, selectedValue, on
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: 40,
+  outlineContainer: {
+    height: 45,
     width: '100%',
-    backgroundColor: '#fff',
     borderWidth: 1,
-    justifyContent: 'center',
+    borderColor: '#000', // outline border
     borderRadius: 5,
+    justifyContent: 'center',
+    backgroundColor: 'transparent', // remove flat fill
   },
   picker: {
     height: '100%',
@@ -72,61 +83,3 @@ const styles = StyleSheet.create({
 });
 
 export default GenericDropdown;
-
-
-
-// import React, { useState } from 'react';
-// import { View, Text, StyleSheet } from 'react-native';
-// import { Picker } from '@react-native-picker/picker';
-
-// const UnitDropdown = ({selectedUnit, setSelectedUnit}) => {
-
-//   return (
-//     <View style={{marginTop:10}}>
-//       <Text style={styles.label}>unit</Text>
-//       <View style={styles.container}>
-//       <Picker
-//         mode='dropdown'
-//         selectedValue={selectedUnit}
-//         // style={styles.picker}
-//         onValueChange={(itemValue) => setSelectedUnit(itemValue)}
-//       >
-//         <Picker.Item label="kg" value="kg" />
-//         <Picker.Item label="gms" value="gms" />
-//         <Picker.Item label="dozen" value="dozen" />
-//         <Picker.Item label="piece" value="piece" />
-//       </Picker>
-//       </View>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     height:40,
-//     width:"100%",
-//     backgroundColor:"#fff",
-//     borderWidth:1,
-//     // backgroundColor:"rgba(231, 223, 236, 1)",
-//     justifyContent: 'center',
-//     borderRadius:5,
-//     // paddingHorizontal: 10,
-//   },
-//   picker: {
-//     height: "100%",
-//     width: '100%',
-//     // backgroundColor:"orange"
-//   },
-//   label: {
-//     position: 'absolute',
-//     backgroundColor: 'white',
-//     top: -12,
-//     left: 10,
-//     zIndex: 1,
-//     paddingHorizontal: 4,
-//     fontSize: 14,
-//     color: 'rgba(0, 0, 0, 0.6)',
-//   },
-// });
-
-// export default UnitDropdown;

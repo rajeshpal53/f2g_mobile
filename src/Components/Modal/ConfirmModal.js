@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { View, StyleSheet } from "react-native";
 import { Button, Dialog, Portal, Paragraph } from "react-native-paper";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useTheme } from "../../Constants/Theme";
 // import { fontFamily,fontSize } from "../Util/UtilApi";
 
 const ConfirmModal = ({
@@ -14,15 +15,16 @@ const ConfirmModal = ({
   buttonTitle,
   
 }) => {
+    const {colors}=useTheme()
   console.log("confirm modalllll")
   const hideDialog = () => setVisible(false);
   const { t } = useTranslation();
   return (
-    <View style={[styles.container, { flex: visible ? 1 : 0 }]}>
+    <View style={[styles.container, { flex: visible ? 1 : 0 , backgroundColor:colors?.background}]}>
       <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
+        <Dialog visible={visible} onDismiss={hideDialog} style={{backgroundColor:colors?.background}}>
           <Dialog.Title
-            style={{ color: "#000", alignSelf: "center", fontSize: 18 }}
+            style={{ color: colors?.text, alignSelf: "center", fontSize: 18,fontWeight:"bold" }}
           >
             {t(heading)}
           </Dialog.Title>
@@ -55,15 +57,16 @@ const ConfirmModal = ({
           </Dialog.Content>
           <Dialog.Actions>
             <Button
+            labelStyle={{color:colors?.main }}
               onPress={hideDialog}
-              style={{ color: "#fff", borderRadius: 12, width: "50%" }}
+              style={{ backgroundColor :colors?.background, borderRadius: 12, width: "50%" }}
               mode="outlined"
             >
               {t("Cancel")}
             </Button>
             <Button
               onPress={handlePress}
-              style={{ borderRadius: 12, width: "50%" }}
+              style={{ borderRadius: 12, width: "50%", backgroundColor:colors?.main }}
               mode="contained"
             >
               {t(buttonTitle)}

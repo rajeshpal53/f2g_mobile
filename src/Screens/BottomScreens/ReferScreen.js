@@ -1,9 +1,19 @@
-import React from "react";
-import { StyleSheet, Text, View, ScrollView, Pressable } from "react-native";
+import React, { useRef, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Pressable,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import GenericDropdown from "../../UI/DropDown/GenericDropDown";
+import { useTheme } from "../../Constants/Theme";
 
 const loanTypes = [
   { label: "Home Loan", value: "home" },
@@ -18,152 +28,235 @@ const ReferralFormSchema = Yup.object().shape({
     .typeError("Loan Amount must be a number")
     .required("Loan Amount is required"),
   loanType: Yup.string().required("Loan Type is required"),
-  addressLine1: Yup.string().required("Address Line 1 is required"),
-  addressLine2: Yup.string(),
-  remark: Yup.string().max(250, "Remark should be less than 250 characters"),
+  street: Yup.string().required("Street / Area is required"),
+  city: Yup.string().required("City is required"),
+  pincode: Yup.string()
+    .matches(/^\d{6}$/, "Enter valid 6-digit pincode")
+    .required("Pincode is required"),
+  remark: Yup.string().max(1000, "Remark should be less than 1000 characters"),
 });
 
 const ReferralForm = () => {
+  const { colors } = useTheme();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const styles= refralStyle(colors)
+
   return (
-    <ScrollView contentContainerStyle={{ flex: 1, justifyContent: "center", padding: 15 }}>
-
-   
-    <Formik
-      initialValues={{
-        name: "",
-        loanAmount: "",
-        loanType: "",
-        addressLine1: "",
-        addressLine2: "",
-        remark: "",
-      }}
-      validationSchema={ReferralFormSchema}
-      onSubmit={(values) => {
-        console.log("Referral Form Submitted: ", values);
-      }}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {({
-        handleChange,
-        handleBlur,
-        handleSubmit,
-        values,
-        errors,
-        touched,
-        setFieldValue,
-      }) => (
-        <ScrollView style={{ flex: 1, padding: 15 }}>
-          <Text style={styles.title}>Referral Form</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View style={[styles.formContainer, { opacity: fadeAnim }]}>
+          <Formik
+            initialValues={{
+              name: "",
+              loanAmount: "",
+              loanType: "",
+              street: "",
+              city: "",
+              pincode: "",
+              remark: "",
+            }}
+            validationSchema={ReferralFormSchema}
+            onSubmit={(values) => {
+              console.log("Referral Form Submitted: ", values);
+            }}
+          >
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              setFieldValue,
+            }) => (
+              <View>
+                <Text style={styles.title}>Referral Form</Text>
 
-          {/* Name */}
-          <TextInput
-            label="First Name + Last Name *"
-            mode="outlined"
-            style={styles.input}
-            onChangeText={handleChange("name")}
-            onBlur={handleBlur("name")}
-            value={values.name}
-            error={touched.name && errors.name}
-          />
-          {touched.name && errors.name && (
-            <Text style={styles.errorText}>{errors.name}</Text>
-          )}
+                {/* Name */}
+                <TextInput
+                  label="First Name + Last Name *"
+                  mode="outlined"
+                  style={styles.input}
+                  activeOutlineColor={colors.primary}
+                  onChangeText={handleChange("name")}
+                  onBlur={handleBlur("name")}
+                  value={values.name}
+                  error={touched.name && errors.name}
+                />
+                {touched.name && errors.name && (
+                  <Text style={styles.errorText}>{errors.name}</Text>
+                )}
 
-          {/* Loan Amount */}
-          <TextInput
-            label="Loan Amount *"
-            mode="outlined"
-            style={styles.input}
-            keyboardType="numeric"
-            onChangeText={handleChange("loanAmount")}
-            onBlur={handleBlur("loanAmount")}
-            value={values.loanAmount}
-            error={touched.loanAmount && errors.loanAmount}
-          />
-          {touched.loanAmount && errors.loanAmount && (
-            <Text style={styles.errorText}>{errors.loanAmount}</Text>
-          )}
+                {/* Loan Amount */}
+                <TextInput
+                  label="Loan Amount *"
+                  mode="outlined"
+                  style={styles.input}
+                  keyboardType="numeric"
+                  activeOutlineColor={colors.primary}
+                  onChangeText={handleChange("loanAmount")}
+                  onBlur={handleBlur("loanAmount")}
+                  value={values.loanAmount}
+                  error={touched.loanAmount && errors.loanAmount}
+                />
+                {touched.loanAmount && errors.loanAmount && (
+                  <Text style={styles.errorText}>{errors.loanAmount}</Text>
+                )}
 
-          {/* Loan Type Dropdown */}
-          <GenericDropdown
-            label={"Loan Type *"}
-            options={loanTypes}
-            selectedValue={values.loanType}
-            onValueChange={(val) => setFieldValue("loanType", val)}
-            pickerContainerStyle={styles.pickerContainerStyle}
-          />
-          {touched.loanType && errors.loanType && (
-            <Text style={styles.errorText}>{errors.loanType}</Text>
-          )}
+                {/* Loan Type */}
+                <GenericDropdown
+                  placeholder="Select Loan Type"
+                  options={loanTypes}
+                  selectedValue={values.loanType}
+                  onValueChange={(val) => setFieldValue("loanType", val)}
+                  pickerContainerStyle={{
+                    ...styles.pickerContainerStyle,
+                    borderColor: values.loanType ? colors.primary : "grey",
+                  }}
+                />
+                {touched.loanType && errors.loanType && (
+                  <Text style={styles.errorText}>{errors.loanType}</Text>
+                )}
 
-          {/* Address Line 1 */}
-          <TextInput
-            label="Customer Address Line 1 *"
-            mode="outlined"
-            style={styles.input}
-            onChangeText={handleChange("addressLine1")}
-            onBlur={handleBlur("addressLine1")}
-            value={values.addressLine1}
-            error={touched.addressLine1 && errors.addressLine1}
-          />
-          {touched.addressLine1 && errors.addressLine1 && (
-            <Text style={styles.errorText}>{errors.addressLine1}</Text>
-          )}
+                {/* Address Fields */}
+                <Text style={styles.sectionTitle}>Customer Address</Text>
 
-          {/* Address Line 2 */}
-          <TextInput
-            label="Customer Address Line 2"
-            mode="outlined"
-            style={styles.input}
-            onChangeText={handleChange("addressLine2")}
-            onBlur={handleBlur("addressLine2")}
-            value={values.addressLine2}
-            error={touched.addressLine2 && errors.addressLine2}
-          />
+                <TextInput
+                  label="Street / Area *"
+                  mode="outlined"
+                  style={styles.input}
+                  activeOutlineColor={colors.primary}
+                  onChangeText={handleChange("street")}
+                  onBlur={handleBlur("street")}
+                  value={values.street}
+                  error={touched.street && errors.street}
+                />
+                {touched.street && errors.street && (
+                  <Text style={styles.errorText}>{errors.street}</Text>
+                )}
 
-          {/* Remark */}
-          <TextInput
-            label="Remark"
-            mode="outlined"
-            style={styles.input}
-            multiline
-            numberOfLines={4}
-            onChangeText={handleChange("remark")}
-            onBlur={handleBlur("remark")}
-            value={values.remark}
-            error={touched.remark && errors.remark}
-          />
-          {touched.remark && errors.remark && (
-            <Text style={styles.errorText}>{errors.remark}</Text>
-          )}
+                <TextInput
+                  label="City *"
+                  mode="outlined"
+                  style={styles.input}
+                  activeOutlineColor={colors.primary}
+                  onChangeText={handleChange("city")}
+                  onBlur={handleBlur("city")}
+                  value={values.city}
+                  error={touched.city && errors.city}
+                />
+                {touched.city && errors.city && (
+                  <Text style={styles.errorText}>{errors.city}</Text>
+                )}
 
-          {/* Submit Button */}
-          <Pressable style={{ marginTop: 20 }}>
-            <Button
-              mode="contained"
-              onPress={handleSubmit}
-              style={{ borderRadius: 10, padding: 5 }}
-            >
-              Submit Referral
-            </Button>
-          </Pressable>
-        </ScrollView>
-      )}
-    </Formik>
-     </ScrollView>
+                <TextInput
+                  label="Pincode *"
+                  mode="outlined"
+                  style={styles.input}
+                  keyboardType="numeric"
+                  activeOutlineColor={colors.primary}
+                  onChangeText={handleChange("pincode")}
+                  onBlur={handleBlur("pincode")}
+                  value={values.pincode}
+                  error={touched.pincode && errors.pincode}
+                />
+                {touched.pincode && errors.pincode && (
+                  <Text style={styles.errorText}>{errors.pincode}</Text>
+                )}
+
+                {/* Remark */}
+                <TextInput
+                  label="Remark / Notes (Optional)"
+                  mode="outlined"
+                  style={[styles.input, { maxHeight: 150 }]}
+                  multiline
+                  numberOfLines={4}
+                  activeOutlineColor={colors.primary}
+                  onChangeText={handleChange("remark")}
+                  onBlur={handleBlur("remark")}
+                  value={values.remark}
+                  error={touched.remark && errors.remark}
+                  maxLength={1000}
+                />
+                {touched.remark && errors.remark && (
+                  <Text style={styles.errorText}>{errors.remark}</Text>
+                )}
+
+                {/* Submit Button */}
+                <Pressable style={{ marginTop: 20 }}>
+                  <Button
+                    mode="contained"
+                    onPress={handleSubmit}
+                    style={{
+                      borderRadius: 10,
+                      padding: 5,
+                      backgroundColor: colors.main,
+                    }}
+                  >
+                    Submit Referral
+                  </Button>
+                </Pressable>
+              </View>
+            )}
+          </Formik>
+        </Animated.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 export default ReferralForm;
 
-const styles = StyleSheet.create({
+const refralStyle =(colors)=> StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingVertical: 40,
+    // backgroundColor: "#f7f7f7",
+     backgroundColor: colors?.background,
+  },
+  formContainer: {
+    backgroundColor: colors?.background,
+    padding: 20,
+    borderRadius: 12,
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: 20,
     textAlign: "center",
+    color: "#333",
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 15,
+    marginBottom: 10,
+    color: colors?.muted,
   },
   input: {
-    backgroundColor: "#FFF",
+    backgroundColor: colors?.background,
     marginBottom: 12,
   },
   errorText: {
@@ -174,9 +267,10 @@ const styles = StyleSheet.create({
   },
   pickerContainerStyle: {
     marginBottom: 12,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderTopRightRadius: 10,
-    borderTopLeftRadius: 10,
+    height: 55,
+    borderWidth: 1,
+    borderRadius: 5,
+    justifyContent: "center",
+    paddingHorizontal: 10,
   },
 });

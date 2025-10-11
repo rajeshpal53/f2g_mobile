@@ -33,6 +33,7 @@ const LightColors = {
   warning: "#ED6C02",
   info: "#0288D1",
   xyz:"#FF00FF",
+    main:"#304FFF", 
 
 };
 
@@ -49,7 +50,8 @@ const DarkColors = {
   // accents
   primary: "#26A0DF",          // lighter blue pops on dark
   secondary: "#0C3B73",        // deep accent blue
-  accent: "#339CFF",           // brighter button color
+  accent: "#339CFF",  
+  main:"#304FFF",         // brighter button color
 
   // states
   overlay: "rgba(255,255,255,0.08)",
