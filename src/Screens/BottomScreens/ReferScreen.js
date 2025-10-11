@@ -25,6 +25,9 @@ const ReferralFormSchema = Yup.object().shape({
 
 const ReferralForm = () => {
   return (
+    <ScrollView contentContainerStyle={{ flex: 1, justifyContent: "center", padding: 15 }}>
+
+   
     <Formik
       initialValues={{
         name: "",
@@ -146,6 +149,7 @@ const ReferralForm = () => {
         </ScrollView>
       )}
     </Formik>
+     </ScrollView>
   );
 };
 

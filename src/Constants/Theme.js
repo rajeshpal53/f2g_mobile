@@ -32,6 +32,7 @@ const LightColors = {
   danger: "#D32F2F",
   warning: "#ED6C02",
   info: "#0288D1",
+  xyz:"#FF00FF",
 
 };
 
@@ -64,6 +65,7 @@ const DarkColors = {
   danger: "#EF9A9A",
   warning: "#FFB74D",
   info: "#4FC3F7",
+    xyz:"#FF00FF",
 };
 
 
