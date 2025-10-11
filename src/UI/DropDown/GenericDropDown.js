@@ -12,7 +12,7 @@ const GenericDropdown = ({ label, dropDownlabelStyle, options, selectedValue, on
     {typeof label === 'string' && label.includes('*') ? (
       <>
         {label.replace('*', '')}
-        <Text style={{ }}>*</Text>
+        <Text>*</Text>
       </>
     ) : (
       label
@@ -35,7 +35,7 @@ const GenericDropdown = ({ label, dropDownlabelStyle, options, selectedValue, on
           }}
           style={pickerStyle}
           dropdownIconColor={pickerStyle?.color || "black"}
-
+          
         >
           {options.map((option, index) => (
             <Picker.Item style={fontStyles} key={index} label={option.label} value={option.value} />
