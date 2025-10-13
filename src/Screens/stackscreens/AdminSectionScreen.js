@@ -24,8 +24,8 @@ const AdminSectionScreen = ({ navigation }) => {
     {
       isDisabled: false,
       icon: "receipt",
-      label: "All Invoice",
-      value: "AllInvoice",
+      label: "All Bookings",
+      value: "AllBookings",
     },
 
     {
@@ -38,14 +38,14 @@ const AdminSectionScreen = ({ navigation }) => {
     {
       isDisabled: false,
       icon: "local-shipping",
-      label: "All Vendor",
-      value: "AllVendor",
+      label: "All Referals",
+      value: "AllRefrals",
     },
     {
       isDisabled: false,
       icon: "support-agent",
-      label: "All Queries and Support",
-      value: "AllQuerysAndSupport",
+      label: "All Queries",
+      value: "AllQueries",
     },
     {
       isDisabled: false,

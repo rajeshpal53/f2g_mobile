@@ -8,8 +8,14 @@ import { useTheme } from "../Constants/Theme.js";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 import AdminSectionScreen from "../Screens/stackscreens/AdminSectionScreen.js";
-import { Text } from "react-native-paper";
+
 import LoginScreen from "../Screens/stackscreens/LoginScreen.js";
+
+
+import { Text ,StyleSheet} from "react-native-paper";
+import CustomBackButton from "../UI/CustomBackButton.js";
+import EditProfileScreen from "../Components/EditProfileScreen.js";
+import AllUser from "../Screens/AdminSectionScreen/AllUserScreen.js";
 
 export default function StackNavigator() {
     const {colors} = useTheme();
@@ -51,6 +57,7 @@ export default function StackNavigator() {
                 }}
             />
         
+
         <Stack.Screen   name="welcome"
           component={WelcomeScreen}
           options={{
@@ -66,6 +73,7 @@ export default function StackNavigator() {
           
           }}
         />
+
 
         <Stack.Screen
   name="AdminSection"
@@ -88,8 +96,51 @@ export default function StackNavigator() {
     // headerLeft: () => <CustomBackButton />, // uncomment if you have one
   }}
 />
+
+
+ <Stack.Screen
+            name="AllUsers"
+            component={AllUser}
+            options={{
+              headerTitle: () => (
+                <Text style={styles.headerTitle}>All Users</Text>
+              ),
+
+              headerTitleAlign: "center",
+              headerLeft: () => <CustomBackButton />,
+            }}
+          ></Stack.Screen>
+   <Stack.Screen
+          name="EditProfile"
+          component={EditProfileScreen}
+          options={{
+            headerTitle: () => (
+              <Text style={styles.headerTitle}>{"EditProfilePage"}</Text>
+            ),
+
+            headerTitleAlign: "center",
+
+            // headerLeft: () => <CustomBackButton />,
+          }}
+        />
         </Stack.Navigator>
         </SafeAreaView>
     
     ) 
 }
+
+const styles =(colors)=> StyleSheet.create({
+  headerTitle: {
+    color:colors?.text,
+    fontFamily: "Poppins-Regular",
+    fontSize: fontSize.headingSmall,
+    fontWeight: "bold",
+
+  },
+  fab: {
+    position: "absolute",
+    margin: 16,
+    right: 0,
+    bottom: 0,
+  },
+});

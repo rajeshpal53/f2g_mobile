@@ -25,7 +25,7 @@ const IllustrationPlaceholder = () => (
 );
 // ------------------------------------
 
-export default function WelcomeScreen() {
+export default function HomeScreen() {
     const {saveUserData,userData}=useContext(UserDataContext)
     useEffect(()=>{
         saveUserData({
