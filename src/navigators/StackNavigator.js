@@ -16,13 +16,15 @@ import { Text ,StyleSheet} from "react-native-paper";
 import CustomBackButton from "../UI/CustomBackButton.js";
 import EditProfileScreen from "../Components/EditProfileScreen.js";
 import AllUser from "../Screens/AdminSectionScreen/AllUserScreen.js";
+import ReferralForm from "../Screens/stackscreens/ReferScreen.js";
+import BookingScreen from "../Screens/stackscreens/BookingScreen.js";
 
 export default function StackNavigator() {
     const {colors} = useTheme();
 
     const Stack = createStackNavigator();
     return(
-        <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: colors?.background }}>
+        <SafeAreaView edges={['bottom',"top"]} style={{ flex: 1, backgroundColor: colors?.background }}>
 
         <Stack.Navigator
             initialRouteName={"welcome"}
@@ -73,7 +75,48 @@ export default function StackNavigator() {
           
           }}
         />
+         <Stack.Screen   name="ReferralForm"
+          component={ReferralForm}
+          options={{
+    headerTitle: () => (
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Poppins-bold",
+          color: colors?.text,
+          fontWeight:"bold"
+        }}
 
+      >
+       Add New Refral
+      </Text>
+    ),
+    headerTitleAlign: "center",
+    headerTintColor: "#000", // color of back arrow and title tint
+    headerShadowVisible: false, // removes bottom shadow
+    // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+  }}
+        />
+         <Stack.Screen   name="BookingScreen"
+          component={BookingScreen}
+         options={{
+    headerTitle: () => (
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Poppins-SemiBold",
+          color: colors?.text,
+        }}
+      >
+       Add New Booking
+      </Text>
+    ),
+    headerTitleAlign: "center",
+    headerTintColor: "#000", // color of back arrow and title tint
+    headerShadowVisible: false, // removes bottom shadow
+    // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+  }}
+        />
 
         <Stack.Screen
   name="AdminSection"
@@ -119,6 +162,8 @@ export default function StackNavigator() {
             ),
 
             headerTitleAlign: "center",
+
+
 
             // headerLeft: () => <CustomBackButton />,
           }}

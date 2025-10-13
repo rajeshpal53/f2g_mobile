@@ -18,9 +18,22 @@ import { useTheme } from "../../Constants/Theme";
 const loanTypes = [
   { label: "Home Loan", value: "home" },
   { label: "Personal Loan", value: "personal" },
+  {lable:"Loan against property",value:"property"},
   { label: "Car Loan", value: "car" },
   { label: "Business Loan", value: "business" },
+   {label :" CV loan",value:" cvLoan"},
+   {label:"Auto loan" ,value:"auto"},
+    { label: "Other", value: "other" },
 ];
+
+
+// 1. Home loan
+// 2. Loan against property 
+// 3. Business loan
+// 4. Personal loan
+// 5. Auto loan
+// 6. CV loan
+// 7. Other
 
 const ReferralFormSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -86,7 +99,7 @@ const ReferralForm = () => {
               setFieldValue,
             }) => (
               <View>
-                <Text style={styles.title}>Referral Form</Text>
+                {/* <Text style={styles.title}>Referral Form</Text> */}
 
                 {/* Name */}
                 <TextInput
@@ -226,8 +239,8 @@ export default ReferralForm;
 const refralStyle =(colors)=> StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingVertical: 40,
+    justifyContent: "",
+    paddingVertical: 10,
     // backgroundColor: "#f7f7f7",
      backgroundColor: colors?.background,
   },

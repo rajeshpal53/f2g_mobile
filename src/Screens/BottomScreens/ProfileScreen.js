@@ -93,11 +93,6 @@ export default function ProfileScreen({ navigation }) {
       const updatelist=()=>{
         try {
         const baseItem = [
-          {
-            icon: "language",
-            label: "Change Language",
-            value: "changeLanguage",
-          },
 
           ...(userData?.user?.roles === "admin" ? AdminOption : []),
           { icon: "policy", label: " Terms and Policy ", value: "Policies" },

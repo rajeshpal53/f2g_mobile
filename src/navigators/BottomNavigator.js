@@ -4,8 +4,9 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "../Screens/BottomScreens/HomeScreen";
 import ProfileScreen from "../Screens/BottomScreens/ProfileScreen";
-import BookingScreen from "../Screens/BottomScreens/BookingScreen";
-import ReferralForm from "../Screens/BottomScreens/ReferScreen";
+
+import ViewReferalScreen from "../Screens/BottomScreens/ViewReferalScreen";
+import ViewBookingScreen from "../Screens/BottomScreens/ViewBookingScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -70,8 +71,8 @@ export default function BottomNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Refer" component={ReferralForm} />
-      <Tab.Screen name="Booking" component={BookingScreen} />
+      <Tab.Screen name="Refer" component={ViewReferalScreen} />
+      <Tab.Screen name="Booking" component={ViewBookingScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
