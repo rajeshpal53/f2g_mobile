@@ -22,11 +22,35 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { useTheme } from "../../Constants/Theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 const screenHeight = Dimensions.get("window").height;
 
 /* -------------------------
-   MOCK HELPERS — replace with real implementations
+   🔹 API Helper
+------------------------- */
+const createApi = async (path, payload) => {
+  try {
+    const baseUrl = "https://reservemyevent.com/api/";
+    const response = await axios.post(baseUrl + path, payload, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data;
+  } catch (error) {
+    const status = error.response?.status;
+    const message =
+      error.response?.data?.message ||
+      (status === 400
+        ? "Invalid request data"
+        : status === 409
+        ? "User already exists"
+        : "Something went wrong, please try again.");
+    throw new Error(message);
+  }
+};
+
+/* -------------------------
+   MOCK HELPERS (OTP Simulated)
 ------------------------- */
 const loginWithPhone = async (fullNumber) => {
   await new Promise((r) => setTimeout(r, 600));
@@ -35,7 +59,7 @@ const loginWithPhone = async (fullNumber) => {
 
 const verifyOtp = async (confirmObj, otp) => {
   await new Promise((r) => setTimeout(r, 600));
-  if (!confirmObj) throw new Error("No confirmation object");
+  if (!confirmObj) throw new Error("No confirmation object found");
   if (otp.length !== 6) throw new Error("Invalid OTP length");
   return {
     getIdToken: async () => {
@@ -45,13 +69,8 @@ const verifyOtp = async (confirmObj, otp) => {
   };
 };
 
-const createApi = async (path, payload) => {
-  await new Promise((r) => setTimeout(r, 700));
-  return { ok: true, data: { message: "signed up (mock)" } };
-};
-
 /* -------------------------
-   Small Checkbox
+   ✅ Checkbox Component
 ------------------------- */
 const Checkbox = ({ checked, onToggle, label, labelStyle }) => {
   const { colors } = useTheme();
@@ -161,7 +180,8 @@ export default function EnterNumberScreen({ navigation }) {
   };
 
   const handleVerifyOtp = async () => {
-    if (!otp || otp.length !== 6) return Alert.alert("Error", "Please enter the complete 6-digit OTP.");
+    if (!otp || otp.length !== 6)
+      return Alert.alert("Error", "Please enter the complete 6-digit OTP.");
     try {
       setLoading(true);
       const user = await verifyOtp(confirm, otp);
@@ -175,23 +195,38 @@ export default function EnterNumberScreen({ navigation }) {
     }
   };
 
+  /* ---------- ✅ Real Signup API ---------- */
   const handleSignup = async (mobile, password) => {
     try {
       setLoading(true);
       const FCMToken = await AsyncStorage.getItem("FCMToken");
-      const payload = { mobile, password, idToken, fcmtokens: FCMToken ? [FCMToken] : [] };
-      await createApi("users/signUp", payload);
-      Alert.alert("Success", "Account created successfully");
+      const payload = {
+        mobile,
+        password,
+        idToken,
+        fcmtokens: FCMToken ? [FCMToken] : [],
+      };
+
+      console.log("Signup Payload:", payload);
+      const result = await createApi("users/signUp", payload);
+      console.log("Signup Response:", result);
+
+      if (result?.user) {
+        await AsyncStorage.setItem("userData", JSON.stringify(result.user));
+      }
+
+      Alert.alert("Success", result?.message || "Account created successfully");
       setPasswordModalVisible(false);
-      navigation.navigate("welcome"); // Navigate to Welcome screen
+      navigation.navigate("welcome");
     } catch (err) {
-      Alert.alert("Signup Failed", err?.message || "Unable to sign up");
+      console.log("Signup Error:", err.message);
+      Alert.alert("Signup Failed", err.message || "Unable to sign up");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---------- OTP input helper ---------- */
+  /* ---------- OTP Input Helper ---------- */
   const onOtpChangeAt = (digit, idx) => {
     const d = digit.replace(/[^0-9]/g, "");
     let arr = otp.split("");
@@ -199,7 +234,6 @@ export default function EnterNumberScreen({ navigation }) {
     arr[idx] = d ? d[0] : "";
     const newOtp = arr.join("").slice(0, 6);
     setOtp(newOtp);
-
     if (d && otpInputsRef.current[idx + 1]) otpInputsRef.current[idx + 1].focus();
     if (!d && otpInputsRef.current[idx - 1]) otpInputsRef.current[idx - 1].focus();
   };
@@ -209,8 +243,19 @@ export default function EnterNumberScreen({ navigation }) {
     container: { flexGrow: 1, padding: 20, backgroundColor: colors.background },
     logoWrap: { alignItems: "center", marginTop: 14, marginBottom: 8 },
     logo: { height: 300, width: 300, borderRadius: 12 },
-    title: { fontSize: 22, fontWeight: "700", alignSelf: "center", color: colors.text, marginTop: 6 },
-    subtitle: { fontSize: 14, textAlign: "center", marginVertical: 8, color: colors.textSecondary },
+    title: {
+      fontSize: 22,
+      fontWeight: "700",
+      alignSelf: "center",
+      color: colors.text,
+      marginTop: 6,
+    },
+    subtitle: {
+      fontSize: 14,
+      textAlign: "center",
+      marginVertical: 8,
+      color: colors.textSecondary,
+    },
     inputContainer: {
       flexDirection: "row",
       borderWidth: 1,
@@ -242,44 +287,105 @@ export default function EnterNumberScreen({ navigation }) {
     errorText: { color: "#e53935", marginBottom: 6 },
     otpRow: { flexDirection: "row", gap: 8, justifyContent: "center" },
     otpBox: {
-      width: 48, height: 56, borderRadius: 10, borderWidth: 1,
-      borderColor: colors.border, backgroundColor: colors.card,
-      textAlign: "center", fontSize: 20, color: colors.text, fontWeight: "600"
+      width: 48,
+      height: 56,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+      textAlign: "center",
+      fontSize: 20,
+      color: colors.text,
+      fontWeight: "600",
     },
     resendContainer: { alignItems: "center", marginVertical: 10 },
     resendText: { color: colors.text, fontWeight: "600" },
     timerText: { color: colors.textSecondary },
-    modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "center", padding: 12 },
-    modalBox: { backgroundColor: colors.card, borderRadius: 12, padding: 18, elevation: 6 },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      justifyContent: "center",
+      padding: 12,
+    },
+    modalBox: {
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      padding: 18,
+      elevation: 6,
+    },
     modalHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
     modalTitle: { fontSize: 18, fontWeight: "700", marginLeft: 8, color: colors.text },
-    inputWithIcon: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginTop: 10, backgroundColor: colors.surface },
+    inputWithIcon: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      marginTop: 10,
+      backgroundColor: colors.surface,
+    },
     modalInput: { flex: 1, paddingVertical: 8, color: colors.text },
-    modalBtnRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
-    modalBtn: { flex: 1, backgroundColor: colors.accent, paddingVertical: 12, borderRadius: 10, alignItems: "center", marginHorizontal: 6 },
+    modalBtnRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 16,
+    },
+    modalBtn: {
+      flex: 1,
+      backgroundColor: colors.accent,
+      paddingVertical: 12,
+      borderRadius: 10,
+      alignItems: "center",
+      marginHorizontal: 6,
+    },
     modalBtnText: { fontSize: 16, fontWeight: "700", color: colors.card },
-    modalInputLabel: { fontSize: 14, fontWeight: "600", color: colors.text, marginTop: 6 },
+    modalInputLabel: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.text,
+      marginTop: 6,
+    },
   });
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={colors.background}
+      />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Logo */}
           <View style={styles.logoWrap}>
-            <Image source={require("../../../assets/image.png")} style={styles.logo} resizeMode="contain" />
+            <Image
+              source={require("../../../assets/image.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
 
-          {/* Formik for mobile input */}
-          <Formik initialValues={{ mobile: "", agree: false }} validationSchema={SignupSchema} onSubmit={handleSendOtp}>
+          {/* Formik */}
+          <Formik
+            initialValues={{ mobile: "", agree: false }}
+            validationSchema={SignupSchema}
+            onSubmit={handleSendOtp}
+          >
             {({ handleChange, handleSubmit, values, errors, touched, setFieldValue }) => (
               <View>
                 {!otpSent ? (
                   <>
                     <Text style={styles.title}>Create an Account</Text>
-                    <Text style={styles.subtitle}>Please enter your mobile number to proceed further</Text>
+                    <Text style={styles.subtitle}>
+                      Please enter your mobile number to proceed further
+                    </Text>
 
                     <View style={styles.inputContainer}>
                       <Text style={styles.countryCode}>+91</Text>
@@ -290,26 +396,70 @@ export default function EnterNumberScreen({ navigation }) {
                         keyboardType="numeric"
                         maxLength={10}
                         value={values.mobile}
-                        onChangeText={(t) => handleChange("mobile")(t.replace(/[^0-9]/g, "").slice(0, 10))}
+                        onChangeText={(t) =>
+                          handleChange("mobile")(t.replace(/[^0-9]/g, "").slice(0, 10))
+                        }
                       />
                     </View>
-                    {touched.mobile && errors.mobile && <Text style={styles.errorText}>{errors.mobile}</Text>}
+                    {touched.mobile && errors.mobile && (
+                      <Text style={styles.errorText}>{errors.mobile}</Text>
+                    )}
 
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                      <Checkbox checked={values.agree} onToggle={() => setFieldValue("agree", !values.agree)} label="I agree to the" />
-                      <TouchableOpacity onPress={() => navigation.navigate("PoliciesDetailScreen", { webUri: "https://qwikbill.in/qapp/privacy-policy?view=mobile", headerTitle: "Privacy and Policies" })}>
-                        <Text style={{ marginLeft: 6, color: colors.accent, fontWeight: "700" }}>Terms & Conditions</Text>
+                      <Checkbox
+                        checked={values.agree}
+                        onToggle={() => setFieldValue("agree", !values.agree)}
+                        label="I agree to the"
+                      />
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate("PoliciesDetailScreen", {
+                            webUri:
+                              "https://qwikbill.in/qapp/privacy-policy?view=mobile",
+                            headerTitle: "Privacy and Policies",
+                          })
+                        }
+                      >
+                        <Text
+                          style={{
+                            marginLeft: 6,
+                            color: colors.accent,
+                            fontWeight: "700",
+                          }}
+                        >
+                          Terms & Conditions
+                        </Text>
                       </TouchableOpacity>
                     </View>
-                    {touched.agree && errors.agree && <Text style={styles.errorText}>{errors.agree}</Text>}
+                    {touched.agree && errors.agree && (
+                      <Text style={styles.errorText}>{errors.agree}</Text>
+                    )}
 
-                    <TouchableOpacity style={styles.sendBtn} onPress={handleSubmit} disabled={loading} activeOpacity={0.85}>
-                      {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.sendBtnText}>Send OTP</Text>}
+                    <TouchableOpacity
+                      style={styles.sendBtn}
+                      onPress={handleSubmit}
+                      disabled={loading}
+                      activeOpacity={0.85}
+                    >
+                      {loading ? (
+                        <ActivityIndicator color={colors.card} />
+                      ) : (
+                        <Text style={styles.sendBtnText}>Send OTP</Text>
+                      )}
                     </TouchableOpacity>
                   </>
                 ) : (
                   <>
-                    <Text style={{ textAlign: "center", color: colors.text, fontSize: 16, marginBottom: 8 }}>Enter OTP sent to +91 {mobileNumber}</Text>
+                    <Text
+                      style={{
+                        textAlign: "center",
+                        color: colors.text,
+                        fontSize: 16,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Enter OTP sent to +91 {mobileNumber}
+                    </Text>
                     <View style={{ alignItems: "center" }}>
                       <View style={styles.otpRow}>
                         {Array.from({ length: 6 }).map((_, i) => (
@@ -333,8 +483,17 @@ export default function EnterNumberScreen({ navigation }) {
                           <Text style={styles.timerText}>Resend OTP in {timer}s</Text>
                         )}
                       </View>
-                      <TouchableOpacity style={[styles.sendBtn, { marginTop: 6 }]} onPress={handleVerifyOtp} disabled={loading} activeOpacity={0.85}>
-                        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.sendBtnText}>Verify OTP</Text>}
+                      <TouchableOpacity
+                        style={[styles.sendBtn, { marginTop: 6 }]}
+                        onPress={handleVerifyOtp}
+                        disabled={loading}
+                        activeOpacity={0.85}
+                      >
+                        {loading ? (
+                          <ActivityIndicator color={colors.card} />
+                        ) : (
+                          <Text style={styles.sendBtnText}>Verify OTP</Text>
+                        )}
                       </TouchableOpacity>
                     </View>
                   </>
@@ -355,8 +514,12 @@ export default function EnterNumberScreen({ navigation }) {
                 <Formik
                   initialValues={{ password: "", confirmPassword: "" }}
                   validationSchema={Yup.object().shape({
-                    password: Yup.string().min(6, "At least 6 chars").required("Required"),
-                    confirmPassword: Yup.string().oneOf([Yup.ref("password"), null], "Passwords must match").required("Required"),
+                    password: Yup.string()
+                      .min(6, "At least 6 characters")
+                      .required("Required"),
+                    confirmPassword: Yup.string()
+                      .oneOf([Yup.ref("password"), null], "Passwords must match")
+                      .required("Required"),
                   })}
                   onSubmit={(vals) => handleSignup(mobileNumber, vals.password)}
                 >
@@ -374,14 +537,24 @@ export default function EnterNumberScreen({ navigation }) {
                           onChangeText={handleChange("password")}
                         />
                         <TouchableOpacity onPress={() => setShowPassword((s) => !s)}>
-                          <MaterialIcons name={showPassword ? "visibility" : "visibility-off"} size={22} color={colors.textSecondary} />
+                          <MaterialIcons
+                            name={showPassword ? "visibility" : "visibility-off"}
+                            size={22}
+                            color={colors.textSecondary}
+                          />
                         </TouchableOpacity>
                       </View>
-                      {touched.password && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+                      {touched.password && errors.password && (
+                        <Text style={styles.errorText}>{errors.password}</Text>
+                      )}
 
                       <Text style={styles.modalInputLabel}>Confirm Password</Text>
                       <View style={styles.inputWithIcon}>
-                        <MaterialIcons name="vpn-key" size={20} color={colors.textSecondary} />
+                        <MaterialIcons
+                          name="lock-outline"
+                          size={20}
+                          color={colors.textSecondary}
+                        />
                         <TextInput
                           placeholder="Confirm Password"
                           placeholderTextColor={colors.textSecondary}
@@ -390,18 +563,38 @@ export default function EnterNumberScreen({ navigation }) {
                           value={values.confirmPassword}
                           onChangeText={handleChange("confirmPassword")}
                         />
-                        <TouchableOpacity onPress={() => setShowConfirmPassword((s) => !s)}>
-                          <MaterialIcons name={showConfirmPassword ? "visibility" : "visibility-off"} size={22} color={colors.textSecondary} />
+                        <TouchableOpacity
+                          onPress={() => setShowConfirmPassword((s) => !s)}
+                        >
+                          <MaterialIcons
+                            name={showConfirmPassword ? "visibility" : "visibility-off"}
+                            size={22}
+                            color={colors.textSecondary}
+                          />
                         </TouchableOpacity>
                       </View>
-                      {touched.confirmPassword && errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+                      {touched.confirmPassword && errors.confirmPassword && (
+                        <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                      )}
 
                       <View style={styles.modalBtnRow}>
-                        <TouchableOpacity style={styles.modalBtn} onPress={handleSubmit} activeOpacity={0.85}>
-                          <Text style={styles.modalBtnText}>{loading ? "Please wait..." : "Set Password"}</Text>
+                        <TouchableOpacity
+                          style={styles.modalBtn}
+                          onPress={handleSubmit}
+                          activeOpacity={0.85}
+                        >
+                          <Text style={styles.modalBtnText}>
+                            {loading ? "Please wait..." : "Set Password"}
+                          </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.modalBtn, { backgroundColor: colors.border }]} onPress={() => setPasswordModalVisible(false)} activeOpacity={0.85}>
-                          <Text style={[styles.modalBtnText, { color: colors.text }]}>Cancel</Text>
+                        <TouchableOpacity
+                          style={[styles.modalBtn, { backgroundColor: colors.border }]}
+                          onPress={() => setPasswordModalVisible(false)}
+                          activeOpacity={0.85}
+                        >
+                          <Text style={[styles.modalBtnText, { color: colors.text }]}>
+                            Cancel
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     </View>

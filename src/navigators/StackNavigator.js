@@ -8,10 +8,15 @@ import { useTheme } from "../Constants/Theme.js";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 import AdminSectionScreen from "../Screens/stackscreens/AdminSectionScreen.js";
+
+import LoginScreen from "../Screens/stackscreens/LoginScreen.js";
+
+
 import { Text ,StyleSheet} from "react-native-paper";
 import CustomBackButton from "../UI/CustomBackButton.js";
 import EditProfileScreen from "../Components/EditProfileScreen.js";
 import AllUser from "../Screens/AdminSectionScreen/AllUserScreen.js";
+
 export default function StackNavigator() {
     const {colors} = useTheme();
 
@@ -43,14 +48,6 @@ export default function StackNavigator() {
                 )}
             </Stack.Screen>
             
-            <Stack.Screen 
-                name="welcome"
-                component={WelcomeScreen}
-                options={{
-                    headerShown: false,
-                }}
-            />
-            
             {/* 💡 FIX: Registering the destination screen for the Sign up button */}
             <Stack.Screen 
                 name="EnterNumberScreen" 
@@ -60,6 +57,23 @@ export default function StackNavigator() {
                 }}
             />
         
+
+        <Stack.Screen   name="welcome"
+          component={WelcomeScreen}
+          options={{
+            headerShown: false,
+          
+          }}
+        />
+
+         <Stack.Screen   name="LoginScreen"
+          component={LoginScreen}
+          options={{
+            headerShown: false,
+          
+          }}
+        />
+
 
         <Stack.Screen
   name="AdminSection"
