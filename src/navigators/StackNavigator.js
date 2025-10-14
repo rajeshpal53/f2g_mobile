@@ -18,6 +18,7 @@ import EditProfileScreen from "../Components/EditProfileScreen.js";
 import AllUser from "../Screens/AdminSectionScreen/AllUserScreen.js";
 import ReferralForm from "../Screens/stackscreens/ReferScreen.js";
 import BookingScreen from "../Screens/stackscreens/BookingScreen.js";
+import FeedbackandHelp from "../Screens/stackscreens/FeedbackandHelp.js";
 
 export default function StackNavigator() {
     const {colors} = useTheme();
@@ -137,6 +138,27 @@ export default function StackNavigator() {
     headerTintColor: "#000", // color of back arrow and title tint
     headerShadowVisible: false, // removes bottom shadow
     // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+  }}
+/>
+<Stack.Screen
+  name="FeedbackandHelp"
+  component={FeedbackandHelp}
+  options={{
+    headerShown:false,
+    headerTitle: () => (
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Poppins-SemiBold",
+          color: "#000",
+        }}
+      >
+        Feedback and Help
+      </Text>
+    ),
+    headerTitleAlign: "center",
+    headerTintColor: "#000",
+    headerShadowVisible: false,
   }}
 />
 

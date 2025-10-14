@@ -9,7 +9,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -24,159 +23,121 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = () => navigation.navigate('Bottom');
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <StatusBar
-        barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={colors.background}
-      />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: '#fff' }]}>
+  <StatusBar
+    barStyle="dark-content"
+    backgroundColor="#fff"
+  />
 
-      {/* HEADER */}
-      {/* <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <MaterialIcons name="arrow-back-ios" size={24} color={colors.text} />
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+  >
+    <View style={[styles.container, { backgroundColor: '#fff' }]}>
+      {/* Illustration */}
+      <View style={styles.illustrationContainer}>
+        <Image
+          source={require('../../../assets/welcomeback.png')}
+          style={styles.illustration}
+        />
+      </View>
+
+      {/* Text */}
+      <Text style={[styles.title, { color: '#000' }]}>Welcome Back!</Text>
+      <Text style={[styles.subtitle, { color: '#666' }]}>
+        Sign in to access your F2G account.
+      </Text>
+
+      {/* PHONE INPUT */}
+      <Text style={[styles.label, { color: '#666' }]}>Phone</Text>
+      <View style={[styles.inputGroup, phoneFocus && { borderColor: '#007AFF' }]}>
+        <MaterialIcons name="phone" size={22} color="#999" />
+        <Text style={[styles.countryCode, { color: '#000', borderColor: '#ccc' }]}>+91</Text>
+        <TextInput
+          placeholder="Mobile number"
+          placeholderTextColor="#999"
+          keyboardType="phone-pad"
+          style={[styles.inputField, { color: '#000' }]}
+          onFocus={() => setPhoneFocus(true)}
+          onBlur={() => setPhoneFocus(false)}
+        />
+      </View>
+
+      {/* PASSWORD INPUT */}
+      <Text style={[styles.label, { color: '#666' }]}>Password</Text>
+      <View style={[styles.inputGroup, passwordFocus && { borderColor: '#007AFF' }]}>
+        <MaterialIcons name="lock" size={22} color="#999" />
+        <TextInput
+          placeholder="••••••••"
+          placeholderTextColor="#999"
+          style={[styles.inputField, { color: '#000' }]}
+          secureTextEntry={!showPassword}
+          onFocus={() => setPasswordFocus(true)}
+          onBlur={() => setPasswordFocus(false)}
+        />
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <MaterialIcons
+            name={showPassword ? 'visibility' : 'visibility-off'}
+            size={22}
+            color="#999"
+          />
         </TouchableOpacity>
-      </View> */}
+      </View>
 
-      {/* MAIN */}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      {/* FORGOT PASSWORD */}
+      <TouchableOpacity style={styles.linkButton}>
+        <Text style={[styles.linkText, { color: '#007AFF' }]}>Forgot Password?</Text>
+      </TouchableOpacity>
+
+      {/* LOGIN BUTTON */}
+      <TouchableOpacity
+        style={[styles.primaryButton, { backgroundColor: '#007AFF' }]}
+        onPress={handleLogin}
+        activeOpacity={0.8}
       >
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'space-between',
-            paddingBottom: 30,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={[styles.contentContainer]}>
-            {/* Illustration */}
-            <View style={styles.illustrationContainer}>
-              <Image
-                source={require('../../../assets/welcomeback.png')}
-                style={styles.illustration}
-              />
-            </View>
+        <Text style={[styles.primaryButtonText, { color: '#fff' }]}>Log In</Text>
+      </TouchableOpacity>
 
-            {/* Text */}
-            <Text style={[styles.title, { color: colors.text }]}>Welcome Back!</Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Sign in to access your F2G account.
-            </Text>
+      {/* SIGN UP */}
+      <View style={styles.signUpTextContainer}>
+        <Text style={[styles.signUpText, { color: '#666' }]}>Don't have an account? </Text>
+        <TouchableOpacity>
+          <Text style={[styles.linkText, { color: '#007AFF' }]}>Sign Up</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </KeyboardAvoidingView>
+</SafeAreaView>
 
-            {/* PHONE INPUT */}
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Phone</Text>
-            <View
-              style={[
-                styles.inputGroup,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-                phoneFocus && { borderColor: colors.accent },
-              ]}
-            >
-              <MaterialIcons name="phone" size={22} color={colors.textSecondary} />
-              <Text style={[styles.countryCode, { color: colors.text, borderColor: colors.border }]}>
-                +91
-              </Text>
-              <TextInput
-                placeholder="Mobile number"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="phone-pad"
-                style={[styles.inputField, { color: colors.text }]}
-                onFocus={() => setPhoneFocus(true)}
-                onBlur={() => setPhoneFocus(false)}
-              />
-            </View>
-
-            {/* PASSWORD INPUT */}
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Password</Text>
-            <View
-              style={[
-                styles.inputGroup,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-                passwordFocus && { borderColor: colors.accent },
-              ]}
-            >
-              <MaterialIcons name="lock" size={22} color={colors.textSecondary} />
-              <TextInput
-                placeholder="••••••••"
-                placeholderTextColor={colors.textSecondary}
-                style={[styles.inputField, { color: colors.text }]}
-                secureTextEntry={!showPassword}
-                onFocus={() => setPasswordFocus(true)}
-                onBlur={() => setPasswordFocus(false)}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <MaterialIcons
-                  name={showPassword ? 'visibility' : 'visibility-off'}
-                  size={22}
-                  color={colors.textSecondary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* FORGOT PASSWORD */}
-            <TouchableOpacity style={styles.linkButton}>
-              <Text style={[styles.linkText, { color: colors.accent }]}>Forgot Password?</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* FOOTER BUTTONS */}
-          <View style={[styles.footer]}>
-            <TouchableOpacity
-              style={[styles.primaryButton, { backgroundColor: colors.main }]}
-              onPress={handleLogin}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.primaryButtonText, { color: colors.card }]}>Log In</Text>
-            </TouchableOpacity>
-
-            <View style={styles.signUpTextContainer}>
-              <Text style={[styles.signUpText, { color: colors.textSecondary }]}>
-                Don't have an account?{' '}
-              </Text>
-              <TouchableOpacity>
-                <Text style={[styles.linkText, { color: colors.accent }]}>Sign Up</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  contentContainer: {
+  container: {
+    flex: 1,
+    justifyContent: 'center',
     paddingHorizontal: 32,
-    alignItems: 'center',
   },
- illustrationContainer: {
-  alignItems: 'center',
-  marginBottom: -10, // 🔥 added: pull text closer without shrinking image
-},
-illustration: {
-  width: 340,
-  height: 340,
-  resizeMode: 'contain',
-},
-title: {
-  fontSize: 26,
-  fontWeight: '700',
-  alignSelf: 'flex-start',
-  marginTop: -20, // 🔥 added: nudge closer to image
-  marginBottom: 4,
-},
-
+  illustrationContainer: {
+    alignItems: 'center',
+    marginBottom: -20,
+  },
+  illustration: {
+    width: '100%',
+    height: 300,
+    resizeMode: 'contain',
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '700',
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
   subtitle: {
     fontSize: 14,
     alignSelf: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   label: {
     fontSize: 10,
@@ -208,16 +169,12 @@ title: {
   },
   linkButton: {
     alignSelf: 'flex-end',
-    marginBottom: 8,
+    marginBottom: 20,
   },
   linkText: {
     fontSize: 14,
     fontWeight: '600',
     textDecorationLine: 'underline',
-  },
-  footer: {
-    paddingHorizontal: 32,
-    paddingBottom: 40,
   },
   primaryButton: {
     height: 56,
