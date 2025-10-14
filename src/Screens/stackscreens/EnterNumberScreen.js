@@ -1,4 +1,3 @@
-// src/Screens/EnterNumberScreen.js
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -22,55 +21,31 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { useTheme } from "../../Constants/Theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import { useSnackbar } from "../../Store/SnackbarContext";
+import { createApi } from "../../Util/UtilApi";
+  import { getApp } from "@react-native-firebase/app";
 
+import {
+  getAuth,
+  signInWithPhoneNumber,
+} from "@react-native-firebase/auth";
+import SetpasswordModal from "../../Components/Modal/SetpasswordModal";
 const screenHeight = Dimensions.get("window").height;
+  const app = getApp();
+const auth = getAuth(app); // ✅ fixed initialization
 
 /* -------------------------
-   🔹 API Helper
+   Validation Schema
 ------------------------- */
-const createApi = async (path, payload) => {
-  try {
-    const baseUrl = "https://reservemyevent.com/api/";
-    const response = await axios.post(baseUrl + path, payload, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data;
-  } catch (error) {
-    const status = error.response?.status;
-    const message =
-      error.response?.data?.message ||
-      (status === 400
-        ? "Invalid request data"
-        : status === 409
-        ? "User already exists"
-        : "Something went wrong, please try again.");
-    throw new Error(message);
-  }
-};
+const SignupSchema = Yup.object().shape({
+  mobile: Yup.string()
+    .matches(/^[0-9]{10}$/, "Enter a valid 10-digit number")
+    .required("Mobile number is required"),
+  agree: Yup.boolean().oneOf([true], "You must agree to continue"),
+});
 
 /* -------------------------
-   MOCK HELPERS (OTP Simulated)
-------------------------- */
-const loginWithPhone = async (fullNumber) => {
-  await new Promise((r) => setTimeout(r, 600));
-  return { phoneNumber: fullNumber, _mock: true };
-};
-
-const verifyOtp = async (confirmObj, otp) => {
-  await new Promise((r) => setTimeout(r, 600));
-  if (!confirmObj) throw new Error("No confirmation object found");
-  if (otp.length !== 6) throw new Error("Invalid OTP length");
-  return {
-    getIdToken: async () => {
-      await new Promise((r) => setTimeout(r, 200));
-      return "mock-id-token-xyz";
-    },
-  };
-};
-
-/* -------------------------
-   ✅ Checkbox Component
+   Checkbox Component
 ------------------------- */
 const Checkbox = ({ checked, onToggle, label, labelStyle }) => {
   const { colors } = useTheme();
@@ -101,36 +76,26 @@ const Checkbox = ({ checked, onToggle, label, labelStyle }) => {
 };
 
 /* -------------------------
-   Validation Schema
-------------------------- */
-const SignupSchema = Yup.object().shape({
-  mobile: Yup.string()
-    .matches(/^[0-9]{10}$/, "Enter a valid 10-digit number")
-    .required("Mobile number is required"),
-  agree: Yup.boolean().oneOf([true], "You must agree to continue"),
-});
-
-/* -------------------------
-   Main Screen
+   Main Component
 ------------------------- */
 export default function EnterNumberScreen({ navigation }) {
   const { colors, isDark } = useTheme();
+  const { showSnackbar } = useSnackbar();
 
   const [otpSent, setOtpSent] = useState(false);
-  const [confirm, setConfirm] = useState(null);
+  const [confirmObj, setConfirmObj] = useState(null);
   const [mobileNumber, setMobileNumber] = useState("");
   const [otp, setOtp] = useState("");
   const otpInputsRef = useRef([]);
   const [timer, setTimer] = useState(60);
   const [resendEnabled, setResendEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [idToken, setIdToken] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  /* ---------- OTP Countdown ---------- */
+  const [isForgetPasswordState, setIsForgetPasswordState] = useState(false)
+  /* ---------- Timer ---------- */
   useEffect(() => {
     let interval;
     if (otpSent && timer > 0) {
@@ -142,91 +107,81 @@ export default function EnterNumberScreen({ navigation }) {
     return () => clearInterval(interval);
   }, [otpSent, timer]);
 
-  /* ---------- Handlers ---------- */
+  /* ---------- Send OTP ---------- */
   const handleSendOtp = async (values) => {
     try {
       setLoading(true);
-      const confirmation = await loginWithPhone("+91" + values.mobile);
-      setConfirm(confirmation);
+      const fullPhone = "+91" + values.mobile;
+      const confirmation = await signInWithPhoneNumber(auth, fullPhone);
+      setConfirmObj(confirmation);
       setMobileNumber(values.mobile);
       setOtpSent(true);
       setTimer(60);
       setResendEnabled(false);
       setTimeout(() => otpInputsRef.current[0]?.focus(), 250);
-      Alert.alert("OTP Sent", `OTP sent to +91 ${values.mobile}`);
-    } catch (err) {
-      Alert.alert("Error", err?.message || "Failed to send OTP");
+      showSnackbar(`OTP sent to ${fullPhone}`, "success");
+    } catch (error) {
+      console.error("OTP Send Error:", error);
+      showSnackbar(error.message || "Failed to send OTP", "error");
     } finally {
       setLoading(false);
     }
   };
 
+  /* ---------- Resend OTP ---------- */
   const handleResendOtp = async () => {
-    if (!mobileNumber) return Alert.alert("Error", "No mobile number to resend OTP.");
+    if (!mobileNumber) return Alert.alert("Error", "No mobile number found.");
+    handleSendOtp({ mobile: mobileNumber, agree: true });
+  };
+
+  /* ---------- Confirm OTP ---------- */
+const handleVerifyOtp = async () => {
+    if (!confirmObj) return Alert.alert("Error", "No confirmation found");
     try {
       setLoading(true);
-      const confirmation = await loginWithPhone("+91" + mobileNumber);
-      setConfirm(confirmation);
-      setTimer(60);
-      setResendEnabled(false);
-      setOtp("");
-      setTimeout(() => otpInputsRef.current[0]?.focus(), 250);
-      Alert.alert("OTP Resent", `OTP resent to +91 ${mobileNumber}`);
-    } catch (err) {
-      Alert.alert("Error", err?.message || "Failed to resend OTP");
+      const userCredential = await confirmObj.confirm(otp); // ✅ Modern API
+      const token = await userCredential.user.getIdToken();
+      console.log("User token:", token);
+      // Alert.alert("Success", "Phone verified!");
+      setIdToken(token)
+      setPasswordModalVisible(true)
+
+    } catch (error) {
+      console.log("Verify OTP Error:", error);
+      Alert.alert("Invalid OTP", "Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOtp = async () => {
-    if (!otp || otp.length !== 6)
-      return Alert.alert("Error", "Please enter the complete 6-digit OTP.");
-    try {
-      setLoading(true);
-      const user = await verifyOtp(confirm, otp);
-      const token = await user.getIdToken();
-      setIdToken(token);
-      setPasswordModalVisible(true);
-    } catch (err) {
-      Alert.alert("Error", err?.message || "Invalid OTP. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ---------- ✅ Real Signup API ---------- */
-  const handleSignup = async (mobile, password) => {
+  /* ---------- Signup API ---------- */
+  const handleSignup = async ( password,isForgetPassword,navigation, setIsForgetPasswordState) => {
     try {
       setLoading(true);
       const FCMToken = await AsyncStorage.getItem("FCMToken");
       const payload = {
-        mobile,
+        mobile:mobileNumber,
         password,
         idToken,
         fcmtokens: FCMToken ? [FCMToken] : [],
       };
-
-      console.log("Signup Payload:", payload);
+      console.log(payload)
       const result = await createApi("users/signUp", payload);
-      console.log("Signup Response:", result);
-
-      if (result?.user) {
+      if (result?.user)
         await AsyncStorage.setItem("userData", JSON.stringify(result.user));
-      }
 
-      Alert.alert("Success", result?.message || "Account created successfully");
+      showSnackbar(result?.message || "Account created successfully", "success");
       setPasswordModalVisible(false);
       navigation.navigate("welcome");
     } catch (err) {
-      console.log("Signup Error:", err.message);
-      Alert.alert("Signup Failed", err.message || "Unable to sign up");
+      console.log("Signup Error:", err);
+      showSnackbar(err.message || "Unable to sign up", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---------- OTP Input Helper ---------- */
+  /* ---------- OTP Input ---------- */
   const onOtpChangeAt = (digit, idx) => {
     const d = digit.replace(/[^0-9]/g, "");
     let arr = otp.split("");
@@ -238,7 +193,7 @@ export default function EnterNumberScreen({ navigation }) {
     if (!d && otpInputsRef.current[idx - 1]) otpInputsRef.current[idx - 1].focus();
   };
 
-  /* ---------- Styles ---------- */
+  /* ---------- UI ---------- */
   const styles = StyleSheet.create({
     container: { flexGrow: 1, padding: 20, backgroundColor: colors.background },
     logoWrap: { alignItems: "center", marginTop: 14, marginBottom: 8 },
@@ -267,7 +222,6 @@ export default function EnterNumberScreen({ navigation }) {
       height: 52,
       backgroundColor: colors.card,
     },
-    countryCode: { marginRight: 10, fontSize: 16, color: colors.text },
     input: { flex: 1, fontSize: 16, color: colors.text },
     sendBtn: {
       height: 55,
@@ -275,16 +229,9 @@ export default function EnterNumberScreen({ navigation }) {
       justifyContent: "center",
       alignItems: "center",
       marginVertical: 15,
-      width: "100%",
       backgroundColor: colors.accent,
-      elevation: 8,
-      shadowColor: colors.accent,
-      shadowOffset: { width: 0, height: 5 },
-      shadowOpacity: 0.3,
-      shadowRadius: 10,
     },
-    sendBtnText: { fontSize: 17, fontWeight: "600", color: colors.card },
-    errorText: { color: "#e53935", marginBottom: 6 },
+    sendBtnText: { fontSize: 17, fontWeight: "600", color: colors.card,  width:150, textAlign:"center"},
     otpRow: { flexDirection: "row", gap: 8, justifyContent: "center" },
     otpBox: {
       width: 48,
@@ -298,55 +245,6 @@ export default function EnterNumberScreen({ navigation }) {
       color: colors.text,
       fontWeight: "600",
     },
-    resendContainer: { alignItems: "center", marginVertical: 10 },
-    resendText: { color: colors.text, fontWeight: "600" },
-    timerText: { color: colors.textSecondary },
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: "rgba(0,0,0,0.45)",
-      justifyContent: "center",
-      padding: 12,
-    },
-    modalBox: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 18,
-      elevation: 6,
-    },
-    modalHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-    modalTitle: { fontSize: 18, fontWeight: "700", marginLeft: 8, color: colors.text },
-    inputWithIcon: {
-      flexDirection: "row",
-      alignItems: "center",
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      marginTop: 10,
-      backgroundColor: colors.surface,
-    },
-    modalInput: { flex: 1, paddingVertical: 8, color: colors.text },
-    modalBtnRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 16,
-    },
-    modalBtn: {
-      flex: 1,
-      backgroundColor: colors.accent,
-      paddingVertical: 12,
-      borderRadius: 10,
-      alignItems: "center",
-      marginHorizontal: 6,
-    },
-    modalBtnText: { fontSize: 16, fontWeight: "700", color: colors.card },
-    modalInputLabel: {
-      fontSize: 14,
-      fontWeight: "600",
-      color: colors.text,
-      marginTop: 6,
-    },
   });
 
   return (
@@ -359,11 +257,7 @@ export default function EnterNumberScreen({ navigation }) {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Logo */}
+        <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.logoWrap}>
             <Image
               source={require("../../../assets/image.png")}
@@ -372,14 +266,13 @@ export default function EnterNumberScreen({ navigation }) {
             />
           </View>
 
-          {/* Formik */}
           <Formik
             initialValues={{ mobile: "", agree: false }}
             validationSchema={SignupSchema}
             onSubmit={handleSendOtp}
           >
             {({ handleChange, handleSubmit, values, errors, touched, setFieldValue }) => (
-              <View>
+              <>
                 {!otpSent ? (
                   <>
                     <Text style={styles.title}>Create an Account</Text>
@@ -388,7 +281,7 @@ export default function EnterNumberScreen({ navigation }) {
                     </Text>
 
                     <View style={styles.inputContainer}>
-                      <Text style={styles.countryCode}>+91</Text>
+                      <Text style={{ marginRight: 10, fontSize: 16, color: colors.text }}>+91</Text>
                       <TextInput
                         style={styles.input}
                         placeholder="Enter Mobile Number"
@@ -402,7 +295,7 @@ export default function EnterNumberScreen({ navigation }) {
                       />
                     </View>
                     {touched.mobile && errors.mobile && (
-                      <Text style={styles.errorText}>{errors.mobile}</Text>
+                      <Text style={{ color: "red" }}>{errors.mobile}</Text>
                     )}
 
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
@@ -431,15 +324,11 @@ export default function EnterNumberScreen({ navigation }) {
                         </Text>
                       </TouchableOpacity>
                     </View>
-                    {touched.agree && errors.agree && (
-                      <Text style={styles.errorText}>{errors.agree}</Text>
-                    )}
 
                     <TouchableOpacity
                       style={styles.sendBtn}
                       onPress={handleSubmit}
                       disabled={loading}
-                      activeOpacity={0.85}
                     >
                       {loading ? (
                         <ActivityIndicator color={colors.card} />
@@ -460,6 +349,7 @@ export default function EnterNumberScreen({ navigation }) {
                     >
                       Enter OTP sent to +91 {mobileNumber}
                     </Text>
+
                     <View style={{ alignItems: "center" }}>
                       <View style={styles.otpRow}>
                         {Array.from({ length: 6 }).map((_, i) => (
@@ -474,20 +364,23 @@ export default function EnterNumberScreen({ navigation }) {
                           />
                         ))}
                       </View>
-                      <View style={styles.resendContainer}>
-                        {resendEnabled ? (
-                          <TouchableOpacity onPress={handleResendOtp} disabled={loading}>
-                            <Text style={styles.resendText}>Resend OTP</Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <Text style={styles.timerText}>Resend OTP in {timer}s</Text>
-                        )}
-                      </View>
+
+                      {resendEnabled ? (
+                        <TouchableOpacity onPress={handleResendOtp} disabled={loading}>
+                          <Text style={{ color: colors.accent, marginVertical: 10 }}>
+                            Resend OTP
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <Text style={{ color: colors.textSecondary, marginVertical: 10 }}>
+                          Resend OTP in {timer}s
+                        </Text>
+                      )}
+
                       <TouchableOpacity
-                        style={[styles.sendBtn, { marginTop: 6 }]}
+                        style={styles.sendBtn}
                         onPress={handleVerifyOtp}
                         disabled={loading}
-                        activeOpacity={0.85}
                       >
                         {loading ? (
                           <ActivityIndicator color={colors.card} />
@@ -498,112 +391,23 @@ export default function EnterNumberScreen({ navigation }) {
                     </View>
                   </>
                 )}
-              </View>
+              </>
             )}
           </Formik>
-
-          {/* Password Modal */}
-          <Modal visible={passwordModalVisible} transparent animationType="slide">
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalBox}>
-                <View style={styles.modalHeader}>
-                  <MaterialIcons name="lock-outline" size={26} color={colors.accent} />
-                  <Text style={styles.modalTitle}>Set Your Password</Text>
-                </View>
-
-                <Formik
-                  initialValues={{ password: "", confirmPassword: "" }}
-                  validationSchema={Yup.object().shape({
-                    password: Yup.string()
-                      .min(6, "At least 6 characters")
-                      .required("Required"),
-                    confirmPassword: Yup.string()
-                      .oneOf([Yup.ref("password"), null], "Passwords must match")
-                      .required("Required"),
-                  })}
-                  onSubmit={(vals) => handleSignup(mobileNumber, vals.password)}
-                >
-                  {({ handleChange, handleSubmit, values, touched, errors }) => (
-                    <View>
-                      <Text style={styles.modalInputLabel}>Password</Text>
-                      <View style={styles.inputWithIcon}>
-                        <MaterialIcons name="vpn-key" size={20} color={colors.textSecondary} />
-                        <TextInput
-                          placeholder="Enter Password"
-                          placeholderTextColor={colors.textSecondary}
-                          secureTextEntry={!showPassword}
-                          style={styles.modalInput}
-                          value={values.password}
-                          onChangeText={handleChange("password")}
-                        />
-                        <TouchableOpacity onPress={() => setShowPassword((s) => !s)}>
-                          <MaterialIcons
-                            name={showPassword ? "visibility" : "visibility-off"}
-                            size={22}
-                            color={colors.textSecondary}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      {touched.password && errors.password && (
-                        <Text style={styles.errorText}>{errors.password}</Text>
-                      )}
-
-                      <Text style={styles.modalInputLabel}>Confirm Password</Text>
-                      <View style={styles.inputWithIcon}>
-                        <MaterialIcons
-                          name="lock-outline"
-                          size={20}
-                          color={colors.textSecondary}
-                        />
-                        <TextInput
-                          placeholder="Confirm Password"
-                          placeholderTextColor={colors.textSecondary}
-                          secureTextEntry={!showConfirmPassword}
-                          style={styles.modalInput}
-                          value={values.confirmPassword}
-                          onChangeText={handleChange("confirmPassword")}
-                        />
-                        <TouchableOpacity
-                          onPress={() => setShowConfirmPassword((s) => !s)}
-                        >
-                          <MaterialIcons
-                            name={showConfirmPassword ? "visibility" : "visibility-off"}
-                            size={22}
-                            color={colors.textSecondary}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      {touched.confirmPassword && errors.confirmPassword && (
-                        <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-                      )}
-
-                      <View style={styles.modalBtnRow}>
-                        <TouchableOpacity
-                          style={styles.modalBtn}
-                          onPress={handleSubmit}
-                          activeOpacity={0.85}
-                        >
-                          <Text style={styles.modalBtnText}>
-                            {loading ? "Please wait..." : "Set Password"}
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={[styles.modalBtn, { backgroundColor: colors.border }]}
-                          onPress={() => setPasswordModalVisible(false)}
-                          activeOpacity={0.85}
-                        >
-                          <Text style={[styles.modalBtnText, { color: colors.text }]}>
-                            Cancel
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-                </Formik>
-              </View>
-            </View>
-          </Modal>
         </ScrollView>
+        {
+          passwordModalVisible&&(
+            <SetpasswordModal
+      visible={passwordModalVisible}
+      closeModal={()=>{setPasswordModalVisible}}
+      navigation={navigation}
+      postData={handleSignup}
+      isForgetPassword={isForgetPasswordState}
+      setIsForgetPasswordState={setIsForgetPasswordState}
+    />
+          )
+        }
+         
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

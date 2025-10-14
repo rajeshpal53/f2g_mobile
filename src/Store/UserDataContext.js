@@ -1,87 +1,52 @@
-import React, { createContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// src/Store/UserDataContext.js
+import React, { createContext, useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const UserDataContext = createContext();
 
 export const UserDataProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const loadUserData = async () => {
-      try {
-        const storedData = await AsyncStorage.getItem('userData');
-        if (storedData) {
-          setUserData(JSON.parse(storedData));
-        }
-      } catch (error) {
-        console.log('Error loading user data:', error);
-      }
-    };
-  // Load data from AsyncStorage when the app starts
-  useEffect(() => {
-    
-
-    loadUserData();
-  }, []);
-
-
-  const fetchUserData = () => {
-    console.log("2 check before Promise");
-
-    return new Promise((resolve, reject) => {
-      AsyncStorage.getItem('userData')
-        .then((storedData) => {
-          if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            setUserData(parsedData);
-
-            console.log("3 check resolve Promise", parsedData);
-            resolve(parsedData);
-            console.log("4 after resolve");
-          } else {
-            reject("No user data found in AsyncStorage");
-          }
-        })
-        .catch((error) => {
-          console.log('Error loading user data:', error);
-          reject(error);
-        });
-    });
-  };
-
-
-
-  // Function to store data both in state and AsyncStorage
-  // const saveUserData = async (data) => {
-  //   try {
-  //     await AsyncStorage.setItem('userData', JSON.stringify(data));
-  //     setUserData(data);
-  //   } catch (error) {
-  //     console.log('Error saving user data:', error);
-  //   }
-  // };
-
-
-  const saveUserData = async (data) => {
-  if (data) {
-    await AsyncStorage.setItem("userData", JSON.stringify(data));
-  } else {
-    await AsyncStorage.removeItem("userData");   // ← delete when null
-  }
-  setUserData(data);
-};
-
-
-  const clearUserData = async () => {
     try {
-      await AsyncStorage.removeItem('userData');
-      setUserData(null);
+      const storedData = await AsyncStorage.getItem("userData");
+      if (storedData) {
+        const parsed = JSON.parse(storedData);
+        setUserData(parsed);
+        console.log("✅ Loaded from AsyncStorage:", parsed);
+      } else {
+        console.log("ℹ️ No userData in AsyncStorage");
+      }
     } catch (error) {
-      console.log('Error clearing user data:', error);
+      console.log("Error loading user data:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const saveUserData = async (data) => {
+    if (data) {
+      await AsyncStorage.setItem("userData", JSON.stringify(data));
+    } else {
+      await AsyncStorage.removeItem("userData");
+    }
+    setUserData(data);
+  };
+
+  const clearUserData = async () => {
+    await AsyncStorage.removeItem("userData");
+    setUserData(null);
+  };
+
   return (
-    <UserDataContext.Provider value={{ userData, saveUserData, clearUserData, fetchUserData,loadUserData}}>
+    <UserDataContext.Provider
+      value={{ userData, saveUserData, clearUserData, loadUserData, isLoading }}
+    >
       {children}
     </UserDataContext.Provider>
   );

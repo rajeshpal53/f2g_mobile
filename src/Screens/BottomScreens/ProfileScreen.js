@@ -140,13 +140,13 @@ export default function ProfileScreen({ navigation }) {
 
   // ✅ Handlers
   const loginClickHandler = () => {
-    navigation.navigate("Login");
+    navigation.navigate("LoginScreen");
   };
 
   const logoutHandler = () => {
     clearUserData();
     setVisible(false);
-    navigation.navigate("Home");
+    navigation.navigate("LoginScreen");
   };
 
   const openImageModal = (uri) => {

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useContext } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,14 +14,10 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import GenericDropdown from "../../UI/DropDown/GenericDropDown";
 import { useTheme } from "../../Constants/Theme";
-
-const loanTypes = [
-  { label: "Home Loan", value: "home" },
-  { label: "Personal Loan", value: "personal" },
-  { label: "Car Loan", value: "car" },
-  { label: "Business Loan", value: "business" },
-];
-
+import { loanTypes } from "../../Util/UtilApi";
+import UserDataContext from "../../Store/UserDataContext";
+import { useSnackbar } from "../../Store/SnackbarContext";
+import { createApi } from "../../Util/UtilApi";
 const BookingFormSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
   bookingAmount: Yup.number()
@@ -37,12 +33,17 @@ const BookingFormSchema = Yup.object().shape({
     .typeError("Tentative Bill must be a number")
     .required("Tentative Bill is required"),
   loanAccountNumber: Yup.string().required("Loan Account Number is required"),
+  mobile: Yup.string()
+          .required('Mobile number is required')
+          .matches(/^[0-9]{10}$/, 'Enter a valid 10-digit number'), 
 });
 
-const BookingScreen = () => {
+const BookingScreen = ({navigation}) => {
   const {colors} = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const styles= Bookstyles(colors)
+  const{userData}=useContext(UserDataContext)
+  const {showSnackbar}=useSnackbar()
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -72,10 +73,45 @@ const BookingScreen = () => {
               pincode: "",
               tentativeBill: "",
               loanAccountNumber: "",
+              mobile:""
             }}
             validationSchema={BookingFormSchema}
-            onSubmit={(values) => {
-              console.log("Booking Form Submitted: ", values);
+            onSubmit={async (values,{resetForm}) => {
+
+                 const loantypefk = loanTypes.find(t => t.value === values.loanType)?.id || null;
+                
+                console.log("Selected loan type from form:", values.loanType);
+                console.log("Available loan types:", loanTypes.map(t => t.value));
+                console.log("loantypefk:", loantypefk);
+                
+                 const payload ={
+address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(", "), // removes undefined or empty valuesjoin(", "),
+                loantypefk:loantypefk,
+                name:values?.name,
+                remark:values?.remark,
+                bookingAmount:values?.bookingAmount,
+                refferedBy:userData?.user?.id,
+                statusfk:2,
+                mobile:values?.mobile,
+                loanAccountNumber:values?.loanAccountNumber,
+                tentativeBillAmount:values?.tentativeBill,
+
+              
+              }
+              console.log("Booking Form Submitted: ", payload);
+               try{
+                              const response = await createApi("booking",payload)
+                              if(response){
+                                navigation.navigate("Bottom",{screen:"Booking"})
+                                 showSnackbar("Add Booking successfully","success")
+                                 resetForm();
+                              }
+                            }catch(err){
+                              console.error(err)
+                                showSnackbar(`failed to add  Booking,${err?.err} `,"error")
+                            }
+                          
+              
             }}
           >
             {({
@@ -88,10 +124,6 @@ const BookingScreen = () => {
               setFieldValue,
             }) => (
               <View>
-                <Text style={[styles.title, { color: colors.primary }]}>
-                  Booking Form
-                </Text>
-
                 {/* Name */}
                 <TextInput
                   label="Full Name *"
@@ -106,6 +138,25 @@ const BookingScreen = () => {
                 {touched.name && errors.name && (
                   <Text style={styles.errorText}>{errors.name}</Text>
                 )}
+                 <TextInput
+                                 placeholder="Mobile number"
+                                  mode="outlined"
+                                   activeOutlineColor={colors.primary}
+                                 keyboardType="number-pad"
+                                 value={values.mobile}
+                                  style={styles.input}
+                                 onBlur={handleBlur('mobile')}
+                                 onChangeText={(text) => {
+                                   // ✅ Allow only digits up to 10 characters
+                                   if (/^\d{0,10}$/.test(text)) {
+                setFieldValue('mobile', text);
+                                   }
+                                 }}
+                               />
+                                    
+                      {touched.mobile && errors.mobile && (
+                        <Text style={styles.errorText}>{errors.mobile}</Text>
+                      )}
 
                 {/* Booking Amount */}
                 <TextInput
@@ -125,17 +176,15 @@ const BookingScreen = () => {
 
                 {/* Loan Type Dropdown */}
                 <GenericDropdown
-                  placeholder="Select Loan Type"
-                  options={loanTypes}
-                  selectedValue={values.loanType}
-                  onValueChange={(val) => setFieldValue("loanType", val)}
-                  pickerContainerStyle={{
-                    ...styles.pickerContainerStyle,
-                    borderColor: values.loanType
-                      ? colors.primary
-                      : "grey",
-                  }}
-                />
+  placeholder="Select Loan Type"
+  options={loanTypes}
+  selectedValue={values.loanType} // now this should be an object
+  onValueChange={(val) => setFieldValue("loanType", val)}
+  pickerContainerStyle={{
+    ...styles.pickerContainerStyle,
+    borderColor: values.loanType ? colors.primary : "grey",
+  }}
+/>
                 {touched.loanType && errors.loanType && (
                   <Text style={styles.errorText}>{errors.loanType}</Text>
                 )}
@@ -247,7 +296,7 @@ export default BookingScreen;
 const Bookstyles =(colors)=> StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: "",
     paddingVertical: 20,
     backgroundColor: colors?.background,
   },
