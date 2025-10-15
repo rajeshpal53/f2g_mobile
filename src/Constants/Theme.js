@@ -74,7 +74,6 @@ const DarkColors = {
 
 export function useTheme() {
   const scheme = useColorScheme(); // 'light' or 'dark'
-  console.log(scheme, "scheme")
   const colors = scheme === 'dark' ? DarkColors : LightColors;
   const isDark = scheme === 'dark';
   return { colors, isDark };

@@ -1,16 +1,11 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Card, Text } from "react-native-paper";
+import { selectLoanFromId,statusById,colorByStatusFk} from  "../../Util/UtilApi"
 
-const statusColors = {
-  Approved: "#22C55E", // green
-  Disbursed: "#3B82F6", // blue
-  Pending: "#FACC15", // yellow
-  Rejected: "#EF4444", // red
-};
 
 const ReferralCard = ({ referral }) => {
-  const statusColor = statusColors[referral.status] || "#9CA3AF";
+  // const statusColor = statusColors[referral.status] || "#9CA3AF";
 
   return (
     <Card style={styles.card}>
@@ -19,14 +14,15 @@ const ReferralCard = ({ referral }) => {
           <View>
             <Text style={styles.name}>{referral.name}</Text>
             <Text style={styles.refId}>Ref ID: {referral.refId}</Text>
+            <Text  style={styles.loanType}> {referral?.user?.mobile} </Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-            <Text style={styles.statusText}>{referral.status}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: colorByStatusFk(referral?.statusfk) }]}>
+            <Text style={styles.statusText}>{statusById[referral.statusfk]}</Text>
           </View>
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={styles.loanType}>{referral.loanType}</Text>
+          <Text style={styles.loanType}>{selectLoanFromId[referral.loantypefk]}</Text>
           <Text style={styles.loanAmount}>₹{referral.loanAmount.toLocaleString()}</Text>
         </View>
 

@@ -12,7 +12,6 @@ import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-ic
 import Entypo from "@expo/vector-icons/Entypo";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
-import { useTranslation } from "react-i18next";
 //import FastImage from "react-native-fast-image";
 import Modal from "react-native-modal";
 import { Divider, Text } from "react-native-paper";
@@ -35,7 +34,6 @@ export default function ServiceImagePicker({
   console.log("profile image is the , ", image);
   console.log("format is , ", format);
   const MAX_FILE_SIZE_MB = 3; // Target file size in MB (e.g., 1MB)
-  const { t } = useTranslation();
   const [uploadStatus, setUploadStatus] = useState("");
   const [modalVisibel, setModalVisible] = useState(false);
   const [imageUrl, setImageUrl] = useState("");

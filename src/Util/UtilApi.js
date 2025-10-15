@@ -5,7 +5,7 @@ import axios from 'axios';
 
 // "enableProguardInReleaseBuilds": true
 
-export const API_BASE_URL = "https://qwikbill.in/qapi/";
+export const API_BASE_URL = "http://10.142.6.132:3001/api/";
 // export const API_BASE_URL = "http://192.168.1.35:2235/";
 
 //for preview:>  eas build --platform android  --profile preview
@@ -149,6 +149,76 @@ export const updateApi = async (endpoint, data, headers) => {
     employee:3,
     viewer:4
   }
+
+  export const loanTypes = [
+  { label: "Home Loan", value: "home",id :1},
+  { label: "Personal Loan", value: "personal",id:2},
+  {label:"Loan against property",value:"property",id:3},
+  { label: "Car Loan", value: "car",id:4},
+  { label: "Business Loan", value: "business",id :5},
+   {label :" CV loan",value:" cvLoan",id:6},
+   {label:"Auto loan" ,value:"auto",id:7},
+    { label: "Other", value: "other",id:8 },
+];
+
+
+  export const selectLoanFromId = {
+  1: "Home Loan",
+  2: "Personal Loan",
+  3: "Loan against property",
+  4: "Car Loan",
+  5: "Business Loan",
+  6: "CV Loan",
+  7: "Auto Loan",
+  8: "Other",
+};
+
+  export const selectLoanFrom = {
+  home: "Home Loan",
+  personal: "Personal Loan",
+  property: "Loan against property",
+  car: "Car Loan",
+  business: "Business Loan",
+  cvLoan: "CV Loan",
+  auto: "Auto Loan",
+  other: "Other",
+};
+
+
+export const statusById = {
+  1: "login incomplete",
+  2: "login done",
+  3: "post paid doc",
+  4: "reject",
+  5: "l and t stage",
+  6: "sub approved",
+  7: "approved",
+  8: "disbursed",
+  9: "otc/pdd pending",
+  10: "billing in process",
+  11: "billing cleared",
+};
+
+// ✅ Define color mapping for each status
+export const statusColors = {
+  "login incomplete": "#F87171", // red-400 (attention needed)
+  "login done": "#34D399", // green-400 (success)
+  "post paid doc": "#60A5FA", // blue-400 (info)
+  "reject": "#EF4444", // red-500 (error)
+  "l and t stage": "#FBBF24", // yellow-400 (in progress)
+  "sub approved": "#A78BFA", // purple-400 (reviewed)
+  "approved": "#22C55E", // green-500 (approved)
+  "disbursed": "#3B82F6", // blue-500 (completed)
+  "otc/pdd pending": "#FACC15", // yellow-400 (pending)
+  "billing in process": "#FB923C", // orange-400 (processing)
+  "billing cleared": "#10B981", // emerald-500 (done)
+};
+
+// ✅ Function to get color from statusFk (id)
+export const colorByStatusFk = (statusFk) => {
+  const statusName = statusById[statusFk];
+  return statusColors[statusName] || "#9CA3AF"; // default: gray-400 if not found
+};
 
 
 

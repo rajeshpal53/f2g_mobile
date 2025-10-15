@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   View,
   Text,
@@ -13,14 +13,42 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../Constants/Theme';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import { createApi } from '../../Util/UtilApi';
+import { useSnackbar } from '../../Store/SnackbarContext';
+import UserDataContext from '../../Store/UserDataContext';
 
 const LoginScreen = ({ navigation }) => {
   const { colors, isDark } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
-  const [phoneFocus, setPhoneFocus] = useState(false);
-  const [passwordFocus, setPasswordFocus] = useState(false);
+  const{showSnackbar}=useSnackbar("")
+  const {saveUserData}=useContext(UserDataContext)
+  // ✅ Yup Validation Schema
+  const validationSchema = Yup.object().shape({
+    mobile: Yup.string()
+      .required('Mobile number is required')
+      .matches(/^[0-9]{10}$/, 'Enter a valid 10-digit number'),
+    password: Yup.string()
+      .required('Password is required')
+      .min(6, 'Password must be at least 6 characters'),
+  });
 
-  const handleLogin = () => navigation.navigate('Bottom');
+  const handleLogin =async (values,resetForm) => {
+    try {
+      console.log('Form Data:', values);
+      const response = await createApi("users/loginUser",values)
+      if(response){
+        showSnackbar("Login Successfully","success")
+        saveUserData(response)
+         navigation.navigate('Bottom');
+      resetForm();
+      }
+    } catch (err) {
+       showSnackbar(`Login failed ${err?.err}`,"error")
+      console.log(err);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: '#fff' }]}>
@@ -29,24 +57,27 @@ const LoginScreen = ({ navigation }) => {
     backgroundColor="#fff"
   />
 
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-  >
-    <View style={[styles.container, { backgroundColor: '#fff' }]}>
-      {/* Illustration */}
-      <View style={styles.illustrationContainer}>
-        <Image
-          source={require('../../../assets/welcomeback.png')}
-          style={styles.illustration}
-        />
-      </View>
 
-      {/* Text */}
-      <Text style={[styles.title, { color: '#000' }]}>Welcome Back!</Text>
-      <Text style={[styles.subtitle, { color: '#666' }]}>
-        Sign in to access your F2G account.
-      </Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'space-between',
+            paddingBottom: 30,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.contentContainer}>
+            {/* Illustration */}
+            <View style={styles.illustrationContainer}>
+              <Image
+                source={require('../../../assets/welcomeback.png')}
+                style={styles.illustration}
+              />
+            </View>
 
       {/* PHONE INPUT */}
       <Text style={[styles.label, { color: '#666' }]}>Phone</Text>
@@ -63,75 +94,139 @@ const LoginScreen = ({ navigation }) => {
         />
       </View>
 
-      {/* PASSWORD INPUT */}
-      <Text style={[styles.label, { color: '#666' }]}>Password</Text>
-      <View style={[styles.inputGroup, passwordFocus && { borderColor: '#007AFF' }]}>
-        <MaterialIcons name="lock" size={22} color="#999" />
-        <TextInput
-          placeholder="••••••••"
-          placeholderTextColor="#999"
-          style={[styles.inputField, { color: '#000' }]}
-          secureTextEntry={!showPassword}
-          onFocus={() => setPasswordFocus(true)}
-          onBlur={() => setPasswordFocus(false)}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <MaterialIcons
-            name={showPassword ? 'visibility' : 'visibility-off'}
-            size={22}
-            color="#999"
-          />
-        </TouchableOpacity>
-      </View>
+            {/* ✅ Formik Form */}
+            <Formik
+              initialValues={{ mobile: '', password: '' }}
+              validationSchema={validationSchema}
+              onSubmit={(values,{resetForm})=>{ handleLogin(values,resetForm)}}
+            >
+              {({
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                values,
+                errors,
+                touched,
+                setFieldValue,
+              }) => (
+                <>
+                  {/* PHONE INPUT */}
+                  <Text style={[styles.label, { color: colors.textSecondary }]}>Phone</Text>
+                  <View
+                    style={[
+                      styles.inputGroup,
+                      { backgroundColor: colors.surface, borderColor: colors.border },
+                      touched.mobile && errors.mobile && { borderColor: 'red' },
+                    ]}
+                  >
+                    <MaterialIcons name="phone" size={22} color={colors.textSecondary} />
+                    <Text
+                      style={[
+                        styles.countryCode,
+                        { color: colors.text, borderColor: colors.border },
+                      ]}
+                    >
+                      +91
+                    </Text>
+                    <TextInput
+                      placeholder="Mobile number"
+                      placeholderTextColor={colors.textSecondary}
+                      keyboardType="number-pad"
+                      value={values.mobile}
+                      style={[styles.inputField, { color: colors.text }]}
+                      onBlur={handleBlur('mobile')}
+                      onChangeText={(text) => {
+                        // ✅ Allow only digits up to 10 characters
+                        if (/^\d{0,10}$/.test(text)) {
+                          setFieldValue('mobile', text);
+                        }
+                      }}
+                    />
+                  </View>
+                  {touched.mobile && errors.mobile && (
+                    <Text style={styles.errorText}>{errors.mobile}</Text>
+                  )}
 
-      {/* FORGOT PASSWORD */}
-      <TouchableOpacity style={styles.linkButton}>
-        <Text style={[styles.linkText, { color: '#007AFF' }]}>Forgot Password?</Text>
-      </TouchableOpacity>
+                  {/* PASSWORD INPUT */}
+                  <Text style={[styles.label, { color: colors.textSecondary }]}>Password</Text>
+                  <View
+                    style={[
+                      styles.inputGroup,
+                      { backgroundColor: colors.surface, borderColor: colors.border },
+                      touched.password && errors.password && { borderColor: 'red' },
+                    ]}
+                  >
+                    <MaterialIcons name="lock" size={22} color={colors.textSecondary} />
+                    <TextInput
+                      placeholder="••••••••"
+                      placeholderTextColor={colors.textSecondary}
+                      style={[styles.inputField, { color: colors.text }]}
+                      secureTextEntry={!showPassword}
+                      value={values.password}
+                      onBlur={handleBlur('password')}
+                      onChangeText={handleChange('password')}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <MaterialIcons
+                        name={showPassword ? 'visibility' : 'visibility-off'}
+                        size={22}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {touched.password && errors.password && (
+                    <Text style={styles.errorText}>{errors.password}</Text>
+                  )}
 
-      {/* LOGIN BUTTON */}
-      <TouchableOpacity
-        style={[styles.primaryButton, { backgroundColor: '#007AFF' }]}
-        onPress={handleLogin}
-        activeOpacity={0.8}
-      >
-        <Text style={[styles.primaryButtonText, { color: '#fff' }]}>Log In</Text>
-      </TouchableOpacity>
+                  {/* FORGOT PASSWORD */}
+                  <TouchableOpacity style={styles.linkButton}>
+                    <Text style={[styles.linkText, { color: colors.accent }]}>
+                      Forgot Password?
+                    </Text>
+                  </TouchableOpacity>
 
-      {/* SIGN UP */}
-      <View style={styles.signUpTextContainer}>
-        <Text style={[styles.signUpText, { color: '#666' }]}>Don't have an account? </Text>
-        <TouchableOpacity>
-          <Text style={[styles.linkText, { color: '#007AFF' }]}>Sign Up</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </KeyboardAvoidingView>
-</SafeAreaView>
+                  {/* LOGIN BUTTON */}
+                  <TouchableOpacity
+                    style={[styles.primaryButton, { backgroundColor: colors.main }]}
+                    onPress={handleSubmit}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.primaryButtonText, { color: colors.card }]}>
+                      Log In
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </Formik>
+          </View>
 
+          {/* FOOTER */}
+          <View style={styles.footer}>
+            <View style={styles.signUpTextContainer}>
+              <Text style={[styles.signUpText, { color: colors.textSecondary }]}>
+                Don't have an account?{' '}
+              </Text>
+              <TouchableOpacity>
+                <Text style={[styles.linkText, { color: colors.accent }]}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  illustrationContainer: {
-    alignItems: 'center',
-    marginBottom: -20,
-  },
-  illustration: {
-    width: '100%',
-    height: 300,
-    resizeMode: 'contain',
-  },
+  contentContainer: { paddingHorizontal: 32, alignItems: 'center' },
+  illustrationContainer: { alignItems: 'center', marginBottom: -10 },
+  illustration: { width: 340, height: 340, resizeMode: 'contain' },
   title: {
     fontSize: 26,
     fontWeight: '700',
     alignSelf: 'flex-start',
+    marginTop: -20,
     marginBottom: 4,
   },
   subtitle: {
@@ -154,7 +249,7 @@ const styles = StyleSheet.create({
     height: 56,
     width: '100%',
     paddingHorizontal: 16,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   countryCode: {
     fontSize: 16,
@@ -178,10 +273,11 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     height: 56,
+    width:100,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginTop: 10,
     shadowOpacity: 0.25,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
@@ -191,12 +287,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  footer: {
+    paddingHorizontal: 32,
+    paddingBottom: 40,
+  },
   signUpTextContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
   signUpText: {
     fontSize: 14,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
   },
 });
 

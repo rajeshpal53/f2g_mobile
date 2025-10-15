@@ -6,7 +6,7 @@ import WelcomeScreen from "../Screens/stackscreens/WelcomeScreen";
 import EnterNumberScreen from "../Screens/stackscreens/EnterNumberScreen"; 
 import { useTheme } from "../Constants/Theme.js";
 import { SafeAreaView } from "react-native-safe-area-context";
-import React from "react";
+import React, { useContext } from "react";
 import AdminSectionScreen from "../Screens/stackscreens/AdminSectionScreen.js";
 
 import LoginScreen from "../Screens/stackscreens/LoginScreen.js";
@@ -19,16 +19,17 @@ import AllUser from "../Screens/AdminSectionScreen/AllUserScreen.js";
 import ReferralForm from "../Screens/stackscreens/ReferScreen.js";
 import BookingScreen from "../Screens/stackscreens/BookingScreen.js";
 import FeedbackandHelp from "../Screens/stackscreens/FeedbackandHelp.js";
+import UserDataContext from "../Store/UserDataContext";
 
 export default function StackNavigator() {
     const {colors} = useTheme();
-
+    const {userData}=useContext(UserDataContext)
     const Stack = createStackNavigator();
     return(
         <SafeAreaView edges={['bottom',"top"]} style={{ flex: 1, backgroundColor: colors?.background }}>
 
         <Stack.Navigator
-            initialRouteName={"welcome"}
+            initialRouteName= {userData?"Bottom":"welcome"}
             screenOptions={{
                 headerStyle: {
                     backgroundColor: colors?.background,
@@ -104,9 +105,10 @@ export default function StackNavigator() {
     headerTitle: () => (
       <Text
         style={{
-          fontSize: 18,
-          fontFamily: "Poppins-SemiBold",
+         fontFamily: "Poppins-bold",
           color: colors?.text,
+          fontWeight:"bold",
+          fontSize:18
         }}
       >
        Add New Booking
