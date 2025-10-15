@@ -7,6 +7,7 @@ import { useTheme } from "../../Constants/Theme";
 import {MaterialIcons} from "@expo/vector-icons/"
 import { readApi,selectLoanFrom } from "../../Util/UtilApi";
 import UserDataContext from "../../Store/UserDataContext";
+import { useIsFocused } from "@react-navigation/native";
 const sampleData = [
   {
     id: 1,
@@ -49,6 +50,7 @@ const ViewReferalScreen = ({navigation}) => {
     const [referral,setReferral]= useState([])
     const searchBarRef=useRef();
     const {userData}=useContext(UserDataContext)
+    const isFocused= useIsFocused()
     const fetchSearchedData=async()=>{
        const respons = await readApi(`refferal?searchTerm=${searchQuery}`)
           setReferral(respons?.refferals)
@@ -60,10 +62,11 @@ const ViewReferalScreen = ({navigation}) => {
 
     const fetchefralData=async()=>{
       try{
+          console.log(`refferal?refferedBy=${userData?.user?.id}`)
          const respons = await readApi(`refferal?refferedBy=${userData?.user?.id}`)
           setReferral(respons?.refferals)
 
-          console.log(respons.refferals)
+          console.log(respons.refferals,"xyz")
       }catch(err){
         console.error("failed to search",err)
       }
@@ -77,7 +80,7 @@ const ViewReferalScreen = ({navigation}) => {
 
     useEffect(()=>{
         fetchefralData();
-    },[])
+    },[isFocused])
   return (
     <View style={styles.container}>
           <Searchbarwithmic
