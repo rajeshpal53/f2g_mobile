@@ -4,7 +4,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  Alert,
   Modal,
   FlatList,
   Pressable,
@@ -15,9 +14,11 @@ import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useTheme } from "../../Constants/Theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSnackbar } from "../../Store/SnackbarContext"; // ✅ Correct hook
 
 const FeedbackandHelp = () => {
   const { colors } = useTheme();
+  const { showSnackbar } = useSnackbar(); // ✅ useSnackbar hook
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -28,34 +29,33 @@ const FeedbackandHelp = () => {
   const [loading, setLoading] = useState(false);
 
   const concerns = [
-    { label: "App Issue", value: "app_issue" },
-    { label: "Booking Problem", value: "booking_problem" },
-    { label: "Payment Related", value: "payment_related" },
-    { label: "Other", value: "other" },
+    { label: "Comment", value: "Comment" },
+    { label: "Issue", value: "Issue" },
+    { label: "Suggestion", value: "Suggestion" },
+    { label: "Other", value: "Other" },
   ];
 
   // ---------------- PICK FILE ----------------
   const pickFile = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.Images, // fixed deprecated option
+        mediaTypes: ImagePicker.MediaType.Images,
         allowsEditing: true,
         quality: 1,
       });
-
       if (!result.canceled && result.assets?.length > 0) {
         setFileUri(result.assets[0].uri);
       }
     } catch (err) {
       console.error("File picker error:", err);
-      Alert.alert("Error", "Failed to pick the file.");
+      showSnackbar("Failed to pick the file.", "error");
     }
   };
 
   // ---------------- SUBMIT ----------------
   const handleSubmit = async () => {
     if (!name || !mobile || !email || !concern || !description) {
-      Alert.alert("Missing Fields", "Please fill all required fields.");
+      showSnackbar("Please fill all required fields.", "warning");
       return;
     }
 
@@ -66,32 +66,32 @@ const FeedbackandHelp = () => {
       formData.append("name", name);
       formData.append("mobile", mobile);
       formData.append("email", email);
-      formData.append("concern", concern);
+      formData.append("feedbackType", concern);
       formData.append("description", description);
 
-      // append file if selected
       if (fileUri) {
-        const response = await fetch(fileUri);
-        const blob = await response.blob();
         const filename = fileUri.split("/").pop();
-        const type = blob.type || "image/jpeg";
+        const type = filename.endsWith(".png")
+          ? "image/png"
+          : filename.endsWith(".jpg") || filename.endsWith(".jpeg")
+          ? "image/jpeg"
+          : "application/octet-stream";
 
-        formData.append("file", {
-          name: filename,
-          type,
+        formData.append("screenShot", {
           uri: fileUri,
+          type,
+          name: filename,
         });
       }
 
-      const res = await axios.post(
-        "https://rajeshpal.online/qapi/feedback/createFeedBack",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      // const res = await axios.post(
+      //   "https://reservemyevent.com/fapi/feedback/createFeedBack",
+      //   formData,
+      //   { timeout: 10000 }
+      // );
 
       if (res.data) {
-        Alert.alert("Success", "Feedback submitted successfully!");
-        // Clear all fields
+        showSnackbar("Feedback submitted successfully!", "success");
         setName("");
         setMobile("");
         setEmail("");
@@ -101,10 +101,7 @@ const FeedbackandHelp = () => {
       }
     } catch (error) {
       console.error("Feedback submit error:", error);
-      Alert.alert(
-        "Error",
-        "Failed to submit feedback. Please check your internet connection."
-      );
+      showSnackbar("Failed to submit feedback. Check your connection.", "error");
     } finally {
       setLoading(false);
     }
@@ -120,7 +117,7 @@ const FeedbackandHelp = () => {
       <View style={styles.card}>
         <Text style={styles.title}>Help & Support</Text>
         <Text style={styles.subtitle}>
-          We’d love to hear your thoughts, suggestions, or problems so we can improve.
+          We’d love to hear your thoughts, suggestions, or issues so we can improve.
         </Text>
 
         <TextInput
@@ -172,10 +169,11 @@ const FeedbackandHelp = () => {
           >
             {concern
               ? concerns.find((c) => c.value === concern)?.label
-              : "Select Concern*"}
+              : "Select Feedback Type*"}
           </Text>
         </TouchableOpacity>
 
+        {/* Modal Dropdown */}
         <Modal
           visible={dropdownVisible}
           transparent
@@ -229,7 +227,7 @@ const FeedbackandHelp = () => {
                 color="#007BFF"
               />
               <Text style={[styles.uploadText, { color: "#007BFF" }]}>
-                Upload a File
+                Upload a Screenshot (Optional)
               </Text>
             </View>
           )}
@@ -250,6 +248,7 @@ const FeedbackandHelp = () => {
   );
 };
 
+// ---------------- STYLES ----------------
 const feedbackStyles = (colors) =>
   StyleSheet.create({
     container: {
@@ -282,19 +281,19 @@ const feedbackStyles = (colors) =>
     },
     input: {
       marginBottom: 12,
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       borderRadius: 10,
     },
     dropdown: {
       borderWidth: 1,
       borderRadius: 10,
       marginBottom: 12,
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
     },
     textarea: {
       height: 120,
       marginBottom: 12,
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       borderRadius: 10,
     },
     uploadBox: {

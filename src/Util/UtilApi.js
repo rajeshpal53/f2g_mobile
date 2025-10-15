@@ -5,7 +5,7 @@ import axios from 'axios';
 
 // "enableProguardInReleaseBuilds": true
 
-export const API_BASE_URL = "http://10.142.6.132:3001/api/";
+export const API_BASE_URL = "https://reservemyevent.com/fapi/";
 // export const API_BASE_URL = "http://192.168.1.35:2235/";
 
 //for preview:>  eas build --platform android  --profile preview
