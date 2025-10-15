@@ -166,7 +166,7 @@ export default function ProfileScreen({ navigation }) {
     if (value === "changeLanguage") {
       setLanguageModalVisible(true);
     } else if (value === "needMoreHelp") {
-      navigation.navigate("Policies", {
+      navigation.navigate("FeedbackandHelp", {
         webUri: `${NORM_URL}qapp/helpandsupport?view=mobile`,
         headerTitle: "Help & Support",
       });
@@ -183,7 +183,7 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           refreshControl={
@@ -191,7 +191,7 @@ export default function ProfileScreen({ navigation }) {
               refreshing={refreshing}
               onRefresh={onRefresh}
               colors={[colors?.primary]}
-              progressBackgroundColor={colors?.background}
+              progressBackgroundColor={colors?.surface}
             />
           }
         >
@@ -202,7 +202,7 @@ export default function ProfileScreen({ navigation }) {
                   justifyContent: "center",
                   marginBottom: 25,
                   alignItems: "center",
-                  backgroundColor: colors?.background,
+                  backgroundColor: colors?.surface,
                 }}
               >
                 <TouchableOpacity
@@ -263,7 +263,7 @@ export default function ProfileScreen({ navigation }) {
                 )}
               </View>
 
-              <Card.Content style={{ backgroundColor: colors?.background }}>
+              <Card.Content style={{ backgroundColor: colors?.surface,marginHorizontal:10}}>
                 {menuItems?.map((item, index) =>
                   item.value === "needMoreHelp" ? (
                     <Pressable
@@ -414,22 +414,30 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
-const profileStyle = (colors) =>
+
+   const profileStyle = (colors) =>
   StyleSheet.create({
     item: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: colors?.surface,
+      backgroundColor: colors?.background,
       paddingVertical: 15,
       paddingHorizontal: 20,
       borderRadius: 10,
       marginVertical: 10,
+      
+      // ✅ Added shadow
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     icon: {
       marginRight: 15,
     },
     container: {
-      height: "100%",
+      height:"100%",
       justifyContent: "center",
       backgroundColor: colors?.background,
     },
@@ -440,8 +448,15 @@ const profileStyle = (colors) =>
     card: {
       width: "100%",
       height: "100%",
-      backgroundColor: colors?.background,
+      backgroundColor: colors?.surface,
       justifyContent: "center",
+
+      // ✅ Added subtle main card shadow
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 4,
     },
     avatar: {
       width: 100,
@@ -450,6 +465,13 @@ const profileStyle = (colors) =>
       marginVertical: 10,
       borderRadius: 50,
       backgroundColor: colors?.avatarBackground || "gray",
+
+      // ✅ Optional subtle shadow for avatar
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
+      elevation: 5,
     },
     chevron: {
       marginLeft: "auto",
@@ -462,11 +484,18 @@ const profileStyle = (colors) =>
     helpItem: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: colors?.surface,
+      backgroundColor: colors?.background,
       paddingVertical: 15,
       paddingHorizontal: 20,
       borderRadius: 10,
       marginVertical: 10,
+
+      // ✅ Added shadow to Help Item
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     modalBackground: {
       flex: 1,

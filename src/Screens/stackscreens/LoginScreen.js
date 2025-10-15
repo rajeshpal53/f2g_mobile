@@ -9,7 +9,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -52,11 +51,12 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <StatusBar
-        barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={colors.background}
-      />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: '#fff' }]}>
+  <StatusBar
+    barStyle="dark-content"
+    backgroundColor="#fff"
+  />
+
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -79,11 +79,20 @@ const LoginScreen = ({ navigation }) => {
               />
             </View>
 
-            {/* Text */}
-            <Text style={[styles.title, { color: colors.text }]}>Welcome Back!</Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Sign in to access your F2G account.
-            </Text>
+      {/* PHONE INPUT */}
+      <Text style={[styles.label, { color: '#666' }]}>Phone</Text>
+      <View style={[styles.inputGroup, phoneFocus && { borderColor: '#007AFF' }]}>
+        <MaterialIcons name="phone" size={22} color="#999" />
+        <Text style={[styles.countryCode, { color: '#000', borderColor: '#ccc' }]}>+91</Text>
+        <TextInput
+          placeholder="Mobile number"
+          placeholderTextColor="#999"
+          keyboardType="phone-pad"
+          style={[styles.inputField, { color: '#000' }]}
+          onFocus={() => setPhoneFocus(true)}
+          onBlur={() => setPhoneFocus(false)}
+        />
+      </View>
 
             {/* ✅ Formik Form */}
             <Formik
@@ -223,7 +232,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     alignSelf: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   label: {
     fontSize: 10,
@@ -255,7 +264,7 @@ const styles = StyleSheet.create({
   },
   linkButton: {
     alignSelf: 'flex-end',
-    marginBottom: 8,
+    marginBottom: 20,
   },
   linkText: {
     fontSize: 14,

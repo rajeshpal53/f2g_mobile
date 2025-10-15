@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 const GenericDropdown = ({
@@ -12,7 +12,7 @@ const GenericDropdown = ({
   pickerContainerStyle,
   pickerStyle,
   fontStyles,
-  placeholder = "Select an option", // added placeholder prop
+  placeholder = "Select an option",
 }) => {
   return (
     <View style={containerStyle}>
@@ -21,7 +21,7 @@ const GenericDropdown = ({
           {typeof label === 'string' && label.includes('*') ? (
             <>
               {label.replace('*', '')}
-              <Text>*</Text>
+              <Text style={{ color: 'gray' }}>*</Text>
             </>
           ) : (
             label
@@ -33,18 +33,20 @@ const GenericDropdown = ({
         <Picker
           mode="dropdown"
           selectedValue={selectedValue}
-          onValueChange={(itemValue) => {
-            console.log("setItem , ", itemValue);
-            onValueChange(itemValue);
-          }}
+          onValueChange={(itemValue) => onValueChange(itemValue)}
           style={[styles.picker, pickerStyle]}
           dropdownIconColor={pickerStyle?.color || "black"}
+          itemStyle={Platform.OS === "android" ? { height: 55, fontSize: 16 } : {}}
         >
           {/* Placeholder option */}
-          <Picker.Item label={placeholder} value="" style={fontStyles} />
+          <Picker.Item
+            label={placeholder}
+            value=""
+            style={[fontStyles, { color: '#999' }]}
+          />
           {options.map((option, index) => (
             <Picker.Item
-              style={fontStyles}
+              style={[fontStyles, { color: 'black' }]}
               key={index}
               label={option.label}
               value={option.value}
@@ -58,27 +60,29 @@ const GenericDropdown = ({
 
 const styles = StyleSheet.create({
   outlineContainer: {
-    height: 45,
+    height: 55, // matches TextInput height
     width: '100%',
     borderWidth: 1,
-    borderColor: '#000', // outline border
+    borderColor: 'black', // black border
     borderRadius: 5,
     justifyContent: 'center',
-    backgroundColor: 'transparent', // remove flat fill
+    backgroundColor: 'transparent',
+    paddingHorizontal: 10,
   },
   picker: {
     height: '100%',
     width: '100%',
+    color: 'black',
   },
   label: {
     position: 'absolute',
     backgroundColor: 'white',
-    top: -12,
+    top: -10,
     left: 10,
     zIndex: 1,
     paddingHorizontal: 4,
     fontSize: 14,
-    color: 'rgba(0, 0, 0, 0.6)',
+    color: 'rgba(0,0,0,0.6)',
   },
 });
 
