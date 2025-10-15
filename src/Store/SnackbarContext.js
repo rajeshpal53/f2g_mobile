@@ -1,91 +1,99 @@
 // SnackbarContext.js
-import React, { createContext, useState, useContext, useRef, useEffect } from "react";
+import React, { createContext, useState, useContext, useRef } from "react";
 import { Animated, View, Text, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 const SnackbarContext = createContext();
 
 export const SnackbarProvider = ({ children }) => {
-  const [snackbar, setSnackbar] = useState({
-    visible: false,
-    message: "",
-    severity: "success", // 'success' | 'error'
-  });
-
+  const [queue, setQueue] = useState([]); // Stack of snackbars
+  const [current, setCurrent] = useState(null);
   const progress = useRef(new Animated.Value(0)).current;
-  const hideTimeoutRef = useRef(null);
+  const timeoutRef = useRef(null);
 
-  const showSnackbar = (message, severity = "success", duration = 2000) => {
-    // Clear any previous timeout if snackbar is re-triggered
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-    }
+  // Show a new snackbar
+  const showSnackbar = (message, severity = "success", duration = 3000) => {
+    const id = Date.now();
+    const newSnackbar = { id, message, severity, duration };
+    setQueue(prev => [...prev, newSnackbar]);
 
-    setSnackbar({ visible: true, message, severity });
+    // If nothing is showing, start displaying
+    if (!current) displayNextSnackbar();
+  };
 
-    // Reset and start progress animation
+  // Display next snackbar in queue
+  const displayNextSnackbar = () => {
+    if (queue.length === 0) return;
+
+    const [next, ...rest] = queue;
+    setCurrent(next);
+    setQueue(rest);
+
     progress.setValue(0);
     Animated.timing(progress, {
       toValue: 1,
-      duration,
+      duration: next.duration,
       useNativeDriver: false,
     }).start();
 
     // Auto-hide after duration
-    hideTimeoutRef.current = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       hideSnackbar();
-    }, duration);
+    }, next.duration);
   };
 
+  // Hide current snackbar
   const hideSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, visible: false }));
+    clearTimeout(timeoutRef.current);
+    setCurrent(null);
+
+    // Display next in queue if available
+    if (queue.length > 0) {
+      setTimeout(displayNextSnackbar, 200); // small delay
+    }
   };
 
   const progressWidth = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: ["100%", "0%"], // Shrinks bar
+    outputRange: ["100%", "0%"],
   });
 
   return (
     <SnackbarContext.Provider value={{ showSnackbar }}>
       {children}
-      {snackbar.visible && (
+
+      {current && (
         <View style={styles.container}>
-          {/* Snackbar box */}
           <View
             style={[
               styles.snackbarBox,
               {
                 backgroundColor:
-                  snackbar.severity === "error" ? "#FDECEC" : "#E7F9ED",
+                  current.severity === "error" ? "#FDECEC" : "#E7F9ED",
               },
             ]}
           >
             <MaterialIcons
-              name={
-                snackbar.severity === "error" ? "error-outline" : "check-circle"
-              }
+              name={current.severity === "error" ? "error-outline" : "check-circle"}
               size={24}
-              color={snackbar.severity === "error" ? "#D93025" : "#34A853"}
+              color={current.severity === "error" ? "#D93025" : "#34A853"}
             />
             <Text
               style={[
                 styles.messageText,
-                { color: snackbar.severity === "error" ? "#D93025" : "#2E7D32" },
+                { color: current.severity === "error" ? "#D93025" : "#2E7D32" },
               ]}
             >
-              {snackbar.message}
+              {current.message}
             </Text>
           </View>
 
-          {/* Animated Progress Bar (Top) */}
           <Animated.View
             style={[
               styles.progressBar,
               {
-                backgroundColor:
-                  snackbar.severity === "error" ? "#D93025" : "#34A853",
                 width: progressWidth,
+                backgroundColor: current.severity === "error" ? "#D93025" : "#34A853",
               },
             ]}
           />
@@ -107,7 +115,6 @@ const styles = StyleSheet.create({
   snackbarBox: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
     borderRadius: 20,
     paddingVertical: 12,
     paddingHorizontal: 15,

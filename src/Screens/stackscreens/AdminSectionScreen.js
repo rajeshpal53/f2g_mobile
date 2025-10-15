@@ -1,95 +1,68 @@
-
 import { CommonActions, useIsFocused } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  RefreshControl,
+} from "react-native";
 import { Card, Text } from "react-native-paper";
 import UserDataContext from "../../Store/UserDataContext";
-//import FastImage from "react-native-fast-image";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import ConfirmModal from "../../Components/Modal/ConfirmModal";
 import { useSnackbar } from "../../Store/SnackbarContext";
-import { NORM_URL, createApi, fontFamily, fontSize } from "../../Util/UtilApi";
+import { NORM_URL, createApi } from "../../Util/UtilApi";
+import { useTheme } from "../../Constants/Theme";
+
 const AdminSectionScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
-  const { userData, saveUserData, clearUserData } = useContext(UserDataContext);
+  const { userData, clearUserData } = useContext(UserDataContext);
   const [imageUrl, setImageUrl] = useState("");
   const [visible, setVisible] = useState(false);
   const { showSnackbar } = useSnackbar();
+  const { colors } = useTheme();
+  const styles = profileStyle(colors);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setRefreshing(false);
+  };
 
   const [menuItems, setMenuItems] = useState([
-    {
-      isDisabled: false,
-      icon: "receipt",
-      label: "All Bookings",
-      value: "AllBookings",
-    },
-
-    {
-      isDisabled: false,
-      icon: "people",
-      label: "All Users",
-      value: "AllUsers",
-    },
-
-    {
-      isDisabled: false,
-      icon: "local-shipping",
-      label: "All Referals",
-      value: "AllRefrals",
-    },
-    {
-      isDisabled: false,
-      icon: "support-agent",
-      label: "All Queries",
-      value: "AllQueries",
-    },
-    {
-      isDisabled: false,
-      icon: "logout",
-      label: "logout",
-      value: "Logout",
-    },
+    { icon: "receipt", label: "All Bookings", value: "AllBookings" },
+    { icon: "people", label: "All Users", value: "AllUsers" },
+    { icon: "local-shipping", label: "All Referals", value: "AllRefrals" },
+    { icon: "support-agent", label: "All Queries", value: "AllQueries" },
+    { icon: "logout", label: "Logout", value: "Logout" },
   ]);
 
   const handlePress = (value) => {
-    console.log("DATA OF VALUE IS ------", value); // Log the value received
-    if (value === "AllInvoice") {
-      navigation.navigate("AllInvoice", { Admin: true });
-    } else if (value === "AllVendor") {
-      navigation.navigate("AllVendor", { isAdmin: true });
-    } else if (value === "AllUsers") {
-      navigation.navigate("AllUsers");
-    } else if (value === "AllQuerysAndSupport") {
-      navigation.navigate("AllQuerysAndSupport");
-    } else if (value === "Logout") {
-      setVisible(true);
-    }
+    if (value === "AllBookings") navigation.navigate("AllBookings");
+    else if (value === "AllUsers") navigation.navigate("AllUsers");
+    else if (value === "AllRefrals") navigation.navigate("AllRefrals");
+    else if (value === "AllQueries") navigation.navigate("AllQueries");
+    else if (value === "Logout") setVisible(true);
   };
 
   const logoutHandler = async () => {
     try {
-      console.log("Attempting logout...");
-
-      // 🔹 Clear all user data immediately (before API call)
       await AsyncStorage.clear();
       await clearUserData();
 
-      // 🔹 Get token (if still available)
       const token = userData?.token || (await AsyncStorage.getItem("userToken"));
-
-      // 🔹 If token is missing or expired, force logout without API call
       if (!token) {
-        console.warn("No token found or already expired. Redirecting to login.");
         showSnackbar("Session expired. Please log in again.", "error");
-        navigation.replace("login"); // Force login screen
+        navigation.replace("login");
         return;
       }
 
-      // 🔹 Attempt API call (just in case backend still accepts it)
       const response = await createApi(
         "users/logout",
         { mobile: userData?.user?.mobile },
@@ -99,15 +72,8 @@ const AdminSectionScreen = ({ navigation }) => {
         }
       );
 
-      console.log("Logout Response:", response);
+      if (response?.success) showSnackbar("Logged out successfully", "success");
 
-      if (response?.success) {
-        showSnackbar("Logged out successfully", "success");
-      } else {
-        console.warn("Logout request failed, likely due to expired token.");
-      }
-
-      // 🔹 Force user to login screen after clearing storage
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -115,167 +81,159 @@ const AdminSectionScreen = ({ navigation }) => {
         })
       );
     } catch (error) {
-      console.error("Error during logout - ", error);
       showSnackbar("Session expired. Please log in again.", "error");
-
-      // 🔹 Ensure user data is cleared and user is redirected to login
       await AsyncStorage.clear();
       await clearUserData();
       navigation.replace("login");
     }
   };
 
-
   useEffect(() => {
     if (userData) {
-      if (userData?.user?.profilePicurl) {
+      if (userData?.user?.profilePicurl)
         setImageUrl(`${NORM_URL}/${userData?.user?.profilePicurl}?${new Date()}`);
-      } else if (userData?.user?.gender == null) {
-        setImageUrl();
-      } else if (userData?.user?.gender === "Female") {
+      else if (userData?.user?.gender === "Female")
         setImageUrl(`https://servicediary.online/assets/mobile/female.png`);
-      } else if (
-        userData?.user?.gender === "Male" ||
-        userData?.user?.gender === "male"
-      ) {
+      else if (userData?.user?.gender === "Male" || userData?.user?.gender === "male")
         setImageUrl(`https://servicediary.online/assets/mobile/male.png`);
-      } else {
-        setImageUrl(`https://servicediary.online/assets/mobile/neutral.png`);
-      }
+      else setImageUrl(`https://servicediary.online/assets/mobile/neutral.png`);
     } else {
       setImageUrl(`https://servicediary.online/assets/mobile/neutral.png`);
     }
-  }, [isFocused, imageUrl, userData]);
-
-  console.log(imageUrl);
+  }, [isFocused, userData]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View
-          style={{
-            justifyContent: "center",
-            // backgroundColor: "#fff",
-            backgroundColor: "lightblue",
-            height: "100%",
-            // flex:1
-          }}
-        >
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            progressBackgroundColor={colors.surface}
+          />
+        }
+      >
+        <View>
           <Card style={styles.card}>
-            <View
-              style={{
-                justifyContent: "center",
-                marginBottom: 25,
-                alignItems: "center",
-                backgroundColor: "#fff",
-              }}
-            >
-              <Image
-                source={{ uri: imageUrl }}
-                style={styles.avatar}
-              />
-
+            <View style={styles.headerSection}>
+              <Image source={{ uri: imageUrl }} style={styles.avatar} />
               {userData && (
-                <Text style={styles.text}>
+                <Text style={styles.userName}>
                   {userData?.user?.name || userData?.user?.mobile}
                 </Text>
               )}
             </View>
-            <Card.Content style={{ backgroundColor: "#fff" }}>
-              {menuItems?.map((item, index) =>
-                !(item.value === "Logout" && !userData) ? (
-                  <TouchableOpacity
-                    key={index}
-                    style={[styles.item, item.isDisabled && { opacity: 0.5 }]}
-                    onPress={() => handlePress(item.value)}
-                    disabled={item.isDisabled}
-                  >
-                    <Icon
-                      name={item.icon}
-                      size={24}
-                      color="#26a0df"
-                      style={styles.icon}
-                    />
-                    <Text style={styles.label}>{t(item.label)}</Text>
-                    <Icon
-                      name="chevron-right"
-                      size={24}
-                      color="#000"
-                      style={styles.chevron}
-                    />
-                  </TouchableOpacity>
-                ) : null
-              )}
+
+            <Card.Content style={{ backgroundColor: colors.surface, marginHorizontal: 10 }}>
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handlePress(item.value)}
+                  style={styles.item}
+                >
+                  <Icon
+                    name={item.icon}
+                    size={24}
+                    color={colors.secondary}
+                    style={styles.icon}
+                  />
+                  <Text style={styles.label}>{t(item.label)}</Text>
+                  <Icon
+                    name="chevron-right"
+                    size={24}
+                    color={colors.text}
+                    style={styles.chevron}
+                  />
+                </TouchableOpacity>
+              ))}
             </Card.Content>
           </Card>
         </View>
       </ScrollView>
-      <ConfirmModal
-        visible={visible}
-        message="are you sure you want to logout"
-        heading={"Log Out"}
-        setVisible={setVisible}
-        handlePress={logoutHandler}
-        buttonTitle="Logout"
-      />
+
+      {/* ✅ Logout Confirmation Modal */}
+      {visible && (
+        <ConfirmModal
+          visible={visible}
+          message="Are you sure you want to log out?"
+          heading="Confirm Logout"
+          setVisible={setVisible}
+          handlePress={logoutHandler}
+          buttonTitle="Logout"
+        />
+      )}
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  text: {
-    fontSize: fontSize.heading,
-    marginBottom: 10,
-    fontFamily: "",
-  },
-  container: {
-    // flex: 1,
-    height: "100%",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  card: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "#fff",
-    justifyContent: "center",
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    justifySelf: "center",
-    alignSelf: "center",
-    marginVertical: 10,
-    borderRadius: 50,
-    backgroundColor: "gray",
-    backgroundColor: "#0a6846",
-  },
-  label: {
-    fontFamily: "",
-  },
-  button: {
-    color: "white",
-    justifySelf: "center",
-    justifyContent: "center",
-    width: "100%",
-    borderRadius: 14,
-  },
-  item: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    marginVertical: 10,
-  },
-  icon: {
-    marginRight: 15,
-  },
-
-  chevron: {
-    marginLeft: "auto",
-  },
-});
+const profileStyle = (colors) =>
+  StyleSheet.create({
+    container: {
+      height: "100%",
+      justifyContent: "center",
+      backgroundColor: colors.background,
+    },
+    card: {
+      width: "100%",
+      height: "100%",
+      backgroundColor: colors.surface,
+      justifyContent: "flex-start",
+      
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 4,
+    },
+    headerSection: {
+      justifyContent: "center",
+      marginBottom: 20,
+      alignItems: "center",
+      backgroundColor: colors.surface,
+    },
+    avatar: {
+      width: 110,
+      height: 110,
+      borderRadius: 55,
+      marginBottom: 10,
+      backgroundColor: colors.avatarBackground || "gray",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    userName: {
+      fontSize: 20,
+      fontFamily: "Poppins-Bold",
+      color: colors.text,
+    },
+    item: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.surface,
+      paddingVertical: 15,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+      marginVertical: 10,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    icon: {
+      marginRight: 15,
+    },
+    label: {
+      fontFamily: "Poppins-Regular",
+      color: colors.text,
+    },
+    chevron: {
+      marginLeft: "auto",
+    },
+  });
 
 export default AdminSectionScreen;
