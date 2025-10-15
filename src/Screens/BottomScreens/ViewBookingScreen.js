@@ -8,39 +8,9 @@ import { MaterialIcons } from "@expo/vector-icons/";
 import BookingCard from "../../Components/Cards/BookingCard";
 import UserDataContext from "../../Store/UserDataContext";
 import { readApi } from "../../Util/UtilApi";
-const sampleData = [
-  {
-    id: 1,
-    name: "Yogesh Gahane",
-    usersfk: 12,
-    bookedBy: 5,
-    loanAmount: 50000.0,
-    tentativeBillAmount: 75000.0,
-    loanAccountNumber: "LN20251013001",
-    loanType: "1",
-    address: "123 Celebration Street, Pune, Maharashtra, India",
-    remark: "Booking confirmed for the wedding event scheduled next month.",
-    bookId: "BK-20251013-001",
-    createdAt: "2025-10-13T10:15:00.000Z",
-    updatedAt: "2025-10-13T10:15:00.000Z",
-  },
-  {
-    id: 2,
-    name: "Mayur Lakhade",
-    usersfk: 12,
-    bookedBy: 5,
-    loanAmount: 50000.0,
-    tentativeBillAmount: 75000.0,
-    loanAccountNumber: "LN20251013001",
-    loanType: "1",
-    address: "123 Celebration Street, Pune, Maharashtra, India",
-    remark: "Booking confirmed for the wedding event scheduled next month.",
-    bookId: "BK-20251013-001",
-    createdAt: "2025-10-13T10:15:00.000Z",
-    updatedAt: "2025-10-13T10:15:00.000Z",
-  },
-  // you can add more data here
-];
+import NoDataFound from "../../UI/NoDataFound";
+import FilterModal from "../../Components/Modal/FilterModal";
+import { formatDate } from "../../Util/UtilApi";
 
 const ViewBookingScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,6 +19,11 @@ const ViewBookingScreen = ({ navigation }) => {
   const [bookings,setBookings]=useState([])
   const searchBarRef = useRef();
       const {userData}=useContext(UserDataContext)
+const [isModalVisible,setModalVisible]=useState(false)
+const [sortBy, setSortBy] = useState("");
+  const [dateRange, setDateRange] = useState({});
+    const [typeFilter, setTypeFilter] = useState("");
+
 
   const fetchSearchedData = () => {};
 
@@ -91,7 +66,26 @@ const ViewBookingScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <BookingCard booking={item} />}
         showsVerticalScrollIndicator={false}
+         ListEmptyComponent={
+          <View style={{ flex:1,justifyContent:"flex",   marginVertical:140,paddingVertical: 50,alignItems: "center"}}>
+                      <NoDataFound textString={"No Bookings Found"}/>
+
+            </View>
+  }
       />
+
+      <FAB
+            style={{
+              position: "absolute",
+              margin: 16,
+              right: 3,
+              bottom: 90,
+              backgroundColor: "#26a0df",
+            }}
+            icon="filter"
+            onPress={() => setModalVisible(true)}
+            color="#fff"
+          />
       <FAB
         icon={() => <MaterialIcons name="add" size={24} color="#fff" />}
         style={styles.fab}
@@ -100,6 +94,20 @@ const ViewBookingScreen = ({ navigation }) => {
           navigation.navigate("BookingScreen");
         }}
       />
+
+      
+            {isModalVisible && (
+        <FilterModal
+          setModalVisible={setModalVisible}
+          isModalVisible={isModalVisible}
+          setSortBy={setSortBy}
+          sortBy={sortBy}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          formatDate={formatDate}
+          setTypeFilter={setTypeFilter}
+
+        />)}
     </View>
   );
 };

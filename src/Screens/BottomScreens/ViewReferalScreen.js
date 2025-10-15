@@ -8,40 +8,9 @@ import {MaterialIcons} from "@expo/vector-icons/"
 import { readApi,selectLoanFrom } from "../../Util/UtilApi";
 import UserDataContext from "../../Store/UserDataContext";
 import { useIsFocused } from "@react-navigation/native";
-const sampleData = [
-  {
-    id: 1,
-    name: "Rajesh Sharma",
-    usersfk: 8,
-    refferedBy: 3,
-    loanAmount: 250000.0,
-    loanType: "Home Loan ",
-    address:
-      "45 Green Valley Apartments, Andheri West, Mumbai, Maharashtra, India",
-    remark: "Customer referred by existing client for business loan.",
-    refId: "REF-20251013-008",
-    createdAt: "2025-10-13T10:30:00.000Z",
-    updatedAt: "2025-10-13T10:30:00.000Z",
-    status:"Approved"
-  },
-  {
-    id: 2,
-    name: "Yogesh Sharma",
-    usersfk: 8,
-    refferedBy: 3,
-    loanAmount: 250000.0,
-    loanType: "Personal Loan ",
-    address:
-      "45 Green Valley Apartments, Andheri West, Mumbai, Maharashtra, India",
-    remark: "Customer referred by existing client for business loan.",
-    refId: "REF-20251013-009",
-    createdAt: "2025-10-13T10:30:00.000Z",
-    updatedAt: "2025-10-13T10:30:00.000Z",
-    status:"Disbursed"
-    
-  },
+import NoDataFound from "../../UI/NoDataFound";
   // you can add more data here
-];
+
 
 const ViewReferalScreen = ({navigation}) => {
     const[searchQuery,setSearchQuery]=useState("")
@@ -97,6 +66,12 @@ const ViewReferalScreen = ({navigation}) => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <ReferralCard referral={item} />}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={{ flex:1,justifyContent:"flex",   marginVertical:140,paddingVertical: 50,alignItems: "center"}}>
+                      <NoDataFound textString={"No Referrals Found"}/>
+
+            </View>
+  }
       />
         <FAB
       icon={() => <MaterialIcons name="add" size={24} color="#fff" />}
