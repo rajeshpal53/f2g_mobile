@@ -56,7 +56,8 @@ const AllQuerysAndSupport = () => {
             <Text
               style={{
                 fontWeight: "600",
-                color: focused ? colors.primary : colors.textSecondary,
+                // color: focused ? colors.secondary : colors.textSecondary,
+                color:colors.text,
                 textTransform: "capitalize",
               }}
             >
