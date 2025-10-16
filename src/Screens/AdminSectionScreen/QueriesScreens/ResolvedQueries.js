@@ -1,63 +1,49 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
-import { deleteApi, readApi } from "../../../Util/UtilApi";
+import { View, FlatList, RefreshControl } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
+import { readApi } from "../../../Util/UtilApi";
 import UserDataContext from "../../../Store/UserDataContext";
 import { useSnackbar } from "../../../Store/SnackbarContext";
-import { ActivityIndicator } from "react-native-paper";
 import QueryCard from "./QueryCard";
-import { RefreshControl } from "react-native-gesture-handler";
 import ViewQueryDetailModal from "./ViewQueryDetailModal";
 import NoDataFound from "../../../Components/NoDataFound";
-import ConfirmModal from "../../../modals/ConfirmModal";
+import { useTheme } from "../../../Constants/Theme";
 
-const ResolvedQueries = ({pendingRefresh}) => {
-  const [resolvedQueries, setResolvedQueries] = useState([]);
+const PAGE_SIZE = 3;
+
+const ResolvedQueries = ({ pendingRefresh }) => {
+  const { colors } = useTheme();
+  const [queries, setQueries] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMorePages, setHasMorePages] = useState(true);
-  const PAGE_SIZE = 10;
-  const [refreshPage, setRefreshPage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [pullRefreshing, setPullRefreshing] = useState(false);
+  const [viewDetailsItem, setViewDetailsItem] = useState(null);
+  const [queryDetailModalVisible, setQueryDetailModalVisible] = useState(false);
+
   const { userData } = useContext(UserDataContext);
   const { showSnackbar } = useSnackbar();
-  const [pullRefreshing, setPullRefreshing] = useState(false);
-  const [queryToDelete, setQueryToDelete] = useState(null);
-  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-   const [queryDetailModalVisible, setQueryDetailModalVisible] = useState(false);
-   const [viewDetailsItem, setViewDetailsItem] = useState(null);
 
   useEffect(() => {
-    fetchData(page);
-  }, [page, refreshPage]);
+    fetchData(1, true);
+  }, [pendingRefresh]);
 
-  useEffect(() => {
-
-    onRefresh();
-  }, [pendingRefresh])
-  const fetchData = async (pageNum) => {
-    const url = `/api/feedback/getAllResolvedByPagination?page=${pageNum}&limit=${PAGE_SIZE}`;
-
+  const fetchData = async (pageNum, reset = false) => {
+    const url = `feedback/getAllResolvedByPagination?page=${pageNum}&limit=${PAGE_SIZE}`;
     try {
       setIsLoading(true);
-
       const response = await readApi(url, {
         Authorization: `Bearer ${userData?.token}`,
       });
 
-      console.log("response of getting resolved feedBack is , ", response);
+      const list = response?.data || [];
+      if (reset) setQueries(list);
+      else setQueries((prev) => [...prev, ...list]);
 
-      if (page == 1) {
-        setResolvedQueries(response?.data);
-      } else if (response?.data?.length > 0) {
-        setResolvedQueries((prev) => [...prev, ...response?.data]);
-      }
-
-      if (response?.data?.length == 0) {
-        setHasMorePages(false);
-      }
+      setHasMorePages(!(list.length < PAGE_SIZE || pageNum >= response?.totalPages));
     } catch (error) {
-      console.error(" error getting feedBackData is , ", error);
-      showSnackbar("No Resolved Queries Found", "error");
-      setResolvedQueries([]);
+      showSnackbar("Failed to load resolved queries", "error");
+      setQueries([]);
       setHasMorePages(false);
     } finally {
       setIsLoading(false);
@@ -66,117 +52,64 @@ const ResolvedQueries = ({pendingRefresh}) => {
   };
 
   const loadMoreData = () => {
-    if (hasMorePages) {
-      setPage((prevPage) => prevPage + 1);
+    if (hasMorePages && !isLoading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchData(nextPage);
     }
   };
 
-  const Loader = () => {
-    if (!isLoading) return null;
-    return (
-      <View style={{ flex: 1, justifyContent: "center" }}>
-        <ActivityIndicator size={"large"}></ActivityIndicator>
-      </View>
-    );
-  };
-
-  const toggleQueryDetailModal = () => {
+  const toggleQueryDetailModal = () =>
     setQueryDetailModalVisible((prev) => !prev);
-  }
 
   const onRefresh = () => {
+    setPullRefreshing(true);
     setPage(1);
     setHasMorePages(true);
-    setRefreshPage((prev) => !prev);
-    setPullRefreshing(true);
-  };
-
-  const handleDeleteQuery = async () => {
-
-    try {
-      
-      const response = await deleteApi(`/api/feedback/deleteFeedback/${queryToDelete?.id}`, 
-        {
-          Authorization : `Bearer ${userData?.token}`
-        }
-      );
-
-      setPage(1);
-      setHasMorePages(true);
-      setRefreshPage((prev) => !prev);
-      setConfirmModalVisible(false)
-      showSnackbar("Query Deleted Successfully", "success");
-      
-    } catch (error) {
-      showSnackbar("Something went wrong", "error");
-      console.log("error deleting query",error);
-    }
+    fetchData(1, true);
   };
 
   return (
-    <View style={{ paddingHorizontal: 15, paddingVertical: 10 }}>
+    <View style={{ flex: 1, paddingHorizontal: 15, paddingVertical: 10, backgroundColor: colors.background }}>
       <FlatList
-        data={resolvedQueries}
-        renderItem={({ item, index }) => (
-          <View style={{ marginVertical: 10 }}>
-            {/* <Text>{item?.description}</Text> */}
-            <QueryCard
-              item={item}
-              setQueryToAct={setQueryToDelete}
-              setConfirmModalVisible={setConfirmModalVisible}
-              setItem={setViewDetailsItem}
-              toggleModal={toggleQueryDetailModal}
-            />
-          </View>
+        data={queries}
+        renderItem={({ item }) => (
+          <QueryCard
+            item={item}
+            setItem={setViewDetailsItem}
+            toggleModal={toggleQueryDetailModal}
+            isResolved
+            themeColors={colors}
+          />
         )}
+        keyExtractor={(item) => item.id.toString()}
         refreshControl={
           <RefreshControl
             refreshing={pullRefreshing}
             onRefresh={onRefresh}
-            colors={["#0a6846"]}
-            progressBackgroundColor={"#fff"}
+            colors={[colors.primary]}
+            progressBackgroundColor={colors.surface}
           />
         }
-        keyExtractor={(item, index) => index}
-        showsVerticalScrollIndicator={false}
         onEndReached={loadMoreData}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={Loader}
-        ListEmptyComponent={
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: "40%",
-            }}
-          >
-            <NoDataFound textString={"No Queries Found"} />
-          </View>
+        ListFooterComponent={
+          isLoading && page > 1 && (
+            <ActivityIndicator size="large" style={{ paddingVertical: 20 }} color={colors.primary} />
+          )
         }
+        ListEmptyComponent={<NoDataFound textString="No Resolved Queries Found" />}
       />
 
-      {confirmModalVisible && (
-        <ConfirmModal
-          visible={confirmModalVisible}
-          message={"Are you sure you want to delete this query?"}
-          heading={"Confirmation Message"}
-          setVisible={setConfirmModalVisible}
-          handlePress={handleDeleteQuery}
-          buttonTitle={"Delete"}
+      {queryDetailModalVisible && (
+        <ViewQueryDetailModal
+          item={viewDetailsItem}
+          queryDetailModalVisible={queryDetailModalVisible}
+          toggleModal={toggleQueryDetailModal}
         />
       )}
-
-{queryDetailModalVisible && 
-        <ViewQueryDetailModal
-        item = {viewDetailsItem}
-        queryDetailModalVisible={queryDetailModalVisible}
-        toggleModal = {toggleQueryDetailModal}
-        />
-        }
     </View>
   );
 };
 
 export default ResolvedQueries;
-
-const styles = StyleSheet.create({});

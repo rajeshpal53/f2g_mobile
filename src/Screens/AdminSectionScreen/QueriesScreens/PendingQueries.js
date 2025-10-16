@@ -8,12 +8,15 @@ import QueryCard from "./QueryCard";
 import ConfirmModal from "../../../modals/ConfirmModal";
 import ViewQueryDetailModal from "./ViewQueryDetailModal";
 import NoDataFound from "../../../Components/NoDataFound";
+import { useTheme } from "../../../Constants/Theme";
+
+const PAGE_SIZE = 3;
 
 const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
+  const { colors } = useTheme();
   const [pendingQueries, setPendingQueries] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMorePages, setHasMorePages] = useState(true);
-  const PAGE_SIZE = 3;
   const [isLoading, setIsLoading] = useState(false);
   const [pullRefreshing, setPullRefreshing] = useState(false);
   const [resolvedQuery, setResolvedQuery] = useState(null);
@@ -25,20 +28,24 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
   const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
-    fetchData(page);
-  }, [page, pendingRefresh]);
+    fetchData(1, true);
+  }, [pendingRefresh]);
 
-  const fetchData = async (pageNum) => {
-    const url = `https://reservemyevent.com/fapi/feedback/getAllUnResolvedByPagination?page=${pageNum}&limit=${PAGE_SIZE}`;
+  const fetchData = async (pageNum, reset = false) => {
+    const url = `feedback/getAllUnResolvedByPagination?page=${pageNum}&limit=${PAGE_SIZE}`;
     try {
       setIsLoading(true);
-      const response = await readApi(url, { Authorization: `Bearer ${userData?.token}` });
-      if (pageNum === 1) setPendingQueries(response?.data || []);
-      else if (response?.data?.length > 0) setPendingQueries((prev) => [...prev, ...response.data]);
+      const response = await readApi(url, {
+        Authorization: `Bearer ${userData?.token}`,
+      });
 
-      if (!response?.data || response?.data?.length === 0) setHasMorePages(false);
+      const list = response?.data || [];
+      if (reset) setPendingQueries(list);
+      else setPendingQueries((prev) => [...prev, ...list]);
+
+      setHasMorePages(!(list.length < PAGE_SIZE || pageNum >= response?.totalPages));
     } catch (error) {
-      showSnackbar("No Pending Queries Found", "error");
+      showSnackbar("Failed to load queries", "error");
       setPendingQueries([]);
       setHasMorePages(false);
     } finally {
@@ -48,34 +55,41 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
   };
 
   const loadMoreData = () => {
-    if (hasMorePages && !isLoading) setPage((prev) => prev + 1);
+    if (hasMorePages && !isLoading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchData(nextPage);
+    }
   };
 
   const handleQueryResolved = async () => {
     try {
-      await updateApi(`https://reservemyevent.com/fapi/feedback/updateFeedback/${resolvedQuery?.id}`, { isResolved: true }, { Authorization: `Bearer ${userData?.token}` });
-      setPage(1);
-      setHasMorePages(true);
-      setPendingRefresh((prev) => !prev);
+      await updateApi(
+        `feedback/updateFeedback/${resolvedQuery?.id}`,
+        { isResolved: true },
+        { Authorization: `Bearer ${userData?.token}` }
+      );
       setConfirmModalVisible(false);
-      showSnackbar("Query Resolved Successfully", "success");
       setIndex(1);
+      setPendingRefresh((prev) => !prev);
+      showSnackbar("Query marked as resolved", "success");
     } catch (error) {
-      showSnackbar("Something went wrong", "error");
+      showSnackbar("Failed to resolve query", "error");
     }
   };
 
-  const toggleQueryDetailModal = () => setQueryDetailModalVisible((prev) => !prev);
+  const toggleQueryDetailModal = () =>
+    setQueryDetailModalVisible((prev) => !prev);
 
   const onRefresh = () => {
+    setPullRefreshing(true);
     setPage(1);
     setHasMorePages(true);
-    setPendingRefresh((prev) => !prev);
-    setPullRefreshing(true);
+    fetchData(1, true);
   };
 
   return (
-    <View style={{ paddingHorizontal: 15, paddingVertical: 10 }}>
+    <View style={{ flex: 1, paddingHorizontal: 15, paddingVertical: 10, backgroundColor: colors.background }}>
       <FlatList
         data={pendingQueries}
         renderItem={({ item }) => (
@@ -85,29 +99,46 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
             setConfirmModalVisible={setConfirmModalVisible}
             setItem={setViewDetailsItem}
             toggleModal={toggleQueryDetailModal}
+            themeColors={colors} // pass colors if needed in QueryCard
           />
         )}
-        keyExtractor={(item, index) => index.toString()}
-        refreshControl={<RefreshControl refreshing={pullRefreshing} onRefresh={onRefresh} colors={["#0a6846"]} progressBackgroundColor="#fff" />}
+        keyExtractor={(item) => item.id.toString()}
+        refreshControl={
+          <RefreshControl
+            refreshing={pullRefreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            progressBackgroundColor={colors.surface}
+          />
+        }
         onEndReached={loadMoreData}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={isLoading && <ActivityIndicator size="large" style={{ paddingVertical: 20 }} />}
-        ListEmptyComponent={<NoDataFound textString="No Queries Found" />}
+        ListFooterComponent={
+          isLoading && page > 1 && (
+            <ActivityIndicator size="large" style={{ paddingVertical: 20 }} color={colors.primary} />
+          )
+        }
+        ListEmptyComponent={<NoDataFound textString="No Pending Queries Found" />}
       />
 
       {confirmModalVisible && (
         <ConfirmModal
           visible={confirmModalVisible}
-          message="Are you sure you want to mark this query as resolved?"
-          heading="Confirmation Message"
+          message="Mark this query as resolved?"
+          heading="Confirm Action"
           setVisible={setConfirmModalVisible}
           handlePress={handleQueryResolved}
-          buttonTitle="Resolved"
+          buttonTitle="Mark Resolved"
+          themeColors={colors}
         />
       )}
 
       {queryDetailModalVisible && (
-        <ViewQueryDetailModal item={viewDetailsItem} queryDetailModalVisible={queryDetailModalVisible} toggleModal={toggleQueryDetailModal} />
+        <ViewQueryDetailModal
+          item={viewDetailsItem}
+          queryDetailModalVisible={queryDetailModalVisible}
+          toggleModal={toggleQueryDetailModal}
+        />
       )}
     </View>
   );

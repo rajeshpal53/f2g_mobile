@@ -1,76 +1,85 @@
-import * as React from "react";
-import { useWindowDimensions } from "react-native";
-import { TabView, TabBar } from "react-native-tab-view";
-import ResolvedQueries from "./ResolvedQueries";
-import PendingQueries from "./PendingQueries";
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Card } from "react-native-paper";
+import { formatDate } from "../../../Util/UtilApi";
+import { useTheme } from "../../../Constants/Theme";
 
-const renderScene = ({
-  route,
-  pendingRefresh,
-  setPendingRefresh,
-  index,
-  setIndex,
+const QueryCard = ({
+  item,
+  setQueryToAct,
+  setConfirmModalVisible,
+  setItem,
+  toggleModal,
+  isResolved,
 }) => {
-  switch (route.key) {
-    case "first":
-      return (
-        <PendingQueries
-          pendingRefresh={pendingRefresh}
-          setPendingRefresh={setPendingRefresh}
-          setIndex={setIndex}
-        />
-      );
-    case "second":
-      return (
-        <ResolvedQueries
-          pendingRefresh={pendingRefresh}
-          setIndex={setIndex}
-        />
-      );
-    default:
-      return null;
-  }
-};
-
-const AllQuerysAndSupport = () => {
-  const layout = useWindowDimensions();
-  const [index, setIndex] = React.useState(0);
-  const [pendingRefresh, setPendingRefresh] = React.useState(false);
-
-  const routes = [
-    { key: "first", title: "Pending" },
-    { key: "second", title: "Resolved" },
-  ];
+  const { colors } = useTheme(); // use theme
 
   return (
-    <TabView
-      navigationState={{ index, routes }}
-      renderScene={(props) =>
-        renderScene({
-          ...props,
-          pendingRefresh,
-          setPendingRefresh,
-          index,
-          setIndex,
-        })
-      }
-      renderTabBar={(props) => (
-        <TabBar
-          {...props}
-          indicatorStyle={{ backgroundColor: "green", height: 3 }}
-          style={{ backgroundColor: "white" }}
-          labelStyle={{
-            fontWeight: "600",
-            color: "black",
-            textTransform: "capitalize",
+    <Card style={[styles.card, { backgroundColor: colors.surface }]}>
+      <View style={styles.header}>
+        <Text style={[styles.type, { color: colors.main }]}>{item.feedbackType}</Text>
+        <Text style={[styles.date, { color: colors.muted }]}>{formatDate(item.createdAt)}</Text>
+      </View>
+
+      <Text style={[styles.desc, { color: colors.text }]}>{item.description}</Text>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          onPress={() => {
+            setItem(item);
+            toggleModal();
           }}
-        />
-      )}
-      onIndexChange={setIndex}
-      initialLayout={{ width: layout.width }}
-      style={{ backgroundColor: "#fff" }}
-    />
+        >
+          <Text style={[styles.link, { color: colors.main }]}>View Details</Text>
+        </TouchableOpacity>
+
+        {!isResolved && (
+          <TouchableOpacity
+            onPress={() => {
+              setQueryToAct(item);
+              setConfirmModalVisible(true);
+            }}
+          >
+            <Text style={[styles.resolve, { color: colors.danger }]}>Mark Resolved</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </Card>
   );
 };
 
-export default AllQuerysAndSupport;
+const styles = StyleSheet.create({
+  card: {
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 10,
+    elevation: 3,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  type: {
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  date: {
+    fontSize: 12,
+  },
+  desc: {
+    marginVertical: 8,
+    fontSize: 14,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  link: {
+    fontWeight: "bold",
+  },
+  resolve: {
+    fontWeight: "bold",
+  },
+});
+
+export default QueryCard;

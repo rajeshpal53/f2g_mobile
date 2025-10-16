@@ -1,47 +1,71 @@
 import * as React from "react";
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, Text } from "react-native";
 import { TabView, TabBar } from "react-native-tab-view";
 import PendingQueries from "./PendingQueries";
 import ResolvedQueries from "./ResolvedQueries";
-
-const renderScene = ({ route, pendingRefresh, setPendingRefresh, index, setIndex }) => {
-  switch (route.key) {
-    case "first":
-      return <PendingQueries pendingRefresh={pendingRefresh} setPendingRefresh={setPendingRefresh} setIndex={setIndex} />;
-    case "second":
-      return <ResolvedQueries pendingRefresh={pendingRefresh} />;
-    default:
-      return null;
-  }
-};
+import { useTheme } from "../../../Constants/Theme";
 
 const AllQuerysAndSupport = () => {
   const layout = useWindowDimensions();
+  const { colors } = useTheme();
+
   const [index, setIndex] = React.useState(0);
   const [pendingRefresh, setPendingRefresh] = React.useState(false);
+  const [resolvedRefresh, setResolvedRefresh] = React.useState(false);
 
   const routes = [
-    { key: "first", title: "Pending" },
-    { key: "second", title: "Resolved" },
+    { key: "pending", title: "Pending" },
+    { key: "resolved", title: "Resolved" },
   ];
+
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case "pending":
+        return (
+          <PendingQueries
+            pendingRefresh={pendingRefresh}
+            setPendingRefresh={setPendingRefresh}
+            setIndex={setIndex}
+          />
+        );
+      case "resolved":
+        return (
+          <ResolvedQueries
+            pendingRefresh={resolvedRefresh}
+            setPendingRefresh={setResolvedRefresh}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <TabView
       navigationState={{ index, routes }}
-      renderScene={(props) => renderScene({ ...props, pendingRefresh, setPendingRefresh, index, setIndex })}
+      renderScene={renderScene}
+      onIndexChange={setIndex}
+      initialLayout={{ width: layout.width }}
       renderTabBar={(props) => (
         <TabBar
           {...props}
-          indicatorStyle={{ backgroundColor: "green", height: 3 }}
-          style={{ backgroundColor: "white" }}
-          activeColor="green"
-          inactiveColor="gray"
-          labelStyle={{ fontWeight: "600", textTransform: "capitalize", color: "black" }}
+          indicatorStyle={{ backgroundColor: colors.primary, height: 3 }}
+          style={{ backgroundColor: colors.secondary}}
+          labelStyle={{ fontWeight: "600", textTransform: "capitalize" }}
+          renderLabel={({ route, focused }) => (
+            <Text
+              style={{
+                fontWeight: "600",
+                color: focused ? colors.primary : colors.textSecondary,
+                textTransform: "capitalize",
+              }}
+            >
+              {route.title}
+            </Text>
+          )}
         />
       )}
-      onIndexChange={setIndex}
-      initialLayout={{ width: layout.width }}
-      style={{ backgroundColor: "#fff" }}
+      style={{ backgroundColor: colors.background }}
     />
   );
 };
