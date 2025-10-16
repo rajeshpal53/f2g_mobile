@@ -37,6 +37,7 @@ const AdminSectionScreen = ({ navigation }) => {
   };
 
   const [menuItems, setMenuItems] = useState([
+    { icon: "receipt", label: "Admin Dashbord", value: "AdminDashbordScreen" },
     { icon: "receipt", label: "All Bookings", value: "AllBookings" },
     { icon: "people", label: "All Users", value: "AllUsers" },
     { icon: "local-shipping", label: "All Referals", value: "AllRefrals" },
@@ -45,7 +46,8 @@ const AdminSectionScreen = ({ navigation }) => {
   ]);
 
   const handlePress = (value) => {
-    if (value === "AllBookings") navigation.navigate("adminViewBooking",{isAdmin:true});
+    if (value === "AdminDashbordScreen") navigation.navigate("AdminDashbordScreen",{isAdmin:true});
+    else if (value === "AllBookings") navigation.navigate("adminViewBooking",{isAdmin:true});
     else if (value === "AllUsers") navigation.navigate("AllUsers");
     else if (value === "AllQueries") navigation.navigate("AllQuerysAndSupport");
     else if (value === "AllRefrals")navigation.navigate("adminViewReferral",{isAdmin:true});

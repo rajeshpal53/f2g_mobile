@@ -25,6 +25,7 @@ import BookingDetailsScreen from "../Screens/stackscreens/BookingDetailScreen";
 import ViewBookingScreen from "../Screens/BottomScreens/ViewBookingScreen";
 import ReferralDetailScreen from "../Screens/stackscreens/ReferralDetailScreen";
 import ViewReferralScreen from "../Screens/BottomScreens/ViewReferalScreen";
+import AdminDashbordScreen from "../Screens/AdminSectionScreen/AdminDashbordScreen";
 export default function StackNavigator() {
     const {colors} = useTheme();
     const {userData}=useContext(UserDataContext)
@@ -256,6 +257,20 @@ export default function StackNavigator() {
             headerTitle: () => (
               <Text style={styles.headerTitle}>
                 All Queries and Support
+              </Text>
+            ),
+            headerShadowVisible: false,
+
+            headerTitleAlign: "center",
+          }}
+        ></Stack.Screen>
+         <Stack.Screen
+          name="AdminDashbordScreen"
+          component={AdminDashbordScreen}
+          options={{
+            headerTitle: () => (
+              <Text style={styles.headerTitle}>
+                AdminDashbordScreen
               </Text>
             ),
             headerShadowVisible: false,

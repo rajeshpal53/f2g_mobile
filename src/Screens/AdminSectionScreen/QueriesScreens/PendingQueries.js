@@ -5,7 +5,7 @@ import { readApi, updateApi } from "../../../Util/UtilApi";
 import UserDataContext from "../../../Store/UserDataContext";
 import { useSnackbar } from "../../../Store/SnackbarContext";
 import QueryCard from "./QueryCard";
-import ConfirmModal from "../../../modals/ConfirmModal";
+import ConfirmModal from "../../../Components/Modal/ConfirmModal";
 import ViewQueryDetailModal from "./ViewQueryDetailModal";
 import NoDataFound from "../../../Components/NoDataFound";
 import { useTheme } from "../../../Constants/Theme";
@@ -14,18 +14,20 @@ const PAGE_SIZE = 3;
 
 const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
   const { colors } = useTheme();
+  const { userData } = useContext(UserDataContext);
+  const { showSnackbar } = useSnackbar();
+
   const [pendingQueries, setPendingQueries] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMorePages, setHasMorePages] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [pullRefreshing, setPullRefreshing] = useState(false);
+
   const [resolvedQuery, setResolvedQuery] = useState(null);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false); // ✅ modal button loading
   const [queryDetailModalVisible, setQueryDetailModalVisible] = useState(false);
   const [viewDetailsItem, setViewDetailsItem] = useState(null);
-
-  const { userData } = useContext(UserDataContext);
-  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     fetchData(1, true);
@@ -62,24 +64,28 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
     }
   };
 
+  // ✅ Handle mark as resolved with modal loading
   const handleQueryResolved = async () => {
     try {
+      setModalLoading(true);
       await updateApi(
         `feedback/updateFeedback/${resolvedQuery?.id}`,
         { isResolved: true },
         { Authorization: `Bearer ${userData?.token}` }
       );
       setConfirmModalVisible(false);
+      setResolvedQuery(null);
       setIndex(1);
       setPendingRefresh((prev) => !prev);
       showSnackbar("Query marked as resolved", "success");
     } catch (error) {
       showSnackbar("Failed to resolve query", "error");
+    } finally {
+      setModalLoading(false);
     }
   };
 
-  const toggleQueryDetailModal = () =>
-    setQueryDetailModalVisible((prev) => !prev);
+  const toggleQueryDetailModal = () => setQueryDetailModalVisible((prev) => !prev);
 
   const onRefresh = () => {
     setPullRefreshing(true);
@@ -99,7 +105,7 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
             setConfirmModalVisible={setConfirmModalVisible}
             setItem={setViewDetailsItem}
             toggleModal={toggleQueryDetailModal}
-            themeColors={colors} // pass colors if needed in QueryCard
+            themeColors={colors}
           />
         )}
         keyExtractor={(item) => item.id.toString()}
@@ -121,17 +127,17 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
         ListEmptyComponent={<NoDataFound textString="No Pending Queries Found" />}
       />
 
-      {confirmModalVisible && (
-        <ConfirmModal
-          visible={confirmModalVisible}
-          message="Mark this query as resolved?"
-          heading="Confirm Action"
-          setVisible={setConfirmModalVisible}
-          handlePress={handleQueryResolved}
-          buttonTitle="Mark Resolved"
-          themeColors={colors}
-        />
-      )}
+      {/* ✅ Confirm Modal with loading state */}
+      <ConfirmModal
+        visible={confirmModalVisible}
+        message="Mark this query as resolved?"
+        heading="Confirm Action"
+        setVisible={setConfirmModalVisible}
+        handlePress={handleQueryResolved}
+        buttonTitle="Mark Resolved"
+        themeColors={colors}
+        loading={modalLoading} // pass loading state to modal
+      />
 
       {queryDetailModalVisible && (
         <ViewQueryDetailModal
