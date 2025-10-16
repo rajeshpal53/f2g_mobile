@@ -4,11 +4,11 @@ import { Card, Text } from "react-native-paper";
 import { selectLoanFromId,statusById,colorByStatusFk} from  "../../Util/UtilApi"
 
 
-const ReferralCard = ({ referral }) => {
+const ReferralCard = ({ referral,navigation,isAdmin }) => {
   // const statusColor = statusColors[referral.status] || "#9CA3AF";
 
   return (
-    <Card style={styles.card}>
+    <Card style={styles.card} onPress={()=>{ navigation.navigate("ReferralDetailScreen",{referral:referral,isAdmin})}}>
       <Card.Content style={styles.content}>
         <View style={styles.header}>
           <View>
