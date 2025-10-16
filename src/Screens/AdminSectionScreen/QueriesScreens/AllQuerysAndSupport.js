@@ -1,40 +1,27 @@
-import * as React from "react";
-import { useWindowDimensions, Text } from "react-native";
-import { TabView, TabBar } from "react-native-tab-view";
-import PendingQueries from "./PendingQueries";
-import ResolvedQueries from "./ResolvedQueries";
-import { useTheme } from "../../../Constants/Theme";
+import React, { useState } from 'react';
+import { View, useWindowDimensions, Text } from 'react-native';
+import { TabView, TabBar } from 'react-native-tab-view';
+import ResolvedQueries from './ResolvedQueries';
+import PendingQueries from './PendingQueries';
+import { useTranslation } from 'react-i18next';
 
 const AllQuerysAndSupport = () => {
+  const { t } = useTranslation();
   const layout = useWindowDimensions();
-  const { colors } = useTheme();
-
-  const [index, setIndex] = React.useState(0);
-  const [pendingRefresh, setPendingRefresh] = React.useState(false);
-  const [resolvedRefresh, setResolvedRefresh] = React.useState(false);
+  const [index, setIndex] = useState(0);
 
   const routes = [
-    { key: "pending", title: "Pending" },
-    { key: "resolved", title: "Resolved" },
+    { key: 'pending', title: t('Pending') },
+    { key: 'resolved', title: t('Resolved') },
   ];
 
+  
   const renderScene = ({ route }) => {
     switch (route.key) {
-      case "pending":
-        return (
-          <PendingQueries
-            pendingRefresh={pendingRefresh}
-            setPendingRefresh={setPendingRefresh}
-            setIndex={setIndex}
-          />
-        );
-      case "resolved":
-        return (
-          <ResolvedQueries
-            pendingRefresh={resolvedRefresh}
-            setPendingRefresh={setResolvedRefresh}
-          />
-        );
+      case 'pending':
+        return <PendingQueries />;
+      case 'resolved':
+        return <ResolvedQueries />;
       default:
         return null;
     }
@@ -44,28 +31,21 @@ const AllQuerysAndSupport = () => {
     <TabView
       navigationState={{ index, routes }}
       renderScene={renderScene}
-      onIndexChange={setIndex}
-      initialLayout={{ width: layout.width }}
       renderTabBar={(props) => (
         <TabBar
           {...props}
-          indicatorStyle={{ backgroundColor: colors.primary, height: 3 }}
-          style={{ backgroundColor: colors.secondary}}
-          labelStyle={{ fontWeight: "600", textTransform: "capitalize" }}
-          renderLabel={({ route, focused }) => (
-            <Text
-              style={{
-                fontWeight: "600",
-                color: focused ? colors.primary : colors.textSecondary,
-                textTransform: "capitalize",
-              }}
-            >
-              {route.title}
-            </Text>
-          )}
+          indicatorStyle={{ backgroundColor: "#0c3b73", height: 3 }}
+          style={{ backgroundColor: "white" }}
+          activeColor='#0c3b73'
+          inactiveColor="black"
         />
       )}
-      style={{ backgroundColor: colors.background }}
+      onIndexChange={(newIndex) => {
+        console.log("Tab Changed To:", newIndex);
+        setIndex(newIndex);
+      }}
+      initialLayout={{ width: layout.width }}
+      style={{ backgroundColor: "#fff" }}
     />
   );
 };

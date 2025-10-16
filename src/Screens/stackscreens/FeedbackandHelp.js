@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -16,6 +16,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSnackbar } from "../../Store/SnackbarContext";
 import { API_BASE_URL, createApi } from "../../Util/UtilApi"; // ✅ use your API helper
 import axios from "axios";
+import UserDataContext from "../../Store/UserDataContext";
 
 const FeedbackandHelp = () => {
   const { colors } = useTheme();
@@ -29,7 +30,7 @@ const FeedbackandHelp = () => {
   const [fileUri, setFileUri] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const{userData}=useContext(UserDataContext)
   const concerns = [
     { label: "Comment", value: "Comment" },
     { label: "Issue", value: "Issue" },
@@ -70,26 +71,38 @@ const FeedbackandHelp = () => {
       formData.append("feedbackType", concern);
       formData.append("description", description);
 
-      if (fileUri) {
-        const filename = fileUri.split("/").pop();
-        const type = filename.endsWith(".png")
-          ? "image/png"
-          : filename.endsWith(".jpg") || filename.endsWith(".jpeg")
-          ? "image/jpeg"
-          : "application/octet-stream";
+      // if (fileUri) {
+      //   const filename = fileUri.split("/").pop();
+      //   const type = filename.endsWith(".png")
+      //     ? "image/png"
+      //     : filename.endsWith(".jpg") || filename.endsWith(".jpeg")
+      //     ? "image/jpeg"
+      //     : "application/octet-stream";
 
-        formData.append("screenShot", {
-          uri: fileUri,
-          type,
-          name: filename,
-        });
-      }
+      //   formData.append("screenShot", {
+      //     uri: fileUri,
+      //     type,
+      //     name: filename,
+      //   });
+      // }
 
       // ✅ Use createApi from UtilApi
-     await axios.post(`${API_BASE_URL}feedback/createFeedBack`, formData);
-
-
+      console.log(`${API_BASE_URL}feedback/createFeedBack`,formData)
+    const response = await axios.post(
+              `${API_BASE_URL}feedback/createFeedBack`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                  
+                },
+              }
+            );
+            if(response){
       showSnackbar("Feedback submitted successfully!", "success");
+
+            }
+
 
       // Reset form
       setName("");
