@@ -9,6 +9,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -19,11 +20,13 @@ import { createApi } from '../../Util/UtilApi';
 import { useSnackbar } from '../../Store/SnackbarContext';
 import UserDataContext from '../../Store/UserDataContext';
 
+
 const LoginScreen = ({ navigation }) => {
   const { colors, isDark } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const{showSnackbar}=useSnackbar("")
   const {saveUserData}=useContext(UserDataContext)
+  const[phoneFocus,setPhoneFocus]=useState(false)
   // ✅ Yup Validation Schema
   const validationSchema = Yup.object().shape({
     mobile: Yup.string()
@@ -80,19 +83,6 @@ const LoginScreen = ({ navigation }) => {
             </View>
 
       {/* PHONE INPUT */}
-      <Text style={[styles.label, { color: '#666' }]}>Phone</Text>
-      <View style={[styles.inputGroup, phoneFocus && { borderColor: '#007AFF' }]}>
-        <MaterialIcons name="phone" size={22} color="#999" />
-        <Text style={[styles.countryCode, { color: '#000', borderColor: '#ccc' }]}>+91</Text>
-        <TextInput
-          placeholder="Mobile number"
-          placeholderTextColor="#999"
-          keyboardType="phone-pad"
-          style={[styles.inputField, { color: '#000' }]}
-          onFocus={() => setPhoneFocus(true)}
-          onBlur={() => setPhoneFocus(false)}
-        />
-      </View>
 
             {/* ✅ Formik Form */}
             <Formik

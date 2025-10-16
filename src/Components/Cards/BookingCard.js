@@ -1,11 +1,11 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Card, Text } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
-import {colorByStatusFk,statusById} from "../../Util/UtilApi"
-const BookingCard = ({ booking, }) => {
+import {colorByStatusFk,statusById,selectLoanFromId} from "../../Util/UtilApi"
+const BookingCard = ({ booking,navigation,isAdmin }) => {
   return (
-    <Card style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={()=>{navigation?.navigate("BookingDetailsScreen",{booking:booking,isAdmin})}}>
       <Card.Content style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
@@ -13,6 +13,7 @@ const BookingCard = ({ booking, }) => {
             <Text style={styles.name}>{booking.name}</Text>
             <Text style={styles.subId}>Book ID: {booking.bookId}</Text>
             <Text style={styles.subId}>Loan No: {booking.loanAccountNumber}</Text>
+            <Text style={styles.loanValue}># {selectLoanFromId[booking.loantypefk]}</Text>
           </View>
          <View style={[styles.statusBadge, { backgroundColor: colorByStatusFk(booking?.statusfk) }]}>
                     <Text style={styles.statusText}>{statusById[booking?.statusfk]}</Text>
@@ -21,6 +22,7 @@ const BookingCard = ({ booking, }) => {
 
         {/* Info Section */}
         <View style={styles.infoContainer}>
+
           <View style={styles.infoRow}>
             <MaterialIcons name="account-balance-wallet" size={14} color="#2563EB" />
             <Text style={styles.label}>BookingAmount:</Text>
@@ -29,10 +31,12 @@ const BookingCard = ({ booking, }) => {
 
           <View style={styles.infoRow}>
             <MaterialIcons name="receipt-long" size={14} color="#2563EB" />
-            <Text style={styles.label}>Bill:</Text>
+            <Text style={styles.label}>Tentative Bill:</Text>
             <Text style={styles.value}>₹{booking.tentativeBillAmount.toLocaleString()}</Text>
           </View>
         </View>
+
+
 
         {/* Address */}
         <Text style={styles.address} numberOfLines={1}>
@@ -49,7 +53,7 @@ const BookingCard = ({ booking, }) => {
           {new Date(booking.createdAt).toLocaleDateString()}
         </Text>
       </Card.Content>
-    </Card>
+    </TouchableOpacity>
   );
 };
 
@@ -111,6 +115,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
     fontSize: 12,
+  },
+  loanValue:{
+       marginLeft: 4,
+    fontWeight: "800",
+    color: "#111827",
+    fontSize: 13,
+    fontStyle:"italic"
   },
   address: {
     fontSize: 12,

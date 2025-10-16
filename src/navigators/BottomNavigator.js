@@ -7,11 +7,15 @@ import ProfileScreen from "../Screens/BottomScreens/ProfileScreen";
 
 import ViewReferalScreen from "../Screens/BottomScreens/ViewReferalScreen";
 import ViewBookingScreen from "../Screens/BottomScreens/ViewBookingScreen";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../Constants/Theme";
 
 const Tab = createBottomTabNavigator();
 
 export default function BottomNavigator() {
+  const {colors}=useTheme();
   return (
+    <SafeAreaView edges={['top',""]} style={{ flex: 1, backgroundColor: colors?.background }}>
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
@@ -75,6 +79,7 @@ export default function BottomNavigator() {
       <Tab.Screen name="Booking" component={ViewBookingScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
+    </SafeAreaView>
   );
 }
 

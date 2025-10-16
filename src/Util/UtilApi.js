@@ -149,6 +149,52 @@ export const updateApi = async (endpoint, data, headers) => {
     employee:3,
     viewer:4
   }
+export const statusOptions = [
+  { id: 1, label: 'login incomplete',value: 'login incomplete' },
+  { id: 2, label: 'login done',value: 'login done' },
+  { id: 3, label: 'post paid doc', label: 'post paid doc' },
+  { id: 4, label: 'reject', value: 'reject' },
+  { id: 5, label: 'l and t stage',value: 'l and t stage' },
+  { id: 6, label: 'sub approved',value: 'sub approved' },
+  { id: 7, label: 'approved',value: 'approved' },
+  { id: 8, label: 'disbursed',value: 'disbursed' },
+  { id: 9, label: 'otc/pdd pending',value: 'otc/pdd pending' },
+  { id: 10, label: 'billing in process',value: 'billing in process' },
+  { id: 11, label: 'billing cleared',value: 'billing cleared' },
+];
+
+
+export const valuesByStatusfk={
+  1:"login incomplete",
+  2:"login done",
+  3:"post paid doc",
+  4:"reject",
+  5:"l and t stage",
+  6:"sub approved",
+  7:"approved",
+  8:"disbursed",
+  9:"otc/pdd pending",
+  10:"billing in process",
+  11:"billing cleared"
+}
+
+export const  statusfkByValues={
+ "login incomplete":1,
+  "login done":2,
+  "post paid doc":3,
+  "reject":4,
+  "l and t stage":5,
+  "sub approved":6,
+  "approved":7,
+  "disbursed":8,
+  "otc/pdd pending":9,
+  "billing in process":10,
+  "billing cleared":11
+}
+
+
+
+
 
   export const loanTypes = [
   { label: "Home Loan", value: "home",id :1},
@@ -159,10 +205,21 @@ export const updateApi = async (endpoint, data, headers) => {
    {label :" CV loan",value:" cvLoan",id:6},
    {label:"Auto loan" ,value:"auto",id:7},
     { label: "Other", value: "other",id:8 },
+
 ];
 
+  export const selectLoanFromValuesById = {
+  1: "home",
+  2: "personal",
+  3: "property",
+  4: "car",
+  5: "business",
+  6: "cvLoan",
+  7: "auto",
+  8: "other",
+};
 
-  export const selectLoanFromId = {
+export const selectLoanFromId  = {
   1: "Home Loan",
   2: "Personal Loan",
   3: "Loan against property",

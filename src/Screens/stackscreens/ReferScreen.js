@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext } from "react";
+import React, { useRef, useEffect, useContext, useState, useLayoutEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,7 +14,15 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import GenericDropdown from "../../UI/DropDown/GenericDropDown";
 import { useTheme } from "../../Constants/Theme";
-import{loanTypes,createApi} from "../../Util/UtilApi"
+import {
+  loanTypes,
+  statusOptions,
+  statusfkByValues,
+  valuesByStatusfk,
+  createApi,
+  updateApi,
+  selectLoanFromValuesById,
+} from "../../Util/UtilApi";
 import UserDataContext from "../../Store/UserDataContext";
 import { useSnackbar } from "../../Store/SnackbarContext";
 
@@ -30,19 +38,34 @@ const ReferralFormSchema = Yup.object().shape({
     .matches(/^\d{6}$/, "Enter valid 6-digit pincode")
     .required("Pincode is required"),
   remark: Yup.string().max(1000, "Remark should be less than 1000 characters"),
-   mobile: Yup.string()
-        .required('Mobile number is required')
-        .matches(/^[0-9]{10}$/, 'Enter a valid 10-digit number'), 
+  mobile: Yup.string()
+    .required("Mobile number is required")
+    .matches(/^[0-9]{10}$/, "Enter a valid 10-digit number"),
 });
 
-
-const ReferralForm = ({navigation}) => {
+const ReferralForm = ({ navigation, route }) => {
   const { colors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const {userData} =useContext(UserDataContext)
+  const { userData } = useContext(UserDataContext);
+  const { showSnackbar } = useSnackbar();
+  const { editReferral } = route?.params || {};
+  const { isAdmin } = route?.params || false;
+  const styles = refralStyle(colors);
 
-  const {showSnackbar}=useSnackbar()
-   useEffect(() => {
+  const [initialValues, setInitialValues] = useState({
+    name: "",
+    loanAmount: "",
+    loanType: "",
+    street: "",
+    city: "",
+    pincode: "",
+    remark: "",
+    mobile: "",
+    status: "",
+  });
+
+  // Fade In Animation
+  useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
@@ -50,12 +73,36 @@ const ReferralForm = ({navigation}) => {
     }).start();
   }, []);
 
-  const styles= refralStyle(colors)
+  // Dynamic title
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: editReferral ? "Edit Referral" : "Add New Referral",
+    });
+  }, [navigation, editReferral]);
 
+  // Pre-fill fields when editing
+  useEffect(() => {
+    if (editReferral) {
+      const [street, city, pincode] = editReferral?.address
+        ?.split(",")
+        ?.map((p) => p.trim()) || [];
+      setInitialValues({
+        name: editReferral?.name || "",
+        loanAmount: editReferral?.loanAmount || "",
+        loanType: selectLoanFromValuesById[editReferral?.loantypefk] || "",
+        street: street || "",
+        city: city || "",
+        pincode: pincode || editReferral?.user?.pincode || "",
+        remark: editReferral?.remark || "",
+        mobile: editReferral?.user?.mobile || "",
+        status: valuesByStatusfk[editReferral?.statusfk] || "",
+      });
+    }
+  }, [editReferral]);
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: colors?.background }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -65,62 +112,66 @@ const ReferralForm = ({navigation}) => {
       >
         <Animated.View style={[styles.formContainer, { opacity: fadeAnim }]}>
           <Formik
-            initialValues={{
-              name: "",
-              loanAmount: "",
-              loanType: "",
-              street: "",
-              city: "",
-              pincode: "",
-              remark: "",
-              mobile:""
-            }}
+            initialValues={initialValues}
+            enableReinitialize={true}
             validationSchema={ReferralFormSchema}
-            onSubmit={ async (values,{resetForm}) => {
-              console.log("Referral Form Submitted: ", values);
-//               {
-            //   "city": "dewas",
-            //   "loanAmount": "25000",
-              // "loanType": "personal",
-              // "name": "Faizan shaukh",
-              // "pincode": "455001",
-              // "remark": "faizan",
-              // "street": "123 itawa"
-            // }
+            onSubmit={async (values, { resetForm }) => {
+              const loantypefk =
+                loanTypes.find((t) => t.value === values.loanType)?.id || null;
 
+              const payload = {
+                address: [values.street, values.city, values.pincode]
+                  .filter(Boolean)
+                  .join(", "),
+                loantypefk,
+                name: values.name,
+                remark: values.remark,
+                loanAmount: values.loanAmount,
+                refferedBy: editReferral
+                  ? editReferral?.refferedBy
+                  : userData?.user?.id,
+                statusfk: values.status
+                  ? statusfkByValues[values.status]
+                  : 2,
+                mobile: values.mobile,
+              };
 
-
-          const loantypefk = loanTypes.find(t => t.value === values.loanType)?.id || null;
-
-console.log("Selected loan type from form:", values.loanType);
-console.log("Available loan types:", loanTypes.map(t => t.value));
-console.log("loantypefk:", loantypefk);
-
-
-              const payload ={
-address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(", "), // removes undefined or empty valuesjoin(", "),
-                loantypefk:loantypefk,
-                name:values?.name,
-                remark:values?.remark,
-                loanAmount:values?.loanAmount,
-                refferedBy:userData?.user?.id,
-                statusfk:2,
-                mobile:values?.mobile
-              }
-              console.log("payload is ",payload)
-              try{
-                const response = await createApi("refferal",payload)
-                if(response){
-                  navigation.navigate("Refer")
-                   showSnackbar("Add refral successfully","success")
-                   resetForm();
+              try {
+                if (editReferral) {
+                  const response = await updateApi(
+                    `refferal/${editReferral?.id}`,
+                    payload
+                  );
+                  if (response) {
+                    if (isAdmin) {
+                      navigation.navigate("adminViewReferral", { isAdmin: true });
+                    } else {
+                      navigation.navigate("Bottom", { screen: "Refer" });
+                    }
+                    showSnackbar("Referral updated successfully", "success");
+                    resetForm();
+                  }
+                } else {
+                  const response = await createApi("refferal", payload);
+                  if (response) {
+                    if (isAdmin) {
+                      navigation.navigate("adminViewReferral", { isAdmin: true });
+                    } else {
+                      navigation.navigate("Bottom", { screen: "Refer" });
+                    }
+                    showSnackbar("Referral added successfully", "success");
+                    resetForm();
+                  }
                 }
-              }catch(err){
-                  showSnackbar(`failed to add  refral,${err?.err} `,"error")
+              } catch (err) {
+                showSnackbar(
+                  `Failed to ${
+                    editReferral ? "update" : "add"
+                  } referral: ${err?.err}`,
+                  "error"
+                );
               }
-            
             }}
-
           >
             {({
               handleChange,
@@ -132,11 +183,9 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
               setFieldValue,
             }) => (
               <View>
-                {/* <Text style={styles.title}>Referral Form</Text> */}
-
                 {/* Name */}
                 <TextInput
-                  label="First Name + Last Name *"
+                  label="Full Name *"
                   mode="outlined"
                   style={styles.input}
                   activeOutlineColor={colors.primary}
@@ -148,27 +197,25 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                 {touched.name && errors.name && (
                   <Text style={styles.errorText}>{errors.name}</Text>
                 )}
-                
-                
-                 <TextInput
-                 placeholder="Mobile number"
+
+                {/* Mobile */}
+                <TextInput
+                  disabled={!!editReferral}
+                  placeholder="Mobile number"
                   mode="outlined"
-                   activeOutlineColor={colors.primary}
-                 keyboardType="number-pad"
-                 value={values.mobile}
+                  activeOutlineColor={colors.primary}
+                  keyboardType="number-pad"
+                  value={values.mobile}
                   style={styles.input}
-                 onBlur={handleBlur('mobile')}
-                 onChangeText={(text) => {
-                   // ✅ Allow only digits up to 10 characters
-                   if (/^\d{0,10}$/.test(text)) {
-setFieldValue('mobile', text);
-                   }
-                 }}
-               />
-                    
-      {touched.mobile && errors.mobile && (
-        <Text style={styles.errorText}>{errors.mobile}</Text>
-      )}
+                  onBlur={handleBlur("mobile")}
+                  onChangeText={(text) => {
+                    if (/^\d{0,10}$/.test(text)) setFieldValue("mobile", text);
+                  }}
+                />
+                {touched.mobile && errors.mobile && (
+                  <Text style={styles.errorText}>{errors.mobile}</Text>
+                )}
+
                 {/* Loan Amount */}
                 <TextInput
                   label="Loan Amount *"
@@ -187,20 +234,35 @@ setFieldValue('mobile', text);
 
                 {/* Loan Type */}
                 <GenericDropdown
-  placeholder="Select Loan Type"
-  options={loanTypes}
-  selectedValue={values.loanType} // now this should be an object
-  onValueChange={(val) => setFieldValue("loanType", val)}
-  pickerContainerStyle={{
-    ...styles.pickerContainerStyle,
-    borderColor: values.loanType ? colors.primary : "grey",
-  }}
-/>
-                {touched.loanType && errors.loanType && (
-                  <Text style={styles.errorText}>{errors.loanType}</Text>
+                  placeholder="Select Loan Type"
+                  options={loanTypes}
+                  selectedValue={values.loanType}
+                  onValueChange={(val) => setFieldValue("loanType", val)}
+                  pickerContainerStyle={{
+                    ...styles.pickerContainerStyle,
+                    borderColor: values.loanType ? colors.primary : "grey",
+                  }}
+                      EditMode={editReferral ? true :false}
+
+                />
+
+                {/* Admin Status Dropdown */}
+                {userData?.user?.roles === "admin" && isAdmin && (
+                  <GenericDropdown
+                    placeholder="Select Status"
+                    options={statusOptions}
+                    selectedValue={values.status}
+                    onValueChange={(val) => setFieldValue("status", val)}
+                    pickerContainerStyle={{
+                      ...styles.pickerContainerStyle,
+                      borderColor: values.status ? colors.primary : "grey",
+                    }}
+                     EditMode={editReferral ? true :false}
+
+                  />
                 )}
 
-                {/* Address Fields */}
+                {/* Address Section */}
                 <Text style={styles.sectionTitle}>Customer Address</Text>
 
                 <TextInput
@@ -260,9 +322,6 @@ setFieldValue('mobile', text);
                   error={touched.remark && errors.remark}
                   maxLength={1000}
                 />
-                {touched.remark && errors.remark && (
-                  <Text style={styles.errorText}>{errors.remark}</Text>
-                )}
 
                 {/* Submit Button */}
                 <Pressable style={{ marginTop: 20 }}>
@@ -275,7 +334,7 @@ setFieldValue('mobile', text);
                       backgroundColor: colors.main,
                     }}
                   >
-                    Submit Referral
+                    {editReferral ? "Edit Referral" : "Add Referral"}
                   </Button>
                 </Pressable>
               </View>
@@ -289,54 +348,45 @@ setFieldValue('mobile', text);
 
 export default ReferralForm;
 
-const refralStyle =(colors)=> StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: "",
-    paddingVertical: 10,
-    // backgroundColor: "#f7f7f7",
-     backgroundColor: colors?.background,
-  },
-  formContainer: {
-    backgroundColor: colors?.background,
-    padding: 20,
-    borderRadius: 12,
-
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#333",
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 15,
-    marginBottom: 10,
-    color: colors?.muted,
-  },
-  input: {
-    backgroundColor: colors?.background,
-    marginBottom: 12,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 12,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  pickerContainerStyle: {
-    marginBottom: 12,
-    height: 55,
-    borderWidth: 1,
-    borderRadius: 5,
-    justifyContent: "center",
-    paddingHorizontal: 10,
-  },
-});
+const refralStyle = (colors) =>
+  StyleSheet.create({
+    scrollContainer: {
+      flexGrow: 1,
+      paddingVertical: 10,
+      backgroundColor: colors?.background,
+    },
+    formContainer: {
+      backgroundColor: colors?.background,
+      padding: 20,
+      borderRadius: 12,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 5,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      marginTop: 15,
+      marginBottom: 10,
+      color: colors?.muted,
+    },
+    input: {
+      backgroundColor: colors?.background,
+      marginBottom: 12,
+    },
+    errorText: {
+      color: "red",
+      fontSize: 12,
+      marginBottom: 8,
+      marginLeft: 4,
+    },
+    pickerContainerStyle: {
+      marginBottom: 12,
+      height: 55,
+      borderWidth: 1,
+      borderRadius: 5,
+      justifyContent: "center",
+      paddingHorizontal: 10,
+    },
+  });
