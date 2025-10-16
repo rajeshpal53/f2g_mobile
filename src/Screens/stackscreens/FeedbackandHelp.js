@@ -15,6 +15,8 @@ import axios from "axios";
 import { useTheme } from "../../Constants/Theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSnackbar } from "../../Store/SnackbarContext"; // ✅ Correct hook
+import { safeGet } from "../../Util/UtilApi"; // add this
+import { api } from "../../Util/UtilApi"; // or use api.post
 
 const FeedbackandHelp = () => {
   const { colors } = useTheme();
@@ -84,12 +86,12 @@ const FeedbackandHelp = () => {
         });
       }
 
-      // const res = await axios.post(
-      //   "https://reservemyevent.com/fapi/feedback/createFeedBack",
-      //   formData,
-      //   { timeout: 10000 }
-      // );
-
+      const res = await api.post("/feedback/createFeedBack", formData, {
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+  timeout: 10000,
+});
       if (res.data) {
         showSnackbar("Feedback submitted successfully!", "success");
         setName("");
