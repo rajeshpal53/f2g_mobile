@@ -19,6 +19,7 @@ import { useSnackbar } from "../../Store/SnackbarContext";
 import { NORM_URL, createApi } from "../../Util/UtilApi";
 import { useTheme } from "../../Constants/Theme";
 
+
 const AdminSectionScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
@@ -46,8 +47,8 @@ const AdminSectionScreen = ({ navigation }) => {
   const handlePress = (value) => {
     if (value === "AllBookings") navigation.navigate("adminViewBooking",{isAdmin:true});
     else if (value === "AllUsers") navigation.navigate("AllUsers");
+    else if (value === "AllQueries") navigation.navigate("AllQuerysAndSupport");
     else if (value === "AllRefrals")navigation.navigate("adminViewReferral",{isAdmin:true});
-    else if (value === "AllQueries") navigation.navigate("AllQueries");
     else if (value === "Logout") setVisible(true);
   };
 

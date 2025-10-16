@@ -34,7 +34,7 @@ const AllUser = ({ navigation }) => {
   // const [isRecording, setIsRecording] = useState(false); // Mic recording state
   const [searchmodal, setsearchmodal] = useState(false); // State for modal visibility
   const [transcript, setTranscript] = useState(""); // State for transcript
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
     
@@ -51,7 +51,7 @@ const AllUser = ({ navigation }) => {
  
   // Fetch data from API
   const fetchData = async (pageNum) => {
-    const url = `users/getUsersByPagination?page=${pageNum}&size=${PAGE_SIZE}`;
+    const url = `users?page=${pageNum}&size=${PAGE_SIZE}`;
     try {
       setIsLoading(true);
       const response = await readApi(url, {

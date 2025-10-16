@@ -20,6 +20,7 @@ import ReferralForm from "../Screens/stackscreens/ReferScreen.js";
 import BookingScreen from "../Screens/stackscreens/BookingScreen.js";
 import FeedbackandHelp from "../Screens/stackscreens/FeedbackandHelp.js";
 import UserDataContext from "../Store/UserDataContext";
+import AllQuerysAndSupport from "../Screens/AdminSectionScreen/QueriesScreens/AllQuerysAndSupport";
 import BookingDetailsScreen from "../Screens/stackscreens/BookingDetailScreen";
 import ViewBookingScreen from "../Screens/BottomScreens/ViewBookingScreen";
 import ReferralDetailScreen from "../Screens/stackscreens/ReferralDetailScreen";
@@ -217,7 +218,7 @@ export default function StackNavigator() {
   name="FeedbackandHelp"
   component={FeedbackandHelp}
   options={{
-    headerShown:false,
+    // headerShown:false,
     headerTitle: () => (
       <Text
         style={{
@@ -248,6 +249,20 @@ export default function StackNavigator() {
               headerLeft: () => <CustomBackButton />,
             }}
           ></Stack.Screen>
+          <Stack.Screen
+          name="AllQuerysAndSupport"
+          component={AllQuerysAndSupport}
+          options={{
+            headerTitle: () => (
+              <Text style={styles.headerTitle}>
+                All Queries and Support
+              </Text>
+            ),
+            headerShadowVisible: false,
+
+            headerTitleAlign: "center",
+          }}
+        ></Stack.Screen>
    <Stack.Screen
           name="EditProfile"
           component={EditProfileScreen}
