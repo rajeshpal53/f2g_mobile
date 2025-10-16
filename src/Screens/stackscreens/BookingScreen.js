@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext } from "react";
+import React, { useRef, useEffect, useContext, useState,useLayoutEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,10 +14,9 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import GenericDropdown from "../../UI/DropDown/GenericDropDown";
 import { useTheme } from "../../Constants/Theme";
-import { loanTypes } from "../../Util/UtilApi";
+import { loanTypes, statusOptions, updateApi,statusfkByValues,createApi,selectLoanFromValuesById,valuesByStatusfk } from "../../Util/UtilApi";
 import UserDataContext from "../../Store/UserDataContext";
 import { useSnackbar } from "../../Store/SnackbarContext";
-import { createApi } from "../../Util/UtilApi";
 const BookingFormSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
   bookingAmount: Yup.number()
@@ -38,12 +37,28 @@ const BookingFormSchema = Yup.object().shape({
           .matches(/^[0-9]{10}$/, 'Enter a valid 10-digit number'), 
 });
 
-const BookingScreen = ({navigation}) => {
+const BookingScreen = ({navigation,route}) => {
   const {colors} = useTheme();
+  const[initialValues,setInitialValues]=useState({
+              name: "",
+              bookingAmount: "",
+              loanType: "",
+              street: "",
+              city: "",
+              pincode: "",
+              tentativeBill: "",
+              loanAccountNumber: "",
+              mobile:"",
+              status:""
+
+            });
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const styles= Bookstyles(colors)
   const{userData}=useContext(UserDataContext)
   const {showSnackbar}=useSnackbar()
+  const{editBooking}=route?.params||{};
+  const{isAdmin}=route?.params||false
+
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -51,6 +66,35 @@ const BookingScreen = ({navigation}) => {
       useNativeDriver: true,
     }).start();
   }, []);
+  useLayoutEffect(() => {
+    if (editBooking) {
+      navigation.setOptions({ title: "Edit Booking" });
+    } else {
+      navigation.setOptions({ title: " Add New Booking" });
+    }
+  }, [navigation,editBooking]);
+
+
+  useEffect(()=>{
+    if(editBooking){
+      console.log(editBooking,"editBooking")
+      const [street, city, pincode] =  editBooking?.address.split(',').map(p => p.trim())
+      setInitialValues({
+              name: editBooking?.name||"",
+              bookingAmount: editBooking?.bookingAmount||"",
+              loanType: selectLoanFromValuesById[editBooking?.loantypefk]||"",
+              // loanType:"personal",
+              street: street||"",
+              city: city||"",
+              pincode: pincode||editBooking?.user?.pincode||"",
+              tentativeBill: editBooking?.tentativeBillAmount||"",
+              loanAccountNumber: editBooking?.loanAccountNumber||"",
+              mobile:editBooking?.user?.mobile||"",
+              status:valuesByStatusfk[editBooking?.statusfk]||""
+             
+            })
+    }
+  },[editBooking])
 
   return (
     <KeyboardAvoidingView
@@ -64,18 +108,9 @@ const BookingScreen = ({navigation}) => {
       >
         <Animated.View style={[styles.formContainer, { opacity: fadeAnim }]}>
           <Formik
-            initialValues={{
-              name: "",
-              bookingAmount: "",
-              loanType: "",
-              street: "",
-              city: "",
-              pincode: "",
-              tentativeBill: "",
-              loanAccountNumber: "",
-              mobile:""
-            }}
+            initialValues={initialValues}
             validationSchema={BookingFormSchema}
+            enableReinitialize={true}
             onSubmit={async (values,{resetForm}) => {
 
                  const loantypefk = loanTypes.find(t => t.value === values.loanType)?.id || null;
@@ -90,27 +125,57 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                 name:values?.name,
                 remark:values?.remark,
                 bookingAmount:values?.bookingAmount,
-                refferedBy:userData?.user?.id,
-                statusfk:2,
+                bookedBy: editBooking? editBooking?.bookedBy:userData?.user?.id,
+                statusfk:values?.status?statusfkByValues[values?.status]:2,
                 mobile:values?.mobile,
                 loanAccountNumber:values?.loanAccountNumber,
                 tentativeBillAmount:values?.tentativeBill,
+                 pincode:values?.pincode
 
-              
               }
               console.log("Booking Form Submitted: ", payload);
                try{
-                              const response = await createApi("booking",payload)
+
+                    if(editBooking){
+                       const response = await updateApi(`booking/${editBooking?.id}`,payload)
                               if(response){
+                                if(isAdmin){
+                                navigation.navigate("adminViewBooking",{isAdmin:true})
+
+                                }else{
                                 navigation.navigate("Bottom",{screen:"Booking"})
+
+                                }
+                                 showSnackbar("Update Booking successfully","success")
+                                 resetForm();
+                              }
+
+                    }else{
+
+                       const response = await createApi("booking",payload)
+                              if(response){
+                                if(isAdmin){
+                               navigation.navigate("adminViewBooking",{isAdmin:true})
+
+                                }else{
+                                navigation.navigate("Bottom",{screen:"Booking"})
+
+                                }
                                  showSnackbar("Add Booking successfully","success")
                                  resetForm();
                               }
+                    }
+
                             }catch(err){
                               console.error(err)
-                                showSnackbar(`failed to add  Booking,${err?.err} `,"error")
-                            }
-                          
+                              if(editBooking){
+                           showSnackbar(`failed to updated Booking,${err?.err} `,"error")
+
+                              }else{
+                    showSnackbar(`failed to add Booking,${err?.err} `,"error")
+ 
+                              }
+                            }  
               
             }}
           >
@@ -139,6 +204,7 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                   <Text style={styles.errorText}>{errors.name}</Text>
                 )}
                  <TextInput
+                 disabled={editBooking?true:false}
                                  placeholder="Mobile number"
                                   mode="outlined"
                                    activeOutlineColor={colors.primary}
@@ -175,18 +241,38 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                 )}
 
                 {/* Loan Type Dropdown */}
-                <GenericDropdown
+               <GenericDropdown
   placeholder="Select Loan Type"
   options={loanTypes}
-  selectedValue={values.loanType} // now this should be an object
+  selectedValue={values.loanType} // "Home"
   onValueChange={(val) => setFieldValue("loanType", val)}
   pickerContainerStyle={{
     ...styles.pickerContainerStyle,
     borderColor: values.loanType ? colors.primary : "grey",
   }}
+  EditMode={editBooking?true:false}
 />
-                {touched.loanType && errors.loanType && (
-                  <Text style={styles.errorText}>{errors.loanType}</Text>
+
+      {
+        userData?.user?.roles==="admin"&& isAdmin&&(
+         < GenericDropdown
+  placeholder="Select Status"
+  options={statusOptions}
+  selectedValue={values.status} // "Home"
+  onValueChange={(val) => setFieldValue("status", val)}
+  pickerContainerStyle={{
+    ...styles.pickerContainerStyle,
+    borderColor: values.status ? colors.primary : "grey",
+  }}
+    EditMode={editBooking?true:false}
+
+/>
+
+        ) 
+      }
+
+                {touched.status && errors.status && (
+                  <Text style={styles.errorText}>{errors.status}</Text>
                 )}
 
                 {/* Customer Address */}
@@ -279,7 +365,7 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                                         backgroundColor: colors.main,
                                       }}
                                     >
-                    Submit Booking
+                    {editBooking?"Edit Booking":"Add Booking"}
                   </Button>
                 </Pressable>
               </View>

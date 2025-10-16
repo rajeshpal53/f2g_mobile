@@ -13,7 +13,9 @@ const GenericDropdown = ({
   pickerStyle,
   fontStyles,
   placeholder = "Select an option",
+  EditMode=false
 }) => {
+  console.log(selectedValue)
   return (
     <View style={containerStyle}>
       {label && (
@@ -39,11 +41,14 @@ const GenericDropdown = ({
           itemStyle={Platform.OS === "android" ? { height: 55, fontSize: 16 } : {}}
         >
           {/* Placeholder option */}
-          <Picker.Item
+          {!EditMode&&(
+             <Picker.Item
             label={placeholder}
-            value=""
+            value={selectedValue||""}
             style={[fontStyles, { color: '#999' }]}
           />
+          )}
+         
           {options.map((option, index) => (
             <Picker.Item
               style={[fontStyles, { color: 'black' }]}

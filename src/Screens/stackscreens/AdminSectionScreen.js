@@ -45,10 +45,10 @@ const AdminSectionScreen = ({ navigation }) => {
   ]);
 
   const handlePress = (value) => {
-    if (value === "AllBookings") navigation.navigate("AllBookings");
+    if (value === "AllBookings") navigation.navigate("adminViewBooking",{isAdmin:true});
     else if (value === "AllUsers") navigation.navigate("AllUsers");
-    else if (value === "AllRefrals") navigation.navigate("AllRefrals");
     else if (value === "AllQueries") navigation.navigate("AllQuerysAndSupport");
+    else if (value === "AllRefrals")navigation.navigate("adminViewReferral",{isAdmin:true});
     else if (value === "Logout") setVisible(true);
   };
 

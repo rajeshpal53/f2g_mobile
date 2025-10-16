@@ -21,13 +21,16 @@ import BookingScreen from "../Screens/stackscreens/BookingScreen.js";
 import FeedbackandHelp from "../Screens/stackscreens/FeedbackandHelp.js";
 import UserDataContext from "../Store/UserDataContext";
 import AllQuerysAndSupport from "../Screens/AdminSectionScreen/QueriesScreens/AllQuerysAndSupport";
-
+import BookingDetailsScreen from "../Screens/stackscreens/BookingDetailScreen";
+import ViewBookingScreen from "../Screens/BottomScreens/ViewBookingScreen";
+import ReferralDetailScreen from "../Screens/stackscreens/ReferralDetailScreen";
+import ViewReferralScreen from "../Screens/BottomScreens/ViewReferalScreen";
 export default function StackNavigator() {
     const {colors} = useTheme();
     const {userData}=useContext(UserDataContext)
     const Stack = createStackNavigator();
     return(
-        <SafeAreaView edges={['bottom',"top"]} style={{ flex: 1, backgroundColor: colors?.background }}>
+        <SafeAreaView edges={['bottom',""]} style={{ flex: 1, backgroundColor: colors?.background }}>
 
         <Stack.Navigator
             initialRouteName= {userData?"Bottom":"welcome"}
@@ -81,21 +84,8 @@ export default function StackNavigator() {
          <Stack.Screen   name="ReferralForm"
           component={ReferralForm}
           options={{
-    headerTitle: () => (
-      <Text
-        style={{
-          fontSize: 18,
-          fontFamily: "Poppins-bold",
-          color: colors?.text,
-          fontWeight:"bold"
-        }}
-
-      >
-       Add New Refral
-      </Text>
-    ),
     headerTitleAlign: "center",
-    headerTintColor: "#000", // color of back arrow and title tint
+    headerTintColor: colors?.text, // color of back arrow and title tint
     headerShadowVisible: false, // removes bottom shadow
     // headerLeft: () => <CustomBackButton />, // uncomment if you have one
   }}
@@ -103,24 +93,57 @@ export default function StackNavigator() {
          <Stack.Screen   name="BookingScreen"
           component={BookingScreen}
          options={{
-    headerTitle: () => (
-      <Text
-        style={{
-         fontFamily: "Poppins-bold",
-          color: colors?.text,
-          fontWeight:"bold",
-          fontSize:18
-        }}
-      >
-       Add New Booking
-      </Text>
-    ),
+   
     headerTitleAlign: "center",
-    headerTintColor: "#000", // color of back arrow and title tint
+    headerTintColor: colors?.text, // color of back arrow and title tint
     headerShadowVisible: false, // removes bottom shadow
     // headerLeft: () => <CustomBackButton />, // uncomment if you have one
   }}
         />
+         
+        <Stack.Screen
+        name="adminViewBooking"
+        component={ViewBookingScreen}
+        options={{
+    headerTitle: () => (
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Poppins-SemiBold",
+          color: colors?.text,
+          fontWeight:"bold"
+        }}
+      > All Bookings </Text>
+    ),
+    headerTitleAlign: "center",
+    headerTintColor: colors?.text, // color of back arrow and title tint
+    headerShadowVisible: false, // removes bottom shadow
+    // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+  }}
+        
+        />
+          <Stack.Screen
+        name="adminViewReferral"
+        component={ViewReferralScreen}
+        options={{
+    headerTitle: () => (
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Poppins-SemiBold",
+          color: colors?.text,
+          fontWeight:"bold"
+        }}
+      > All Referrals </Text>
+    ),
+    headerTitleAlign: "center",
+    headerTintColor: colors?.text, // color of back arrow and title tint
+    headerShadowVisible: false, // removes bottom shadow
+    // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+  }}
+        
+        />
+
 
         <Stack.Screen
   name="AdminSection"
@@ -131,14 +154,62 @@ export default function StackNavigator() {
         style={{
           fontSize: 18,
           fontFamily: "Poppins-SemiBold",
-          color: "#000",
+          color: colors?.text,
         }}
       >
         Admin Section
       </Text>
     ),
     headerTitleAlign: "center",
-    headerTintColor: "#000", // color of back arrow and title tint
+    headerTintColor: colors?.text, // color of back arrow and title tint
+    headerShadowVisible: false, // removes bottom shadow
+    // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+  }}
+/>
+ <Stack.Screen   name="ReferralDetailScreen"
+          component={ReferralDetailScreen}
+          options={{
+    headerTitle: () => (
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Poppins-SemiBold",
+          color: colors?.text,
+          fontWeight: "bold"
+        }}
+      >
+       Referral  Details Screen
+      </Text>
+    ),
+   
+    headerTitleAlign: "center",
+    headerTintColor: colors?.text, // color of back arrow and title tint
+    headerShadowVisible: false, // removes bottom shadow
+    // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+  }}
+        />
+
+
+
+ <Stack.Screen
+  name="BookingDetailsScreen"
+  component={BookingDetailsScreen}
+  options={{
+    headerTitle: () => (
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Poppins-SemiBold",
+          color: colors?.text,
+          fontWeight: "bold"
+        }}
+      >
+       Booking Details Screen
+      </Text>
+    ),
+   
+    headerTitleAlign: "center",
+    headerTintColor: colors?.text, // color of back arrow and title tint
     headerShadowVisible: false, // removes bottom shadow
     // headerLeft: () => <CustomBackButton />, // uncomment if you have one
   }}
@@ -153,14 +224,14 @@ export default function StackNavigator() {
         style={{
           fontSize: 18,
           fontFamily: "Poppins-SemiBold",
-          color: "#000",
+          color: colors?.text,
         }}
       >
         Feedback and Help
       </Text>
     ),
     headerTitleAlign: "center",
-    headerTintColor: "#000",
+    headerTintColor: colors?.text,
     headerShadowVisible: false,
   }}
 />
