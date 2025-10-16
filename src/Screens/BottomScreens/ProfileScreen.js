@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
 import ConfirmModal from "../../Components/Modal/ConfirmModal";
 import { NORM_URL } from "../../Util/UtilApi";
 import { useTheme } from "../../Constants/Theme";
@@ -20,7 +19,6 @@ import UserDataContext from "../../Store/UserDataContext";
 import { useIsFocused } from "@react-navigation/native";
 
 export default function ProfileScreen({ navigation }) {
-  const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = profileStyle(colors);
   const isFocused = useIsFocused();
@@ -75,7 +73,6 @@ export default function ProfileScreen({ navigation }) {
     if (userData) {
       if (userData?.user?.profilePicurl) {
         const newVar = `${NORM_URL}/${userData?.user?.profilePicurl}`;
-        console.log("profile image is", newVar);
         setImageUrl(newVar);
       } else if (userData?.user?.gender == null) {
         setImageUrl("https://dailysabji.com/assets/mobile/neutral.png");
@@ -196,7 +193,7 @@ export default function ProfileScreen({ navigation }) {
                         buttonColor={colors?.accent}
                         style={styles.button}
                       >
-                        {t("Edit")}
+                        Edit
                       </Button>
                     </TouchableOpacity>
                   </View>
@@ -207,7 +204,7 @@ export default function ProfileScreen({ navigation }) {
                     buttonColor={colors?.primary}
                     style={styles.button}
                   >
-                    {t("Login")}
+                    Login
                   </Button>
                 )}
               </View>
@@ -226,7 +223,7 @@ export default function ProfileScreen({ navigation }) {
                             color: colors?.text,
                           }}
                         >
-                          {t(item.label)}
+                          {item.label}
                         </Text>
                         <View style={styles.helpItem}>
                           <View
@@ -248,7 +245,7 @@ export default function ProfileScreen({ navigation }) {
                                   color: colors?.textSecondary,
                                 }}
                               >
-                                {t("Feedback and Help")}
+                                Feedback and Help
                               </Text>
                               <Text
                                 style={{
@@ -257,7 +254,7 @@ export default function ProfileScreen({ navigation }) {
                                   fontSize: 12,
                                 }}
                               >
-                                {t("Contact us for your query and support")}
+                                Contact us for your query and support
                               </Text>
                             </View>
 
@@ -267,7 +264,7 @@ export default function ProfileScreen({ navigation }) {
                                 color: colors?.accent,
                               }}
                             >
-                              {t("Support")}
+                              Support
                             </Text>
                           </View>
                         </View>
@@ -285,7 +282,7 @@ export default function ProfileScreen({ navigation }) {
                         color={colors?.secondary}
                         style={styles.icon}
                       />
-                      <Text style={styles.label}>{t(item.label)}</Text>
+                      <Text style={styles.label}>{item.label}</Text>
                       <MaterialIcons
                         name="chevron-right"
                         size={24}
@@ -307,7 +304,7 @@ export default function ProfileScreen({ navigation }) {
           visible={loginConfirmModalVisible}
           setVisible={setLoginConfirmModalVisible}
           handlePress={loginClickHandler}
-          message="Please Login to Become Service Provider"
+          message="Please login to become a service provider"
           heading="Login"
           buttonTitle="Login"
         />

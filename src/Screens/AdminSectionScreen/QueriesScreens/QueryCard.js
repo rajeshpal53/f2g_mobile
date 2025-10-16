@@ -10,6 +10,7 @@ const QueryCard = ({
   setConfirmModalVisible,
   setItem,
   toggleModal,
+  isResolved = false, // <-- Add this prop
 }) => {
   const { colors } = useTheme();
 
@@ -60,14 +61,17 @@ const QueryCard = ({
           <Text style={[styles.link, { color: colors.primary }]}>View Details</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => {
-            setQueryToAct(item);
-            setConfirmModalVisible(true);
-          }}
-        >
-          <Text style={[styles.resolve, { color: colors.danger }]}>Mark Resolved</Text>
-        </TouchableOpacity>
+        {/* Only show "Mark Resolved" if it's NOT already resolved */}
+        {!isResolved && (
+          <TouchableOpacity
+            onPress={() => {
+              setQueryToAct(item);
+              setConfirmModalVisible(true);
+            }}
+          >
+            <Text style={[styles.resolve, { color: colors.danger }]}>Mark Resolved</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </Card>
   );

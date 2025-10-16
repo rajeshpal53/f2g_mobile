@@ -1,10 +1,8 @@
-import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Dialog, Portal, Paragraph } from "react-native-paper";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useTheme } from "../../Constants/Theme";
-// import { fontFamily,fontSize } from "../Util/UtilApi";
 
 const ConfirmModal = ({
   visible,
@@ -13,28 +11,42 @@ const ConfirmModal = ({
   message,
   heading,
   buttonTitle,
-  
 }) => {
-    const {colors}=useTheme()
-  console.log("confirm modalllll")
+  const { colors } = useTheme();
   const hideDialog = () => setVisible(false);
-  const { t } = useTranslation();
+
   return (
-    <View style={[styles.container, { flex: visible ? 1 : 0 , backgroundColor:colors?.background}]}>
+    <View
+      style={[
+        styles.container,
+        { flex: visible ? 1 : 0, backgroundColor: colors?.background },
+      ]}
+    >
       <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog} style={{backgroundColor:colors?.background}}>
+        <Dialog
+          visible={visible}
+          onDismiss={hideDialog}
+          style={{ backgroundColor: colors?.background }}
+        >
           <Dialog.Title
-            style={{ color: colors?.text, alignSelf: "center", fontSize: 18,fontWeight:"bold" }}
+            style={{
+              color: colors?.text,
+              alignSelf: "center",
+              fontSize: 18,
+              fontWeight: "bold",
+            }}
           >
-            {t(heading)}
+            {heading}
           </Dialog.Title>
+
           <Dialog.Content
             style={{
               flexDirection: "row",
               justifyContent: "center",
-              alignItems: "center", // Align items parallel to each other
+              alignItems: "center",
             }}
           >
+            {/* Optional Icon */}
             {/* <Icon name="warning-sharp" size={40} color={"#FFD700"} /> */}
             <View
               style={{
@@ -45,31 +57,40 @@ const ConfirmModal = ({
             >
               <Paragraph
                 style={{
-                  // fontFamily:fontFamily.regular,
                   fontSize: 14,
                   flexWrap: "wrap",
                   textAlign: "flex-start",
                 }}
               >
-                {t(message)}
+                {message}
               </Paragraph>
             </View>
           </Dialog.Content>
+
           <Dialog.Actions>
             <Button
-            labelStyle={{color:colors?.main }}
+              labelStyle={{ color: colors?.main }}
               onPress={hideDialog}
-              style={{ backgroundColor :colors?.background, borderRadius: 12, width: "50%" }}
+              style={{
+                backgroundColor: colors?.background,
+                borderRadius: 12,
+                width: "50%",
+              }}
               mode="outlined"
             >
-              {t("Cancel")}
+              Cancel
             </Button>
+
             <Button
               onPress={handlePress}
-              style={{ borderRadius: 12, width: "50%", backgroundColor:colors?.main }}
+              style={{
+                borderRadius: 12,
+                width: "50%",
+                backgroundColor: colors?.main,
+              }}
               mode="contained"
             >
-              {t(buttonTitle)}
+              {buttonTitle}
             </Button>
           </Dialog.Actions>
         </Dialog>
@@ -80,7 +101,6 @@ const ConfirmModal = ({
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 16,

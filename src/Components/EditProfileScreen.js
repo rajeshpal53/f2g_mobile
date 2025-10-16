@@ -21,7 +21,6 @@ import UserDataContext from "../Store/UserDataContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRoute } from "@react-navigation/native";
 import axios from "axios";
-import { useTranslation } from "react-i18next";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import ConfirmModal from "../Components/Modal/ConfirmModal";
 import { useSnackbar } from "../Store/SnackbarContext";
@@ -39,7 +38,7 @@ const validationSchema = Yup.object().shape({
   gender: Yup.string().required("Gender is required").nullable(),
   address: Yup.string().required("Address is required").min(4, "At least 4 characters"),
   dob: Yup.string()
-    .required("DOB is required")
+    .required("Date of birth is required")
     .test("min-age", "You must be at least 5 years old", function (value) {
       if (!value) return false;
       const enteredDate = new Date(value);
@@ -51,7 +50,6 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function EditProfileScreen({ navigation }) {
-  const { t } = useTranslation();
   const { showSnackbar } = useSnackbar();
   const { saveUserData, userData } = useContext(UserDataContext);
   const { colors } = useTheme();
@@ -127,7 +125,7 @@ export default function EditProfileScreen({ navigation }) {
       };
 
       saveUserData(updatedUser);
-      showSnackbar(t("Profile updated successfully!"), "success");
+      showSnackbar("Profile updated successfully!", "success");
 
       if (onGoBack) onGoBack(response?.data);
       navigation.goBack();
@@ -243,8 +241,7 @@ export default function EditProfileScreen({ navigation }) {
                   containerStyle={{ marginTop: 10 }}
                   pickerContainerStyle={{
                     borderColor: colors.text,
-                    backgroundColor: "#FFFFFF",
-                    paddingbottom:-10,
+                    backgroundColor: colors.surface,
                   }}
                   pickerStyle={{ color: colors.text }}
                   fontStyles={{ fontSize: 14, color: colors.text }}

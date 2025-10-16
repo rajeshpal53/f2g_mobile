@@ -13,7 +13,6 @@ import {
 } from "expo-speech-recognition";
 import { Searchbar } from "react-native-paper";
 import { fontSize } from "../Util/UtilApi";
-import { useTranslation } from "react-i18next";
 import { useSnackbar } from "../Store/SnackbarContext";
 
 const Searchbarwithmic = ({
@@ -35,9 +34,7 @@ const Searchbarwithmic = ({
   const { showSnackbar } = useSnackbar();
   const isArray = Array.isArray(placeholderText);
 
-  const { t } = useTranslation();
-
-  // Request microphone permission
+  // ✅ Request microphone permission
   const requestMicrophonePermission = async () => {
     if (Platform.OS === "android") {
       const granted = await PermissionsAndroid.request(
@@ -56,7 +53,7 @@ const Searchbarwithmic = ({
     }
   };
 
-  // Start speech recognition
+  // ✅ Start speech recognition
   const handleStart = async () => {
     try {
       const result =
@@ -69,7 +66,7 @@ const Searchbarwithmic = ({
       if (!recognizing) {
         setsearchmodal(true);
         ExpoSpeechRecognitionModule.start({
-          lang: "en-US", // ✅ fixed language to English
+          lang: "en-US",
           interimResults: true,
           maxAlternatives: 1,
           continuous: false,
@@ -89,7 +86,7 @@ const Searchbarwithmic = ({
     handleStart();
   };
 
-  // Speech recognition event handlers
+  // ✅ Speech recognition event handlers
   useSpeechRecognitionEvent("start", () => {
     setTranscript("");
     setRecognizing(true);
@@ -117,7 +114,7 @@ const Searchbarwithmic = ({
     console.log("error message:", event.message);
   });
 
-  // Animated placeholder typing effect
+  // ✅ Animated placeholder typing effect
   useEffect(() => {
     if (searchQuery !== "" || stopPlaceHolder) return;
 
@@ -156,7 +153,7 @@ const Searchbarwithmic = ({
           ref={refuser || null}
           style={styles.searchbar}
           numberOfLines={1}
-          placeholder={SelectedPlaceholderText || "Search for ....."}
+          placeholder={SelectedPlaceholderText || "Search for ..."}
           onFocus={() => setStopPlaceHolder(true)}
           returnKeyType="search"
           onSubmitEditing={() => {

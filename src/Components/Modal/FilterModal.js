@@ -9,9 +9,8 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useTranslation } from "react-i18next";
 import { Picker } from "@react-native-picker/picker";
-import { fontFamily, statusOptions, loanTypes } from "../../Util/UtilApi"; // Import your options
+import { statusOptions, loanTypes } from "../../Util/UtilApi"; // Import your options
 
 const FilterModal = ({
   isModalVisible,
@@ -25,10 +24,9 @@ const FilterModal = ({
   setStatusFilter,
   setLoanTypeFilter,
 }) => {
-  const { t } = useTranslation();
   const [selectedValue, setSelectedValue] = useState(sortBy || "");
-  const [selectedStatus, setSelectedStatus] = useState(""); // New state for status
-  const [selectedLoanType, setSelectedLoanType] = useState(""); // New state for loan type
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedLoanType, setSelectedLoanType] = useState("");
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
@@ -39,15 +37,9 @@ const FilterModal = ({
     { label: "Date Wise", value: "datewise" },
   ];
 
-  const typeFilters = [
-    { label: "Gst", value: "gst" },
-    { label: "Provisional", value: "provisional" },
-  ];
-
   const handleRemoveFilter = () => {
     setSelectedValue("");
     setSortBy("");
-  
     setStatusFilter("");
     setLoanTypeFilter("");
     setSelectedStatus("");
@@ -58,7 +50,6 @@ const FilterModal = ({
   const handleSubmit = () => {
     if (selectedValue === "datewise") {
       setSortBy("datewise");
-    
     }
     setModalVisible(false);
   };
@@ -70,9 +61,8 @@ const FilterModal = ({
       return;
     }
 
-    setDateRange(prev => {
+    setDateRange((prev) => {
       const newRange = { ...prev };
-
       if (type === "startDate") {
         newRange.startDate = selectedDate;
         if (prev.endDate && prev.endDate < selectedDate) newRange.endDate = null;
@@ -82,7 +72,6 @@ const FilterModal = ({
         newRange.endDate = selectedDate;
         setShowEndDatePicker(false);
       }
-
       return newRange;
     });
   };
@@ -111,10 +100,10 @@ const FilterModal = ({
                 style={styles.removeFilterButton}
                 onPress={handleRemoveFilter}
               >
-                <Text style={styles.removeFilterText}>{t("Remove Filter")}</Text>
+                <Text style={styles.removeFilterText}>Remove Filter</Text>
               </TouchableOpacity>
 
-              <Text style={styles.modalTitle}>{t("Select Filter")}</Text>
+              <Text style={styles.modalTitle}>Select Filter</Text>
 
               {/* Date Filters */}
               <View style={styles.optionList}>
@@ -141,14 +130,12 @@ const FilterModal = ({
                         },
                       ]}
                     >
-                      {t(option.label)}
+                      {option.label}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              {/* Type Filter */}
-             
               {/* Status Filter */}
               <View style={styles.pickerContainer}>
                 <Picker
@@ -158,9 +145,13 @@ const FilterModal = ({
                     setStatusFilter(value);
                   }}
                 >
-                  <Picker.Item label={t("Select Status")} value="" />
+                  <Picker.Item label="Select Status" value="" />
                   {statusOptions.map((option, index) => (
-                    <Picker.Item key={index} label={t(option.label)} value={option.value} />
+                    <Picker.Item
+                      key={index}
+                      label={option.label}
+                      value={option.value}
+                    />
                   ))}
                 </Picker>
               </View>
@@ -174,9 +165,13 @@ const FilterModal = ({
                     setLoanTypeFilter(value);
                   }}
                 >
-                  <Picker.Item label={t("Select Loan Type")} value="" />
+                  <Picker.Item label="Select Loan Type" value="" />
                   {loanTypes.map((option, index) => (
-                    <Picker.Item key={index} label={t(option.label)} value={option.value} />
+                    <Picker.Item
+                      key={index}
+                      label={option.label}
+                      value={option.value}
+                    />
                   ))}
                 </Picker>
               </View>
@@ -186,7 +181,11 @@ const FilterModal = ({
                 <>
                   {showStartDatePicker && (
                     <DateTimePicker
-                      value={dateRange.startDate ? new Date(dateRange.startDate) : new Date()}
+                      value={
+                        dateRange.startDate
+                          ? new Date(dateRange.startDate)
+                          : new Date()
+                      }
                       mode="date"
                       display="default"
                       onChange={(e, date) => handleDateChange(e, date, "startDate")}
@@ -194,7 +193,9 @@ const FilterModal = ({
                   )}
                   {showEndDatePicker && (
                     <DateTimePicker
-                      value={dateRange.endDate ? new Date(dateRange.endDate) : new Date()}
+                      value={
+                        dateRange.endDate ? new Date(dateRange.endDate) : new Date()
+                      }
                       mode="date"
                       display="default"
                       onChange={(e, date) => handleDateChange(e, date, "endDate")}
