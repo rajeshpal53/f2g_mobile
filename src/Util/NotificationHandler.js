@@ -1,5 +1,5 @@
 // src/notificationService.js
-import messaging from '@react-native-firebase/messaging';
+// import messaging from '@react-native-firebase/messaging'; // 🔒 Disabled for now
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Platform } from 'react-native';
 
@@ -38,70 +38,44 @@ export const resetValue = async () => {
   }
 };
 
-// Request permission & get FCM token
+// Stub for request permission (no Firebase)
 export const requestUserPermission = async () => {
-  const authStatus = await messaging().requestPermission();
-  const enabled =
-    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-  if (enabled) {
-    const token = await getFcmToken();
-    return token;
-  } else {
-    Alert.alert('Notification Permission Denied');
-    return null;
-  }
+  console.log('🔔 Notifications disabled (Firebase messaging not configured).');
+  Alert.alert('Notification Info', 'Notifications are currently disabled.');
+  return null;
 };
 
-// Get FCM token
+// Stub for FCM token
 export const getFcmToken = async () => {
-  try {
-    const token = await messaging().getToken();
-    if (token) {
-      await AsyncStorage.setItem('FCMToken', token);
-      return token;
-    }
-  } catch (error) {
-    console.log('Error getting FCM token:', error);
+  console.log('⚠️ getFcmToken called but Firebase is not active.');
+  return null;
+};
+
+// Stub for token refresh
+export const setupTokenRefreshListener = () => {
+  console.log('⚠️ setupTokenRefreshListener skipped (Firebase disabled).');
+  return null;
+};
+
+// Stub for foreground handler
+export const foregroundHandler = async (player) => {
+  console.log('⚠️ foregroundHandler disabled (Firebase not active).');
+  if (player) {
+    player.seekTo?.(0);
+    player.play?.();
   }
 };
 
-// Listen to token refresh
-export const setupTokenRefreshListener = (setFcmToken) => {
-  return messaging().onTokenRefresh(async (token) => {
-    setFcmToken(token);
-    await AsyncStorage.setItem('FCMToken', token);
-  });
+// Stub for background handler
+export const setupBackgroundHandler = async (player) => {
+  console.log('⚠️ setupBackgroundHandler disabled (Firebase not active).');
+  if (player) {
+    player.seekTo?.(0);
+    player.play?.();
+  }
 };
 
-// Handle foreground messages
-export const foregroundHandler = (player) => {
-  return messaging().onMessage(async (remoteMessage) => {
-    console.log('Foreground message:', remoteMessage);
-    await incrementValue();
-    await storeMessage(remoteMessage);
-    if (player) {
-      player.seekTo(0);
-      player.play();
-    }
-  });
-};
-
-// Handle background messages
-export const setupBackgroundHandler = (player) => {
-  messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-    console.log('Background message:', remoteMessage);
-    await incrementValue();
-    await storeMessage(remoteMessage);
-    if (player) {
-      player.seekTo(0);
-      player.play();
-    }
-  });
-};
-
-// Store incoming messages
+// Store incoming messages (local only)
 export const storeMessage = async (message) => {
   try {
     const existingMessages = await AsyncStorage.getItem('remoteMessages');
