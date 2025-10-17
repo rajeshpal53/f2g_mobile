@@ -153,9 +153,10 @@ export default function StackNavigator() {
     headerTitle: () => (
       <Text
         style={{
-          fontSize: 18,
+          fontSize: 16,
           fontFamily: "Poppins-SemiBold",
           color: colors?.text,
+          fontWeight:"bold"
         }}
       >
         Admin Section
@@ -268,15 +269,24 @@ export default function StackNavigator() {
           name="AdminDashbordScreen"
           component={AdminDashbordScreen}
           options={{
-            headerTitle: () => (
-              <Text style={styles.headerTitle}>
-                AdminDashbordScreen
-              </Text>
-            ),
-            headerShadowVisible: false,
-
-            headerTitleAlign: "center",
-          }}
+    headerTitle: () => (
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Poppins-SemiBold",
+          color: colors?.text,
+          fontWeight: "bold"
+        }}
+      >
+          Admin Dashboard
+        </Text>
+    ),
+   
+    headerTitleAlign: "center",
+    headerTintColor: colors?.text, // color of back arrow and title tint
+    headerShadowVisible: false, // removes bottom shadow
+    // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+  }}
         ></Stack.Screen>
    <Stack.Screen
           name="EditProfile"

@@ -35,17 +35,20 @@ const ViewReferralScreen = ({ navigation,route }) => {
   const { colors } = useTheme();
 
   // Build API URL dynamically
-  const buildApiUrl = (pageNum = 1) => {
-    let url = `refferal?refferedBy=${userData?.user?.id}&page=${pageNum}`;
-    if (searchQuery) url += `&searchTerm=${searchQuery}`;
-    if (sortBy) url += `&sortBy=${sortBy}`;
-    if (typeFilter) url += `&type=${typeFilter}`;
-    if (statusFilter) url += `&status=${statusFilter}`;
-    if (loanTypeFilter) url += `&loanType=${loanTypeFilter}`;
-    if (dateRange?.start && dateRange?.end)
-      url += `&startDate=${dateRange.start}&endDate=${dateRange.end}`;
-    return url;
-  };
+ const buildApiUrl = (pageNum = 1) => {
+      let url = `refferal?refferedBy=${userData?.user?.id}&page=${pageNum}`;
+  if (isAdmin) url = `refferal?page=${pageNum}&limit=5`;
+   if (sortBy&&!sortBy=="datewise") url += `&dateRange=${sortBy}`;
+   if (loanTypeFilter) url += `&loantypefk=${loanTypeFilter}`;
+   if (statusFilter) url += `&statusfk=${statusFilter}`;
+   if (dateRange?.startDate && dateRange?.endDate)
+   { 
+     console.log(dateRange)
+     url += `&startDate=${formatDateWithoutTime(dateRange.startDate)}&endDate=${formatDateWithoutTime(dateRange.endDate)}`;
+   }
+   if (searchQuery) url += `&searchTerm=${searchQuery}`;
+   return url;
+ };
 
   // 🔹 Fetch data from API
   const fetchReferrals = async (pageNum = 1, force = false) => {

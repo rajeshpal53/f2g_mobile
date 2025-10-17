@@ -4,12 +4,12 @@ import { FAB } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../Constants/Theme";
 import { useIsFocused } from "@react-navigation/native";
-import { readApi } from "../../Util/UtilApi";
+import { readApi,formatDateWithoutTime } from "../../Util/UtilApi";
 import BookingCard from "../../Components/Cards/BookingCard";
 import Searchbarwithmic from "../../Components/Searchbarwithmic";
 import NoDataFound from "../../UI/NoDataFound";
 import FilterModal from "../../Components/Modal/FilterModal";
-import { formatDate } from "../../Util/UtilApi";
+import { formatDate,} from "../../Util/UtilApi";
 import UserDataContext from "../../Store/UserDataContext";
 import { useSnackbar } from "../../Store/SnackbarContext";
 import Loader from "../../UI/Loader"; // ✅ add your loader component
@@ -41,87 +41,93 @@ const ViewBookingScreen = ({ navigation,route }) => {
   const [typeFilter, setTypeFilter] = useState("");
   const [searchCalled, setSearchCalled] = useState(false);
 
-  // 🔹 Build API URL dynamically
+
   const buildApiUrl = (pageNum = 1) => {
+  let url = `booking?bookedBy=${userData?.user?.id}&page=${pageNum}&limit=5`;
+  if (isAdmin) url = `booking?page=${pageNum}&limit=5`;
+  if (sortBy&&!sortBy=="datewise") url += `&dateRange=${sortBy}`;
+  if (loanTypeFilter) url += `&loantypefk=${loanTypeFilter}`;
+  if (statusFilter) url += `&statusfk=${statusFilter}`;
+  if (dateRange?.startDate && dateRange?.endDate)
+  { 
+    // booking?bookedBy=1&page=1&limit=5&dateRange=datewise&startDate=14-10-2025&endDate=17-10-2025
+    console.log(dateRange)
+    url += `&startDate=${formatDateWithoutTime(dateRange.startDate)}&endDate=${formatDateWithoutTime(dateRange.endDate)}`;
+  }
+  if (searchQuery) url += `&searchTerm=${searchQuery}`;
+  return url;
+};
 
-    let url = `booking?bookedBy=${userData?.user?.id}&page=${pageNum}&limit=5`;
-    if(isAdmin)url= `booking?page=${pageNum}&limit=5`
-    if (sortBy) url += `&sortBy=${sortBy}`;
-    if (loanTypeFilter) url += `&loanType=${loanTypeFilter}`;
-    if (typeFilter) url += `&type=${typeFilter}`;
-    if (dateRange?.from && dateRange?.to)
-      url += `&from=${dateRange.from}&to=${dateRange.to}`;
-    if (searchQuery) url += `&search=${searchQuery}`;
-    return url;
-  };
-
-  // 🔹 Fetch Bookings (Paginated)
+  // 🔹 Build API URL dynamically
   const fetchBookings = async (pageNum = 1, force = false) => {
-    if (!force && pageNum === 1 && !mainLoading) return;
+  if (apiError && !force) return;
+  if (!force && pageNum === 1 && mainLoading) return;
+  if (force) setApiError(false);
+
+  if (pageNum === 1) {
+    setMainLoading(true);
+    setHasMore(true);
+    if (force) setBookings([]);
+  }
+  setIsLoading(true);
+
+  try {
+    const api = buildApiUrl(pageNum);
+    console.log(api, pageNum, "api and page");
+    const response = await readApi(api);
 
     if (pageNum === 1) {
-      setMainLoading(true);
-      setHasMore(true);
-      setApiError(false);
+      setBookings(response.bookings || []);
+    } else if (response?.bookings?.length > 0) {
+      setBookings((prev) => [...prev, ...response.bookings]);
+    } else {
+      setHasMore(false);
     }
-    setIsLoading(true);
+  } catch (err) {
+    // mark API error and stop further pagination attempts
+    setApiError(true);
+    setHasMore(false);
 
+    if (pageNum === 1) setBookings([]);
+    console.error("API fetch failed:", err);
+    showSnackbar("Failed to fetch bookings", "error");
+  } finally {
+    setIsLoading(false);
+    setMainLoading(false);
+  }
+};
 
-    try {
-      const api = buildApiUrl(pageNum);
+// 🔹 Pagination: Load More
+const loadMoreData = () => {
+  // don't load more if currently loading, no more items, or we've hit an API error
+  if (!isLoading && hasMore && !apiError) {
+    setPage((prev) => prev + 1);
+  }
+};
 
-      console.log(api,page,"api and page")
-      const response = await readApi(api);
-
-      if (pageNum === 1) {
-        setBookings(response.bookings || []);
-      } else if (response?.bookings?.length > 0) {
-        setBookings((prev) => [...prev, ...response.bookings]);
-      } else {
-        setHasMore(false);
-      }
-    } catch (err) {
-      setApiError(true);
-      if (pageNum === 1) setBookings([]);
-      console.error("API fetch failed:", err);
-      showSnackbar("Failed to fetch bookings", "error");
-    } finally {
-      setIsLoading(false);
-      setMainLoading(false);
+// 🔹 Fetch more data when page changes
+useEffect(() => {
+  if (page > 1) {
+    if (searchQuery?.length > 0 && searchCalled) {
+      fetchSearchedData(searchQuery, page);
+    } else {
+      fetchBookings(page);
     }
-  };
+  }
+}, [page]);
 
-  // 🔹 Pagination: Load More
-  const loadMoreData = () => {
-    if (!isLoading && hasMore) {
-      setPage((prev) => prev + 1);
-    }
-  };
-
-  // 🔹 Fetch more data when page changes
-  useEffect(() => {
-    if (page > 1) {
-      if (searchQuery?.length > 0 && searchCalled) {
-        fetchSearchedData(searchQuery, page);
-      } 
-      else {
-       
-        fetchBookings(page);
-      }
-    }
-  }, [page]);
-
-  // 🔹 Handle filters, type changes, or error reset
-  useEffect(() => {
-    if (!apiError) {
-      setPage(1);
-      setSearchQuery("");
-      setSearchCalled(false);
-      setHasMore(true);
-      fetchBookings(1, true);
-    }
-  }, [sortBy, typeFilter, loanTypeFilter, dateRange, statusFilter]);
-
+// 🔹 Handle filters, type changes, or error reset
+useEffect(() => {
+  // when filters change we want to explicitly force a refresh.
+  // If apiError is true we won't fetch — keep that guard so the UI can surface the error,
+  // but if you want automatic retry on filter-change remove the apiError check.
+  if (!apiError) {
+    setPage(1);
+    setSearchCalled(false);
+    setHasMore(true);
+    fetchBookings(page, true); // force = true => explicit refresh, clears apiError if set
+  }
+}, [sortBy, typeFilter, loanTypeFilter, dateRange, statusFilter,searchQuery]);
   // 🔹 Refresh data when screen refocuses
   useEffect(() => {
     if (isFocused) 
@@ -135,7 +141,7 @@ const ViewBookingScreen = ({ navigation,route }) => {
     setSearchCalled(true);
     try {
       const response = await readApi(
-        `booking?bookedBy=${userData?.user?.id}&search=${query}&page=${pageNum}`
+        `booking?bookedBy=${userData?.user?.id}&searchTerm=${query}&page=${pageNum}`
       );
       if (pageNum === 1) {
         setBookings(response.bookings || []);
@@ -160,13 +166,26 @@ const ViewBookingScreen = ({ navigation,route }) => {
         setTranscript={setTranscript}
         placeholderText="Search bookings..."
         refuser={searchBarRef}
-        searchData={fetchSearchedData}
+ searchData={()=>
+        {
+           setSearchCalled(true);
+    setPage(1);
+    fetchBookings(1, true);
+        }
+        }
+        fetchData={() => {
+  setSearchQuery("");
+  setPage(1)
+  setSearchCalled(false);
+  setApiError(false);
+  setHasMore(true);
+}}
       />
 
       {/* 🔹 Booking List */}
       <FlatList
         data={bookings}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item,index) => index}
         renderItem={({ item }) => (
           <BookingCard booking={item} navigation={navigation} isAdmin={isAdmin} />
         )}

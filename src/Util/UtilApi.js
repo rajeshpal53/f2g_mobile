@@ -150,17 +150,17 @@ export const updateApi = async (endpoint, data, headers) => {
     viewer:4
   }
 export const statusOptions = [
-  { id: 1, label: 'login incomplete',value: 'login incomplete' },
-  { id: 2, label: 'login done',value: 'login done' },
-  { id: 3, label: 'post paid doc', label: 'post paid doc' },
-  { id: 4, label: 'reject', value: 'reject' },
-  { id: 5, label: 'l and t stage',value: 'l and t stage' },
-  { id: 6, label: 'sub approved',value: 'sub approved' },
-  { id: 7, label: 'approved',value: 'approved' },
-  { id: 8, label: 'disbursed',value: 'disbursed' },
-  { id: 9, label: 'otc/pdd pending',value: 'otc/pdd pending' },
-  { id: 10, label: 'billing in process',value: 'billing in process' },
-  { id: 11, label: 'billing cleared',value: 'billing cleared' },
+  { id: 1, label: 'Login Incomplete',value: 'login incomplete' },
+  { id: 2, label: 'Login Done',value: 'login done' },
+  { id: 3, label: 'Post Paid Doc', label: 'post paid doc' },
+  { id: 4, label: 'Reject', value: 'reject' },
+  { id: 5, label: 'L and T Stage',value: 'l and t stage' },
+  { id: 6, label: 'Sub Approved',value: 'sub approved' },
+  { id: 7, label: 'Approved',value: 'approved' },
+  { id: 8, label: 'Disbursed',value: 'disbursed' },
+  { id: 9, label: 'OTC/PDD Pending',value: 'otc/pdd pending' },
+  { id: 10, label: 'Billing in Process',value: 'billing in process' },
+  { id: 11, label: 'Billing Cleared',value: 'billing cleared' },
 ];
 
 
@@ -242,6 +242,7 @@ export const selectLoanFromId  = {
 };
 
 
+
 export const statusById = {
   1: "login incomplete",
   2: "login done",
@@ -307,6 +308,21 @@ export const formatDate = (dateString) => {
   return `${day} ${month} ${year} ${hours}:${minutes}:${seconds}`;
 };
 
+
+export const formatDateWithoutTime = (dateString) => {
+  const date = new Date(dateString);
+
+  // Ensure valid date
+  if (isNaN(date.getTime())) {
+    return ""; // Return empty string if invalid date
+  }
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-based
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`; // ✅ dd-mm-yyyy
+};
 
 export const capitalizeFirstLetter = (str) => {
   if (!str || typeof str !== "string") return "";

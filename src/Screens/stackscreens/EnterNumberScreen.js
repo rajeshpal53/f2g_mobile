@@ -30,6 +30,7 @@ import {
   signInWithPhoneNumber,
 } from "@react-native-firebase/auth";
 import SetpasswordModal from "../../Components/Modal/SetpasswordModal";
+import { getFcmToken } from "../../Util/NotificationHandler";
 const screenHeight = Dimensions.get("window").height;
   const app = getApp();
 const auth = getAuth(app); // ✅ fixed initialization
@@ -95,6 +96,14 @@ export default function EnterNumberScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isForgetPasswordState, setIsForgetPasswordState] = useState(false)
+
+
+  useEffect(()=>{
+     const token=getFcmToken()
+     console.log(token,"token in enter Number Screen")
+  },[])
+  
+
   /* ---------- Timer ---------- */
   useEffect(() => {
     let interval;

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useCallback } from "react";
+import React, { useContext, useEffect, useCallback,useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import StackNavigator from "./src/navigators/StackNavigator";
 import { UserDataProvider } from "./src/Store/UserDataContext";
@@ -7,10 +7,41 @@ import { SnackbarProvider } from "./src/Store/SnackbarContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PaperProvider } from "react-native-paper";
 import * as SplashScreen from "expo-splash-screen";
+import {
+  storeMessage,
+  requestUserPermission,
+  setupTokenRefreshListener,
+  setupBackgroundHandler,
+  foregroundHandler,
+} from "./src/Util/NotificationHandler";
+import { useAudioPlayer } from 'expo-audio';
 
 SplashScreen.preventAutoHideAsync(); // 👈 Keep splash visible until ready
 
 export default function App() {
+  const [fcmToken,setFcmToken]=useState('')
+
+  const audioSource = require('./assets/notification.mp3');
+  const player = useAudioPlayer(audioSource);
+   useEffect(() => {
+    // Request permission and retrieve token on startup
+    requestUserPermission();
+    // Set up the token refresh listener
+    const unsubscribeTokenRefresh = setupTokenRefreshListener(setFcmToken);
+    // Clean up the token refresh listener
+    return () => unsubscribeTokenRefresh();
+  }, []);
+  useEffect(() => {
+    // Handle background messages
+      const remoteMessage=setupBackgroundHandler(player);
+      // playNotificationSound();
+      console.log('Message handled in the background:', remoteMessage);
+  }, []);
+  useEffect(() => {
+    const unsubscribeForeground = foregroundHandler(storeMessage);
+    console.log("unsubscribeForeground", unsubscribeForeground);
+    return () => unsubscribeForeground();
+  }, []);
   return (
     <SafeAreaProvider>
       <PaperProvider>

@@ -150,7 +150,7 @@ const FilterModal = ({
                     <Picker.Item
                       key={index}
                       label={option.label}
-                      value={option.value}
+                      value={option.id}
                     />
                   ))}
                 </Picker>
@@ -170,7 +170,7 @@ const FilterModal = ({
                     <Picker.Item
                       key={index}
                       label={option.label}
-                      value={option.value}
+                      value={option.id}
                     />
                   ))}
                 </Picker>

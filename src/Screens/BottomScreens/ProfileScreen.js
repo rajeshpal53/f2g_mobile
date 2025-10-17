@@ -4,7 +4,6 @@ import {
   Modal,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -17,7 +16,7 @@ import { NORM_URL } from "../../Util/UtilApi";
 import { useTheme } from "../../Constants/Theme";
 import UserDataContext from "../../Store/UserDataContext";
 import { useIsFocused } from "@react-navigation/native";
-
+import {SafeAreaView} from "react-native-safe-area-context"
 export default function ProfileScreen({ navigation }) {
   const { colors } = useTheme();
   const styles = profileStyle(colors);
