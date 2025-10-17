@@ -68,20 +68,8 @@ const HomeScreen = () => {
   const totalReferrals = referralDashboardData?.totalRefferals ?? 0;
 
   const mixPieData = [
-    {
-      name: "Loans",
-      population: totalLoans,
-      color: "#42A5F5",
-      legendFontColor: colors.text,
-      legendFontSize: 14,
-    },
-    {
-      name: "Referrals",
-      population: totalReferrals,
-      color: "#AB47BC",
-      legendFontColor: colors.text,
-      legendFontSize: 14,
-    },
+    { name: "Loans", population: totalLoans, color: "#42A5F5" },
+    { name: "Referrals", population: totalReferrals, color: "#AB47BC" },
   ];
 
   const chartConfig = {
@@ -96,19 +84,30 @@ const HomeScreen = () => {
     const entries = Object.entries(dataObj || {});
     if (entries.length === 0) return null;
 
+    const statusColors = ["#42A5F5", "#AB47BC", "#FF7043", "#26A69A", "#FFCA28"];
     return (
-      <Card style={styles.statusCard}>
-        <Text style={styles.statusTitle}>{title}</Text>
+      <Card style={[styles.statusCard, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.statusTitle, { color: colors.primary }]}>{title}</Text>
         {entries.map(([key, val], i) => (
-          <View
-            key={i}
-            style={[
-              styles.statusRow,
-              { backgroundColor: i % 2 === 0 ? colors.surface : colors.background },
-            ]}
-          >
-            <Text style={styles.statusKey}>{key}</Text>
-            <Text style={styles.statusValue}>{val ?? 0}</Text>
+          <View key={i} style={styles.statusRowModern}>
+            <View
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: statusColors[i % statusColors.length],
+                marginRight: 10,
+              }}
+            />
+            <Text style={styles.statusKeyModern}>{key}</Text>
+            <Text
+              style={[
+                styles.statusValueModern,
+                { color: statusColors[i % statusColors.length] },
+              ]}
+            >
+              {val ?? 0}
+            </Text>
           </View>
         ))}
       </Card>
@@ -127,11 +126,9 @@ const HomeScreen = () => {
               setShowReferralStatus(false);
             }}
           >
-            <Card style={styles.statCard}>
-              <Text style={[styles.statValue, { color: "#42A5F5", textAlign: "center" }]}>
-                {totalLoans}
-              </Text>
-              <Text style={[styles.statLabel, { textAlign: "center" }]}>Total Bookings</Text>
+            <Card style={[styles.statCardModern, { borderLeftColor: "#42A5F5" }]}>
+              <Text style={styles.statValueModern}>{totalLoans}</Text>
+              <Text style={styles.statLabelModern}>Total Bookings</Text>
             </Card>
           </TouchableOpacity>
 
@@ -142,44 +139,35 @@ const HomeScreen = () => {
               setShowBookingStatus(false);
             }}
           >
-            <Card style={styles.statCard}>
-              <Text style={[styles.statValue, { color: "#AB47BC", textAlign: "center" }]}>
-                {totalReferrals}
-              </Text>
-              <Text style={[styles.statLabel, { textAlign: "center" }]}>Total Referrals</Text>
+            <Card style={[styles.statCardModern, { borderLeftColor: "#AB47BC" }]}>
+              <Text style={styles.statValueModern}>{totalReferrals}</Text>
+              <Text style={styles.statLabelModern}>Total Referrals</Text>
             </Card>
           </TouchableOpacity>
         </View>
 
         {/* Status Cards */}
-        {showBookingStatus &&
-          renderStatusCard("Booking Status Breakdown", dashboardData?.statusWiseBookings)}
-        {showReferralStatus &&
-          renderStatusCard("Referral Status Breakdown", referralDashboardData?.statusWiseRefferals)}
+        {showBookingStatus && renderStatusCard("Booking Status Breakdown", dashboardData?.statusWiseBookings)}
+        {showReferralStatus && renderStatusCard("Referral Status Breakdown", referralDashboardData?.statusWiseRefferals)}
 
         {/* Pie Chart */}
-        <Card style={styles.chartCard}>
+        <Card style={styles.chartCardModern}>
           <Text style={styles.chartTitle}>Loan vs Referral Overview</Text>
-          <View style={{ alignItems: "center" }}>
+          <View style={{ alignItems: "center", justifyContent: "center" }}>
             <PieChart
               data={mixPieData}
-              width={screenWidth - 80}
+              width={screenWidth - 60}
               height={220}
               chartConfig={chartConfig}
               accessor="population"
               backgroundColor="transparent"
               paddingLeft="70"
-              hasLegend={false} // remove default legend
-              absolute={false} // remove numbers inside slices
+              hasLegend={false}
+              absolute={false}
             />
-
-            {/* Custom legend */}
-            <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 15,marginLeft:10 }}>
+            <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 15 }}>
               {mixPieData.map((item, idx) => (
-                <View
-                  key={idx}
-                  style={{ flexDirection: "row", alignItems: "center", marginHorizontal: 15 }}
-                >
+                <View key={idx} style={{ flexDirection: "row", alignItems: "center", marginHorizontal: 10 }}>
                   <View
                     style={{
                       width: 14,
@@ -197,13 +185,15 @@ const HomeScreen = () => {
         </Card>
 
         {/* Quote */}
-        <Text style={styles.quote}>
-          "Share with your friends and earn rewards for every referral!"
-        </Text>
+        <View style={styles.quoteContainer}>
+          <Text style={styles.quoteModern}>
+            "Share with your friends and earn rewards for every referral!"
+          </Text>
+        </View>
 
         {/* Referral Button */}
         <TouchableOpacity
-          style={[styles.referralButton, { backgroundColor: "#007BFF" }]}
+          style={styles.referralButtonModern}
           onPress={handleReferralPress}
         >
           <Text style={styles.referralButtonText}>Refer & Earn</Text>
@@ -213,51 +203,31 @@ const HomeScreen = () => {
   );
 };
 
-// Dynamic styles generator
+// Styles
 const getStyles = (colors) =>
   StyleSheet.create({
-    container: {
-      alignItems: "center",
-      paddingVertical: 20,
-      flexGrow: 1,
-    },
-    loaderContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: colors.surface,
-    },
-    statsRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      width: screenWidth - 30,
-      marginBottom: 20,
-    },
-    statCard: {
+    container: { alignItems: "center", paddingVertical: 20, flexGrow: 1 },
+    loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.surface },
+    statsRow: { flexDirection: "row", justifyContent: "space-between", width: screenWidth - 30, marginBottom: 20 },
+    statCardModern: {
       flex: 1,
       alignItems: "center",
-      paddingVertical: 20,
+      paddingVertical: 25,
       marginHorizontal: 5,
       borderRadius: 15,
       elevation: 4,
       backgroundColor: "#FFFFFF",
+      borderLeftWidth: 5,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.1,
       shadowRadius: 5,
     },
-    statValue: {
-      fontSize: 24,
-      fontWeight: "bold",
-    },
-    statLabel: {
-      fontSize: 14,
-      marginTop: 5,
-      color: colors.text,
-    },
-    chartCard: {
+    statValueModern: { fontSize: 28, fontWeight: "bold" },
+    statLabelModern: { fontSize: 14, marginTop: 5, color: "#555" },
+    chartCardModern: {
       width: screenWidth - 30,
-      borderRadius: 15,
+      borderRadius: 20,
       padding: 15,
       elevation: 4,
       backgroundColor: "#FFFFFF",
@@ -267,55 +237,36 @@ const getStyles = (colors) =>
       shadowRadius: 5,
       marginBottom: 20,
     },
-    chartTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      textAlign: "center",
-      marginBottom: 10,
-      color: colors.text,
-    },
-    statusCard: {
-      width: screenWidth - 30,
-      borderRadius: 15,
-      padding: 10,
-      marginBottom: 15,
-      elevation: 4,
-      backgroundColor: "#FFFFFF",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.1,
-      shadowRadius: 5,
-    },
-    statusTitle: {
-      fontSize: 16,
-      fontWeight: "bold",
-      textAlign: "center",
-      marginBottom: 10,
-      color: colors.primary,
-    },
-    statusRow: {
+    chartTitle: { fontSize: 16, fontWeight: "600", textAlign: "center", marginBottom: 10, color: colors.text },
+    statusCard: { width: screenWidth - 30, borderRadius: 15, padding: 10, marginBottom: 15, elevation: 4, backgroundColor: "#FFFFFF" },
+    statusTitle: { fontSize: 16, fontWeight: "bold", textAlign: "center", marginBottom: 10, color: colors.primary },
+    statusRowModern: {
       flexDirection: "row",
       justifyContent: "space-between",
-      paddingVertical: 8,
+      alignItems: "center",
+      paddingVertical: 10,
       paddingHorizontal: 15,
+      marginVertical: 4,
+      borderRadius: 10,
+      backgroundColor: "#f9f9f9",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 2,
     },
-    statusKey: { fontSize: 14, fontWeight: "500", color: colors.text },
-    statusValue: { fontSize: 14, fontWeight: "500", color: colors.text },
-    quote: {
-      fontStyle: "italic",
-      textAlign: "center",
-      fontSize: 14,
-      marginBottom: 15,
-      paddingHorizontal: 20,
-      color: colors.text,
-    },
-    referralButton: {
+    statusKeyModern: { flex: 1, fontSize: 15, fontWeight: "500", color: "#333" },
+    statusValueModern: { fontSize: 15, fontWeight: "bold" },
+    quoteContainer: { width: screenWidth - 40, marginVertical: 10, padding: 10, backgroundColor: "#f2f2f2", borderRadius: 15 },
+    quoteModern: { fontStyle: "italic", textAlign: "center", fontSize: 14, color: "#555" },
+    referralButtonModern: {
       paddingVertical: 15,
-      borderRadius: 25,
+      borderRadius: 30,
       width: screenWidth - 50,
       alignSelf: "center",
       justifyContent: "center",
       alignItems: "center",
+      backgroundColor: "#007BFF",
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 5 },
       shadowOpacity: 0.2,
@@ -323,11 +274,7 @@ const getStyles = (colors) =>
       elevation: 5,
       marginBottom: 30,
     },
-    referralButtonText: {
-      color: "#fff",
-      fontWeight: "bold",
-      fontSize: 16,
-    },
+    referralButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   });
 
 export default HomeScreen;
