@@ -48,6 +48,7 @@ export default function ProfileScreen({ navigation }) {
       value: "AdminSection",
     },
   ];
+  
 
   useEffect(() => {
     const updatelist = () => {
@@ -95,10 +96,14 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const logoutHandler = () => {
-    clearUserData();
-    setVisible(false);
-    navigation.navigate("LoginScreen");
-  };
+  clearUserData();
+  setVisible(false);
+
+  navigation.reset({
+    index: 0,
+    routes: [{ name: "LoginScreen" }],
+  });
+};
 
   const openImageModal = (uri) => {
     setSelectedImageUri(uri);

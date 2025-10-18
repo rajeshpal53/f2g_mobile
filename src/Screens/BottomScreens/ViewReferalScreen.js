@@ -10,6 +10,7 @@ import UserDataContext from "../../Store/UserDataContext";
 import { useIsFocused } from "@react-navigation/native";
 import NoDataFound from "../../UI/NoDataFound";
 import FilterModal from "../../Components/Modal/FilterModal";
+import OpenMicModal from "../../Components/Modal/Openmicmodal";
 
 const ViewReferralScreen = ({ navigation,route }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,7 +22,8 @@ const ViewReferralScreen = ({ navigation,route }) => {
   const [loanTypeFilter, setLoanTypeFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const {isAdmin}=route?.params||false
-
+const [transcript, setTranscript] = useState("");
+  const [searchmodal, setsearchmodal] = useState(false);
   // pagination states
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,9 +125,9 @@ const ViewReferralScreen = ({ navigation,route }) => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         setsearchmodal={() => {}}
-        setTranscript={() => {}}
         placeholderText="Search referrals..."
         refuser={searchBarRef}
+        setTranscript={setTranscript}
         searchData={() => fetchReferrals(1, true)}
       />
 
@@ -148,12 +150,12 @@ const ViewReferralScreen = ({ navigation,route }) => {
             <View
               style={{
                 flex: 1,
-                justifyContent: "center",
-                marginVertical: 120,
+                marginVertical: 140,
+                paddingVertical: 50,
                 alignItems: "center",
               }}
             >
-              <NoDataFound textString={"No Referrals Found"} />
+              <NoDataFound textString={"No Referral Found"} />
             </View>
           )
         }
@@ -188,6 +190,13 @@ const ViewReferralScreen = ({ navigation,route }) => {
           setTypeFilter={setTypeFilter}
           setStatusFilter={setStatusFilter}
           setLoanTypeFilter={setLoanTypeFilter}
+        />
+      )}
+      {searchmodal && (
+        <OpenMicModal
+          modalVisible={searchmodal}
+          setModalVisible={setsearchmodal}
+          transcript={transcript}
         />
       )}
     </View>

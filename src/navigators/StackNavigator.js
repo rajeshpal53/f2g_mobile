@@ -26,6 +26,7 @@ import ViewBookingScreen from "../Screens/BottomScreens/ViewBookingScreen";
 import ReferralDetailScreen from "../Screens/stackscreens/ReferralDetailScreen";
 import ViewReferralScreen from "../Screens/BottomScreens/ViewReferalScreen";
 import AdminDashbordScreen from "../Screens/AdminSectionScreen/AdminDashbordScreen";
+import PoliciesDetailsScreen from "../Screens/stackscreens/PoliciesDetailsScreen";
 export default function StackNavigator() {
     const {colors} = useTheme();
     const {userData}=useContext(UserDataContext)
@@ -65,6 +66,16 @@ export default function StackNavigator() {
                     headerShown: false,
                 }}
             />
+             <Stack.Screen
+          name="Policies"
+          component={PoliciesDetailsScreen}
+          options={{
+            headerShown: false,
+            headerTintColor: "#000",
+            headerShadowVisible: false,
+            // headerLeft: () => <CustomBackButton />,
+          }}
+        />
         
 
         <Stack.Screen   name="welcome"

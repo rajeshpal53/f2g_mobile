@@ -14,7 +14,7 @@ function NoDataFound({ textString, home = false }) {
       }}
     >
       <Image
-        source={require("../../assets/noDataFound.png")}
+        source={require("../../assets/noDataFound.jpg")}
         style={{ width: 300, height: 230 }}
       />
       <Text

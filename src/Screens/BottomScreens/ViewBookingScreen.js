@@ -13,6 +13,8 @@ import { formatDate,} from "../../Util/UtilApi";
 import UserDataContext from "../../Store/UserDataContext";
 import { useSnackbar } from "../../Store/SnackbarContext";
 import Loader from "../../UI/Loader"; // ✅ add your loader component
+import OpenMicModal from "../../Components/Modal/Openmicmodal";
+
 
 const ViewBookingScreen = ({ navigation,route }) => {
   const searchBarRef = useRef();
@@ -32,7 +34,6 @@ const ViewBookingScreen = ({ navigation,route }) => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchModal, setSeachModal] = useState("");
-  const [transcript, setTranscript] = useState("");
   const [isModalVisible, setModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState("");
   const [dateRange, setDateRange] = useState({});
@@ -40,6 +41,8 @@ const ViewBookingScreen = ({ navigation,route }) => {
   const [loanTypeFilter, setLoanTypeFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [searchCalled, setSearchCalled] = useState(false);
+  const [transcript, setTranscript] = useState("");
+    const [searchmodal, setsearchmodal] = useState(false);
 
 
   const buildApiUrl = (pageNum = 1) => {
@@ -238,6 +241,13 @@ useEffect(() => {
           setTypeFilter={setTypeFilter}
           setStatusFilter={setStatusFilter}
           setLoanTypeFilter={setLoanTypeFilter}
+        />
+      )}
+      {searchmodal && (
+        <OpenMicModal
+          modalVisible={searchmodal}
+          setModalVisible={setsearchmodal}
+          transcript={transcript}
         />
       )}
     </View>

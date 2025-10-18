@@ -24,7 +24,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSnackbar } from "../../Store/SnackbarContext";
 import { createApi } from "../../Util/UtilApi";
   import { getApp } from "@react-native-firebase/app";
-
+  import {Checkbox} from 'react-native-paper'
 import {
   getAuth,
   signInWithPhoneNumber,
@@ -48,31 +48,40 @@ const SignupSchema = Yup.object().shape({
 /* -------------------------
    Checkbox Component
 ------------------------- */
-const Checkbox = ({ checked, onToggle, label, labelStyle }) => {
+const Checkbox1= ({ checked, onToggle, label, labelStyle, showError, errorText }) => {
   const { colors } = useTheme();
+
   return (
-    <TouchableOpacity
-      onPress={onToggle}
-      style={{ flexDirection: "row", alignItems: "center" }}
-      activeOpacity={0.8}
-    >
-      <View
-        style={{
-          width: 20,
-          height: 20,
-          borderRadius: 4,
-          borderWidth: 1.5,
-          borderColor: colors.border,
-          backgroundColor: checked ? colors.accent : "transparent",
-          justifyContent: "center",
-          alignItems: "center",
-          marginRight: 10,
-        }}
+    <View>
+      <TouchableOpacity
+        onPress={onToggle}
+        style={{ flexDirection: "row", alignItems: "center" }}
+        activeOpacity={0.8}
       >
-        {checked && <MaterialIcons name="check" size={14} color={colors.card} />}
-      </View>
-      <Text style={[{ color: colors.textSecondary }, labelStyle]}>{label}</Text>
-    </TouchableOpacity>
+        <View
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 4,
+            borderWidth: 1.5,
+            borderColor: showError && !checked ? colors.error : colors.border,
+            backgroundColor: checked ? colors.accent : "transparent",
+            justifyContent: "center",
+            alignItems: "center",
+            marginRight: 10,
+          }}
+        >
+          {checked && <MaterialIcons name="check" size={14} color={colors.card} />}
+        </View>
+        <Text style={[{ color: colors.textSecondary }, labelStyle]}>{label}</Text>
+      </TouchableOpacity>
+
+      {showError && !checked && (
+        <Text style={{ color: colors.error, fontSize: 12, marginTop: 4 }}>
+          {errorText || "This field is required"}
+        </Text>
+      )}
+    </View>
   );
 };
 
@@ -119,6 +128,7 @@ export default function EnterNumberScreen({ navigation }) {
   /* ---------- Send OTP ---------- */
   const handleSendOtp = async (values) => {
     try {
+
       setLoading(true);
       const fullPhone = "+91" + values.mobile;
       const confirmation = await signInWithPhoneNumber(auth, fullPhone);
@@ -276,7 +286,7 @@ const handleVerifyOtp = async () => {
           </View>
 
           <Formik
-            initialValues={{ mobile: "", agree: false }}
+            initialValues={{ mobile: "", agree: true }}
             validationSchema={SignupSchema}
             onSubmit={handleSendOtp}
           >
@@ -306,33 +316,44 @@ const handleVerifyOtp = async () => {
                     {touched.mobile && errors.mobile && (
                       <Text style={{ color: "red" }}>{errors.mobile}</Text>
                     )}
+<View style={{ marginBottom: 12 }}>
+  <TouchableOpacity
+    style={{ flexDirection: "row", alignItems: "center" }}
+    onPress={() => setFieldValue("agree", !values.agree)}
+    activeOpacity={0.8}
+  >
+    <Checkbox
+      status={values.agree ? "checked" : "unchecked"}
+      color={colors?.main}
+    />
+    <Text style={styles.label}>I agree to the</Text>
 
-                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                      <Checkbox
-                        checked={values.agree}
-                        onToggle={() => setFieldValue("agree", !values.agree)}
-                        label="I agree to the"
-                      />
-                      <TouchableOpacity
-                        onPress={() =>
-                          navigation.navigate("PoliciesDetailScreen", {
-                            webUri:
-                              "https://qwikbill.in/qapp/privacy-policy?view=mobile",
-                            headerTitle: "Privacy and Policies",
-                          })
-                        }
-                      >
-                        <Text
-                          style={{
-                            marginLeft: 6,
-                            color: colors.accent,
-                            fontWeight: "700",
-                          }}
-                        >
-                          Terms & Conditions
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate("Policies", {
+          webUri: "https://qwikbill.in/qapp/privacy-policy?view=desktop",
+          headerTitle: "Privacy and Policies",
+        })
+      }
+      activeOpacity={0.7}
+    >
+      <Text
+        style={{
+          marginLeft: 6,
+          color: colors.accent,
+          fontWeight: "700",
+        }}
+      >
+        Terms & Conditions
+      </Text>
+    </TouchableOpacity>
+  </TouchableOpacity>
+
+  {touched.agree && errors.agree && (
+    <Text style={{ color: "red", marginTop: 4 }}>{errors.agree}</Text>
+  )}
+</View>
+
 
                     <TouchableOpacity
                       style={styles.sendBtn}

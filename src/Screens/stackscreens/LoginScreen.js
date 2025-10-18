@@ -44,7 +44,10 @@ const LoginScreen = ({ navigation }) => {
       if(response){
         showSnackbar("Login Successfully","success")
         saveUserData(response)
-         navigation.navigate('Bottom');
+         navigation.reset({
+    index: 0,
+    routes: [{ name: "Bottom" }],
+  });
       resetForm();
       }
     } catch (err) {
@@ -196,7 +199,7 @@ const LoginScreen = ({ navigation }) => {
               <Text style={[styles.signUpText, { color: colors.textSecondary }]}>
                 Don't have an account?{' '}
               </Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={()=>{navigation.navigate("EnterNumberScreen")}}>
                 <Text style={[styles.linkText, { color: colors.accent }]}>Sign Up</Text>
               </TouchableOpacity>
             </View>

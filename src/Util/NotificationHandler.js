@@ -41,7 +41,7 @@ export const resetValue = async () => {
 // Stub for request permission (no Firebase)
 export const requestUserPermission = async () => {
   console.log('🔔 Notifications disabled (Firebase messaging not configured).');
-  Alert.alert('Notification Info', 'Notifications are currently disabled.');
+  // Alert.alert('Notification Info', 'Notifications are currently disabled.');
   return null;
 };
 

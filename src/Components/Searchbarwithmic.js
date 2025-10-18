@@ -197,12 +197,13 @@ const Searchbarwithmic = ({
               )}
 
               {searchQuery === "" ? (
-                <TouchableOpacity
-                  style={{ marginRight: 10 }}
-                  onPress={handleMicPress}
-                >
-                  <MaterialIcons name="mic" size={24} color="black" />
-                </TouchableOpacity>
+                <></>
+                // <TouchableOpacity
+                //   style={{ marginRight: 10 }}
+                //   onPress={handleMicPress}
+                // >
+                //   <MaterialIcons name="mic" size={24} color="black" />
+                // </TouchableOpacity>
               ) : (
                 <TouchableOpacity
                   style={{ marginRight: 10 }}

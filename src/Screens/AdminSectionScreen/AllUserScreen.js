@@ -19,7 +19,7 @@ import { NORM_URL } from "../../Util/UtilApi";
 import { getRandomImage } from "../../Util/UtilApi";
 import UserCard from "../../Components/Cards/UserCard";
 import Searchbarwithmic from "../../Components/Searchbarwithmic";
-import OpenmiqModal from "../../Components/Modal/Openmicmodal";
+import OpenMicModal from "../../Components/Modal/Openmicmodal";
 import NoDataFound from "../../UI/NoDataFound";
 const AllUser = ({ navigation }) => {
   const { userData } = useContext(UserDataContext);
@@ -243,7 +243,7 @@ const AllUser = ({ navigation }) => {
       )}
 
       {searchmodal && (
-        <OpenmiqModal
+        <OpenMicModal
           modalVisible={searchmodal}
           setModalVisible={setsearchmodal}
           transcript={transcript}

@@ -5,7 +5,7 @@ import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
-const OpenmiqModal = ({ modalVisible, setModalVisible, transcript }) => {
+const OpenMicModal = ({ modalVisible, setModalVisible, transcript }) => {
   const handleClose = () => {
     ExpoSpeechRecognitionModule.stop(); // Stop speech recognition
     setModalVisible(false); // Close the modal
@@ -87,4 +87,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OpenmiqModal;
+export default OpenMicModal;

@@ -36,10 +36,10 @@ const AdminSectionScreen = ({ navigation }) => {
   const [menuItems, setMenuItems] = useState([
     { icon: "receipt", label: "Admin Dashboard", value: "AdminDashbordScreen" },
     { icon: "receipt", label: "All Bookings", value: "AllBookings" },
-    { icon: "people", label: "All Users", value: "AllUsers" },
+    // { icon: "people", label: "All Users", value: "AllUsers" },
     { icon: "local-shipping", label: "All Referrals", value: "AllRefrals" },
     { icon: "support-agent", label: "All Queries", value: "AllQueries" },
-    { icon: "logout", label: "Logout", value: "Logout" },
+    // { icon: "logout", label: "Logout", value: "Logout" },
   ]);
 
   const handlePress = (value) => {

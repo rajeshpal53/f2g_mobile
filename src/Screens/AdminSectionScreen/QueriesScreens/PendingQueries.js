@@ -9,6 +9,7 @@ import ConfirmModal from "../../../Components/Modal/ConfirmModal";
 import ViewQueryDetailModal from "./ViewQueryDetailModal";
 import NoDataFound from "../../../Components/NoDataFound";
 import { useTheme } from "../../../Constants/Theme";
+import ResolvedModal from "../../../Components/Modal/ResolvedModal";
 
 const PAGE_SIZE = 3;
 
@@ -28,6 +29,7 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
   const [modalLoading, setModalLoading] = useState(false); // ✅ modal button loading
   const [queryDetailModalVisible, setQueryDetailModalVisible] = useState(false);
   const [viewDetailsItem, setViewDetailsItem] = useState(null);
+  const [resolvedMessage,setResolvedMessage]=useState("")
 
   useEffect(() => {
     fetchData(1, true);
@@ -138,6 +140,19 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
         themeColors={colors}
         loading={modalLoading} // pass loading state to modal
       />
+      {confirmModalVisible && 
+      <ResolvedModal 
+      visible={confirmModalVisible}
+      message={"Are you sure you want to mark this query as resolved?"}
+      heading={"Confirmation Message"}
+      setVisible={setConfirmModalVisible}
+      handlePress={handleQueryResolved}
+      buttonTitle={"Resolved"}
+      TextMessage={resolvedMessage}
+      onchangeText={setResolvedMessage}
+      />}
+      
+    
 
       {queryDetailModalVisible && (
         <ViewQueryDetailModal
