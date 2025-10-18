@@ -27,6 +27,8 @@ import ReferralDetailScreen from "../Screens/stackscreens/ReferralDetailScreen";
 import ViewReferralScreen from "../Screens/BottomScreens/ViewReferalScreen";
 import AdminDashbordScreen from "../Screens/AdminSectionScreen/AdminDashbordScreen";
 import PoliciesDetailsScreen from "../Screens/stackscreens/PoliciesDetailsScreen";
+import { TouchableOpacity } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 export default function StackNavigator() {
     const {colors} = useTheme();
     const {userData}=useContext(UserDataContext)
@@ -131,6 +133,12 @@ export default function StackNavigator() {
     headerTintColor: colors?.text, // color of back arrow and title tint
     headerShadowVisible: false, // removes bottom shadow
     // headerLeft: () => <CustomBackButton />, // uncomment if you have one
+    // headerRight:()=><TouchableOpacity
+    //   style={{marginRight:10,marginTop:3}}
+    //   onPress={}
+    // > <MaterialIcons size={25} name="download"/>
+
+    // </TouchableOpacity>
   }}
         
         />

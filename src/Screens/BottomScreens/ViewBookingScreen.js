@@ -14,7 +14,7 @@ import UserDataContext from "../../Store/UserDataContext";
 import { useSnackbar } from "../../Store/SnackbarContext";
 import Loader from "../../UI/Loader"; // ✅ add your loader component
 import OpenMicModal from "../../Components/Modal/Openmicmodal";
-
+import DownloadMenuButton from "../../Components/DownloadMenuButton";
 
 const ViewBookingScreen = ({ navigation,route }) => {
   const searchBarRef = useRef();
@@ -45,21 +45,37 @@ const ViewBookingScreen = ({ navigation,route }) => {
     const [searchmodal, setsearchmodal] = useState(false);
 
 
-  const buildApiUrl = (pageNum = 1) => {
-  let url = `booking?bookedBy=${userData?.user?.id}&page=${pageNum}&limit=5`;
-  if (isAdmin) url = `booking?page=${pageNum}&limit=5`;
-  if (sortBy&&!sortBy=="datewise") url += `&dateRange=${sortBy}`;
+  const buildApiUrl = (pageNum = 1, downloadUrl = false) => {
+  let url = "";
+
+  if (downloadUrl) {
+    // Download endpoint
+    url = `booking/downloadBookings?`;
+  } else if (isAdmin) {
+    // Admin view
+    url = `booking?page=${pageNum}&limit=5`;
+  } else {
+    // Normal user view
+    url = `booking?bookedBy=${userData?.user?.id}&page=${pageNum}&limit=5`;
+  }
+
+  // Apply filters for both normal and download cases
+  if (sortBy && sortBy !== "datewise") url += `&dateRange=${sortBy}`;
   if (loanTypeFilter) url += `&loantypefk=${loanTypeFilter}`;
   if (statusFilter) url += `&statusfk=${statusFilter}`;
-  if (dateRange?.startDate && dateRange?.endDate)
-  { 
-    // booking?bookedBy=1&page=1&limit=5&dateRange=datewise&startDate=14-10-2025&endDate=17-10-2025
-    console.log(dateRange)
+
+  if (dateRange?.startDate && dateRange?.endDate) {
     url += `&startDate=${formatDateWithoutTime(dateRange.startDate)}&endDate=${formatDateWithoutTime(dateRange.endDate)}`;
   }
+
   if (searchQuery) url += `&searchTerm=${searchQuery}`;
+
+  // Add pagination for download URLs if needed
+  if (downloadUrl && !isAdmin) url += `&page=${pageNum}&limit=5`;
+
   return url;
 };
+
 
   // 🔹 Build API URL dynamically
   const fetchBookings = async (pageNum = 1, force = false) => {
@@ -161,6 +177,12 @@ useEffect(() => {
 
   return (
     <View style={styles.container}>
+      {
+          isAdmin&&(
+      <DownloadMenuButton buildApiUrl={buildApiUrl} mode={"bookings"}/>
+
+          )
+        }
       {/* 🔍 Search Bar */}
       <Searchbarwithmic
         searchQuery={searchQuery}
@@ -241,6 +263,8 @@ useEffect(() => {
           setTypeFilter={setTypeFilter}
           setStatusFilter={setStatusFilter}
           setLoanTypeFilter={setLoanTypeFilter}
+          loanTypeFilter={loanTypeFilter}
+          statusFilter={statusFilter}
         />
       )}
       {searchmodal && (

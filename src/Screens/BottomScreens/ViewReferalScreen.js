@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useContext } from "react";
 import { FlatList, StyleSheet, View, ActivityIndicator } from "react-native";
 import ReferralCard from "../../Components/Cards/RefralCard";
 import Searchbarwithmic from "../../Components/Searchbarwithmic";
-import { FAB } from "react-native-paper";
+import { Button, FAB } from "react-native-paper";
 import { useTheme } from "../../Constants/Theme";
 import { MaterialIcons } from "@expo/vector-icons/";
 import { readApi, formatDate } from "../../Util/UtilApi";
@@ -11,7 +11,7 @@ import { useIsFocused } from "@react-navigation/native";
 import NoDataFound from "../../UI/NoDataFound";
 import FilterModal from "../../Components/Modal/FilterModal";
 import OpenMicModal from "../../Components/Modal/Openmicmodal";
-
+import DownloadMenuButton from "../../Components/DownloadMenuButton";
 const ViewReferralScreen = ({ navigation,route }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [referral, setReferral] = useState([]);
@@ -37,20 +37,37 @@ const [transcript, setTranscript] = useState("");
   const { colors } = useTheme();
 
   // Build API URL dynamically
- const buildApiUrl = (pageNum = 1) => {
-      let url = `refferal?refferedBy=${userData?.user?.id}&page=${pageNum}`;
-  if (isAdmin) url = `refferal?page=${pageNum}&limit=5`;
-   if (sortBy&&!sortBy=="datewise") url += `&dateRange=${sortBy}`;
-   if (loanTypeFilter) url += `&loantypefk=${loanTypeFilter}`;
-   if (statusFilter) url += `&statusfk=${statusFilter}`;
-   if (dateRange?.startDate && dateRange?.endDate)
-   { 
-     console.log(dateRange)
-     url += `&startDate=${formatDateWithoutTime(dateRange.startDate)}&endDate=${formatDateWithoutTime(dateRange.endDate)}`;
-   }
-   if (searchQuery) url += `&searchTerm=${searchQuery}`;
-   return url;
- };
+ const buildApiUrl = (pageNum = 1, downloadUrl = false) => {
+  let url = "";
+
+  if (downloadUrl) {
+    // Download endpoint
+    url = `refferal/downloadRefferals?`;
+  } else if (isAdmin) {
+    // Admin view
+    url = `refferal?page=${pageNum}&limit=5`;
+  } else {
+    // Normal user view
+    url = `refferal?refferedBy=${userData?.user?.id}&page=${pageNum}`;
+  }
+
+  // Apply filters to all (including download)
+  if (sortBy && sortBy !== "datewise") url += `&dateRange=${sortBy}`;
+  if (loanTypeFilter) url += `&loantypefk=${loanTypeFilter}`;
+  if (statusFilter) url += `&statusfk=${statusFilter}`;
+
+  if (dateRange?.startDate && dateRange?.endDate) {
+    url += `&startDate=${formatDateWithoutTime(dateRange.startDate)}&endDate=${formatDateWithoutTime(dateRange.endDate)}`;
+  }
+
+  if (searchQuery) url += `&searchTerm=${searchQuery}`;
+
+  // Add page for download only if not already handled
+  if (downloadUrl && !isAdmin) url += `&page=${pageNum}`;
+
+  return url;
+};
+
 
   // 🔹 Fetch data from API
   const fetchReferrals = async (pageNum = 1, force = false) => {
@@ -121,6 +138,15 @@ const [transcript, setTranscript] = useState("");
 
   return (
     <View style={styles.container}>
+      <View style={{backgroundColor:"red"}}>
+        {
+          isAdmin&&(
+      <DownloadMenuButton buildApiUrl={buildApiUrl} mode={"referral"}/>
+
+          )
+        }
+      </View>
+      {/* <Button style={{position:"absolute" ,top:-50 , right:5, zIndex:120, height:100}}> <MaterialIcons name="download" size={35} /></Button> */}
       <Searchbarwithmic
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -190,6 +216,8 @@ const [transcript, setTranscript] = useState("");
           setTypeFilter={setTypeFilter}
           setStatusFilter={setStatusFilter}
           setLoanTypeFilter={setLoanTypeFilter}
+          statusFilter={statusFilter}
+          loanTypeFilter={loanTypeFilter}
         />
       )}
       {searchmodal && (

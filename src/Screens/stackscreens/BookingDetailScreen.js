@@ -100,7 +100,15 @@ const BookingDetailsScreen = ({ route,navigation }) => {
       )}
       {
         
-     <Button  onPress={()=>{navigation.navigate("BookingScreen",{editBooking:booking,isAdmin})}}mode="contained" labelStyle={{fontSize:16}} icon={"pencil"} style={{width:"80%",alignSelf:"center",backgroundColor:theme?.colors?.main,borderRadius:8}} >Edit Booking</Button>
+     <Button 
+            disabled={!isAdmin&&booking?.statusfk>2?true:false}
+     onPress={()=>{navigation.navigate("BookingScreen",{editBooking:booking,isAdmin})}}
+     mode="contained" 
+     labelStyle={{fontSize:16}} 
+     icon={"pencil"}
+     style={{width:"80%",
+                opacity:!isAdmin&&booking?.statusfk>2?0.8:1,
+      alignSelf:"center",backgroundColor:theme?.colors?.main,borderRadius:8}} >Edit Booking</Button>
         
         }
     </ScrollView>

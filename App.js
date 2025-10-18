@@ -7,6 +7,7 @@ import { SnackbarProvider } from "./src/Store/SnackbarContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PaperProvider } from "react-native-paper";
 import * as SplashScreen from "expo-splash-screen";
+import { StorageLocationProvider } from "./src/Store/StorageLocationContext";
 import {
   storeMessage,
   requestUserPermission,
@@ -46,11 +47,14 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider>
-        <SnackbarProvider>
+        <StorageLocationProvider>
+                  <SnackbarProvider>
           <UserDataProvider>
             <AppContainer />
           </UserDataProvider>
         </SnackbarProvider>
+        </StorageLocationProvider>
+
       </PaperProvider>
     </SafeAreaProvider>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,8 @@ const FilterModal = ({
   setTypeFilter,
   setStatusFilter,
   setLoanTypeFilter,
+  statusFilter,
+  loanTypeFilter
 }) => {
   const [selectedValue, setSelectedValue] = useState(sortBy || "");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -46,6 +48,14 @@ const FilterModal = ({
     setSelectedLoanType("");
     setDateRange({ startDate: null, endDate: null });
   };
+
+   useEffect(() => {
+    if (isModalVisible) {
+      setSelectedStatus(statusFilter || "");
+      setSelectedLoanType(loanTypeFilter || "");
+      setSelectedValue(sortBy || "");
+    }
+  }, [isModalVisible, statusFilter, loanTypeFilter, sortBy]);
 
   const handleSubmit = () => {
     if (selectedValue === "datewise") {

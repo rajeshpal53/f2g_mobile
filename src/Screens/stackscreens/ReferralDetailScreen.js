@@ -17,7 +17,6 @@ const ReferralDetailScreen = ({ route, navigation }) => {
   }
 
   const referredByUser = referral.refferedByUser;
-
   return (
     <ScrollView
       style={styles.container}
@@ -38,7 +37,7 @@ const ReferralDetailScreen = ({ route, navigation }) => {
               Referral ID: {referral.refId}
             </Text>
             <Text variant="bodyMedium" style={[styles.statusText,{color:statusColors[status]}]}>
-              Status: { valuesByStatusfk[referral.statusfk] || "Pending"}
+              Status: { valuesByStatusfk[referral.statusfk]}
             </Text>
           </View>
         </Card.Content>
@@ -108,9 +107,10 @@ const ReferralDetailScreen = ({ route, navigation }) => {
           </Card.Content>
         </Card>
       )}
-
+       
       {/* Edit Button */}
       <Button
+      disabled={!isAdmin&&referral?.statusfk>2?true:false}
         onPress={() =>
           navigation.navigate("ReferralForm", { editReferral: referral, isAdmin })
         }
@@ -118,11 +118,13 @@ const ReferralDetailScreen = ({ route, navigation }) => {
         labelStyle={{ fontSize: 16 }}
         icon="pencil"
         style={{
+          opacity:!isAdmin&&referral?.statusfk>2?0.8:1,
           width: "80%",
           alignSelf: "center",
           backgroundColor: theme?.colors?.main,
           borderRadius: 8,
           marginTop: 16,
+          color:theme?.colors?.text
         }}
       >
         Edit Referral
