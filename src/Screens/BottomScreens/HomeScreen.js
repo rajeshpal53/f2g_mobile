@@ -32,21 +32,27 @@ const HomeScreen = () => {
   const { userData } = useContext(UserDataContext);
 
   const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState(null);
-  const [referralDashboardData, setReferralDashboardData] = useState(null);
+  const [dashboardData, setDashboardData] = useState({});
+  const [referralDashboardData, setReferralDashboardData] = useState({});
   const [showBookingStatus, setShowBookingStatus] = useState(false);
   const [showReferralStatus, setShowReferralStatus] = useState(false);
-  const isFocused=useIsFocused()
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     const fetchData = async () => {
+      // 🧠 Wait for userData to be available
+      if (!userData?.user?.id) {
+        console.log("⏳ Waiting for user data...");
+        return;
+      }
+
       try {
-        setLoading(true)
+        setLoading(true);
         const bookingRes = await readApi(
-          `booking/getBookingStats?year=2025&bookedBy=${userData?.user?.id}`
+          `booking/getBookingStats?year=2025&bookedBy=${userData.user.id}`
         );
         const referralRes = await readApi(
-          `refferal/getRefferalStats?year=2025&refferedBy=${userData?.user?.id}`
+          `refferal/getRefferalStats?year=2025&refferedBy=${userData.user.id}`
         );
 
         setDashboardData(bookingRes || {});
@@ -57,32 +63,39 @@ const HomeScreen = () => {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, [isFocused]);
+  }, [isFocused, userData]);
 
   const handleReferralPress = () => {
-    Alert.alert(
-      "Referral",
-      "Navigate to referral page or share your referral link!"
-    );
+    Alert.alert("Referral", "Navigate to referral page or share your referral link!");
   };
 
-  // 🌀 Loading State
-  if (loading) {
+  // 🌀 Show loader while fetching or waiting for userData
+  if (loading || !userData?.user?.id) {
     return (
       <SafeAreaView style={styles.loaderContainer}>
         <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={{ color: colors.text, marginTop: 10 }}>
-          Loading Overview...
-        </Text>
+        <Text style={{ color: colors.text, marginTop: 10 }}>Loading Overview...</Text>
       </SafeAreaView>
     );
   }
 
+  // ✅ Normalize data (handles API naming inconsistencies)
+  const totalLoans =
+    dashboardData?.totalBookings ??
+    dashboardData?.noOfBookings ??
+    dashboardData?.bookings ??
+    0;
+
+  const totalReferrals =
+    referralDashboardData?.totalRefferals ??
+    referralDashboardData?.noOfRefferals ??
+    referralDashboardData?.referrals ??
+    0;
+
   // 🧾 Empty Data → Show Welcome Screen
-  if (
-    dashboardData?.noOfBookings === 0 &&referralDashboardData?.noOfRefferals === 0
-  ) {
+  if (!totalLoans && !totalReferrals) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="dark-content" backgroundColor={LIGHT_BACKGROUND} />
@@ -97,10 +110,10 @@ const HomeScreen = () => {
           <Text style={styles.mainHeading}>
             Congratulations!{"\n"}Welcome to F2G 🥳
           </Text>
-          <Text style={styles.subText}>We are happy to have you.{"\n"}
-           It's time to <Text style={{ fontWeight: "700" }}>refer</Text>,{" "}
-            <Text style={{ fontWeight: "700" }}></Text>your collegues{" "}
-            <Text style={{ fontWeight: "700" }}>and earn profit</Text>
+          <Text style={styles.subText}>
+            We are happy to have you.{"\n"}It's time to{" "}
+            <Text style={{ fontWeight: "700" }}>refer</Text> your colleagues and{" "}
+            <Text style={{ fontWeight: "700" }}>earn profit</Text>
           </Text>
         </View>
       </SafeAreaView>
@@ -108,9 +121,6 @@ const HomeScreen = () => {
   }
 
   // ✅ Dashboard Data Available → Show Analytics
-  const totalLoans = dashboardData?.totalBookings ?? 0;
-  const totalReferrals = referralDashboardData?.totalRefferals ?? 0;
-
   const mixPieData = [
     { name: "Loans", population: totalLoans, color: "#42A5F5" },
     { name: "Referrals", population: totalReferrals, color: "#AB47BC" },
@@ -125,15 +135,14 @@ const HomeScreen = () => {
   };
 
   const renderStatusCard = (title, dataObj) => {
-    const entries = Object.entries(dataObj || {});
-    if (entries.length === 0) return null;
+    if (!dataObj || Object.keys(dataObj).length === 0) return null;
 
+    const entries = Object.entries(dataObj);
     const statusColors = ["#42A5F5", "#AB47BC", "#FF7043", "#26A69A", "#FFCA28"];
+
     return (
       <Card style={[styles.statusCard, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.statusTitle, { color: colors.primary }]}>
-          {title}
-        </Text>
+        <Text style={[styles.statusTitle, { color: colors.primary }]}>{title}</Text>
         {entries.map(([key, val], i) => (
           <View key={i} style={styles.statusRowModern}>
             <View
@@ -162,10 +171,7 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <TouchableOpacity
@@ -175,9 +181,7 @@ const HomeScreen = () => {
               setShowReferralStatus(false);
             }}
           >
-            <Card
-              style={[styles.statCardModern, { borderLeftColor: "#42A5F5" }]}
-            >
+            <Card style={[styles.statCardModern, { borderLeftColor: "#42A5F5" }]}>
               <Text style={styles.statValueModern}>{totalLoans}</Text>
               <Text style={styles.statLabelModern}>Total Bookings</Text>
             </Card>
@@ -190,9 +194,7 @@ const HomeScreen = () => {
               setShowBookingStatus(false);
             }}
           >
-            <Card
-              style={[styles.statCardModern, { borderLeftColor: "#AB47BC" }]}
-            >
+            <Card style={[styles.statCardModern, { borderLeftColor: "#AB47BC" }]}>
               <Text style={styles.statValueModern}>{totalReferrals}</Text>
               <Text style={styles.statLabelModern}>Total Referrals</Text>
             </Card>
@@ -201,15 +203,9 @@ const HomeScreen = () => {
 
         {/* Status Cards */}
         {showBookingStatus &&
-          renderStatusCard(
-            "Booking Status Breakdown",
-            dashboardData?.statusWiseBookings
-          )}
+          renderStatusCard("Booking Status Breakdown", dashboardData?.statusWiseBookings)}
         {showReferralStatus &&
-          renderStatusCard(
-            "Referral Status Breakdown",
-            referralDashboardData?.statusWiseRefferals
-          )}
+          renderStatusCard("Referral Status Breakdown", referralDashboardData?.statusWiseRefferals)}
 
         {/* Pie Chart */}
         <Card style={styles.chartCardModern}>
@@ -224,7 +220,6 @@ const HomeScreen = () => {
               backgroundColor="transparent"
               paddingLeft="70"
               hasLegend={false}
-              absolute={false}
             />
             <View
               style={{
@@ -251,9 +246,7 @@ const HomeScreen = () => {
                       marginRight: 6,
                     }}
                   />
-                  <Text style={{ color: colors.text, fontSize: 14 }}>
-                    {item.name}
-                  </Text>
+                  <Text style={{ color: colors.text, fontSize: 14 }}>{item.name}</Text>
                 </View>
               ))}
             </View>
@@ -263,14 +256,12 @@ const HomeScreen = () => {
         {/* Quote */}
         <View style={styles.quoteContainer}>
           <Text style={styles.quoteModern}>
-            "Share with your collegues and earn rewards on every referral!"
+            "Share with your colleagues and earn rewards on every referral!"
           </Text>
         </View>
+
         {/* Referral Button */}
-        <TouchableOpacity
-          style={styles.referralButtonModern}
-          onPress={handleReferralPress}
-        >
+        <TouchableOpacity style={styles.referralButtonModern} onPress={handleReferralPress}>
           <Text style={styles.referralButtonText}>Refer & Earn</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -280,60 +271,15 @@ const HomeScreen = () => {
 
 const getStyles = (colors) =>
   StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: LIGHT_BACKGROUND,
-    },
-    loaderContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: colors.surface,
-    },
-    contentContainer: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: 20,
-    },
-    illustrationContainer: {
-      width: "100%",
-      height: screenHeight * 0.35,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 50,
-      marginTop: 10,
-    },
-    illustrationImage: {
-      width: "150%",
-      height: "150%",
-    },
-    mainHeading: {
-      fontSize: 28,
-      fontWeight: "900",
-      textAlign: "center",
-      color: HEADER_BLACK,
-      lineHeight: 42,
-      marginBottom: 25,
-    },
-    subText: {
-      fontSize: 16,
-      color: GRAY_TEXT,
-      textAlign: "center",
-      lineHeight: 28,
-      fontWeight: "400",
-    },
-    container: {
-      alignItems: "center",
-      paddingVertical: 20,
-      flexGrow: 1,
-    },
-    statsRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      width: screenWidth - 30,
-      marginBottom: 20,
-    },
+    safeArea: { flex: 1, backgroundColor: LIGHT_BACKGROUND },
+    loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.surface },
+    contentContainer: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 20 },
+    illustrationContainer: { width: "100%", height: screenHeight * 0.35, alignItems: "center", justifyContent: "center", marginBottom: 50 },
+    illustrationImage: { width: "150%", height: "150%" },
+    mainHeading: { fontSize: 28, fontWeight: "900", textAlign: "center", color: HEADER_BLACK, lineHeight: 42, marginBottom: 25 },
+    subText: { fontSize: 16, color: GRAY_TEXT, textAlign: "center", lineHeight: 28 },
+    container: { alignItems: "center", paddingVertical: 20, flexGrow: 1 },
+    statsRow: { flexDirection: "row", justifyContent: "space-between", width: screenWidth - 30, marginBottom: 20 },
     statCardModern: {
       flex: 1,
       alignItems: "center",
@@ -362,28 +308,9 @@ const getStyles = (colors) =>
       shadowRadius: 5,
       marginBottom: 20,
     },
-    chartTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      textAlign: "center",
-      marginBottom: 10,
-      color: colors.text,
-    },
-    statusCard: {
-      width: screenWidth - 30,
-      borderRadius: 15,
-      padding: 10,
-      marginBottom: 15,
-      elevation: 4,
-      backgroundColor: "#FFFFFF",
-    },
-    statusTitle: {
-      fontSize: 16,
-      fontWeight: "bold",
-      textAlign: "center",
-      marginBottom: 10,
-      color: colors.primary,
-    },
+    chartTitle: { fontSize: 16, fontWeight: "600", textAlign: "center", marginBottom: 10, color: colors.text },
+    statusCard: { width: screenWidth - 30, borderRadius: 15, padding: 10, marginBottom: 15, elevation: 4 },
+    statusTitle: { fontSize: 16, fontWeight: "bold", textAlign: "center", marginBottom: 10 },
     statusRowModern: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -393,10 +320,6 @@ const getStyles = (colors) =>
       marginVertical: 4,
       borderRadius: 10,
       backgroundColor: "#f9f9f9",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 3,
       elevation: 2,
     },
     statusKeyModern: { flex: 1, fontSize: 15, fontWeight: "500", color: "#333" },
@@ -408,12 +331,7 @@ const getStyles = (colors) =>
       backgroundColor: "#f2f2f2",
       borderRadius: 15,
     },
-    quoteModern: {
-      fontStyle: "italic",
-      textAlign: "center",
-      fontSize: 14,
-      color: "#555",
-    },
+    quoteModern: { fontStyle: "italic", textAlign: "center", fontSize: 14, color: "#555" },
     referralButtonModern: {
       paddingVertical: 15,
       borderRadius: 30,
