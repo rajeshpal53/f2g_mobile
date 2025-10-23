@@ -34,7 +34,7 @@ const BookingDetailsScreen = ({ route,navigation }) => {
             style={{ backgroundColor: theme.colors.primary }}
           />
           <View style={{ marginLeft: 15 }}>
-            <Text variant="titleLarge" style={styles.headerTitle}>
+            <Text variant="titleMedium" style={styles.headerTitle}>
               Booking ID: {booking.bookId}
             </Text>
             <Text variant="bodyMedium" style={styles.statusText}>
@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontWeight: "700",
     color: "#333",
+    flexWrap:"wrap"
   },
   statusText: {
     marginTop: 3,

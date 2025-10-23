@@ -14,6 +14,7 @@ import {
   setupTokenRefreshListener,
   setupBackgroundHandler,
   foregroundHandler,
+
 } from "./src/Util/NotificationHandler";
 import { useAudioPlayer } from 'expo-audio';
 
@@ -25,25 +26,26 @@ export default function App() {
 
   const audioSource = require('./assets/notification.mp3');
   const player = useAudioPlayer(audioSource);
-  //  useEffect(() => {
-  //   // Request permission and retrieve token on startup
-  //   requestUserPermission();
-  //   // Set up the token refresh listener
-  //   const unsubscribeTokenRefresh = setupTokenRefreshListener(setFcmToken);
-  //   // Clean up the token refresh listener
-  //   return () => unsubscribeTokenRefresh();
-  // }, []);
-  // useEffect(() => {
-  //   // Handle background messages
-  //     const remoteMessage=setupBackgroundHandler(player);
-  //     // playNotificationSound();
-  //     console.log('Message handled in the background:', remoteMessage);
-  // }, []);
-  // useEffect(() => {
-  //   const unsubscribeForeground = foregroundHandler(storeMessage);
-  //   console.log("unsubscribeForeground", unsubscribeForeground);
-  //   return () => unsubscribeForeground();
-  // }, []);
+  
+   useEffect(() => {
+    // Request permission and retrieve token on startup
+    requestUserPermission();
+    // Set up the token refresh listener
+    const unsubscribeTokenRefresh = setupTokenRefreshListener(setFcmToken);
+    // Clean up the token refresh listener
+    return () => unsubscribeTokenRefresh();
+  }, []);
+  useEffect(() => {
+    // Handle background messages
+      const remoteMessage=setupBackgroundHandler(player);
+      // playNotificationSound();
+      console.log('Message handled in the background:', remoteMessage);
+  }, []);
+  useEffect(() => {
+    const unsubscribeForeground = foregroundHandler(storeMessage);
+    console.log("unsubscribeForeground", unsubscribeForeground);
+    return () => unsubscribeForeground();
+  }, []);
   return (
     <SafeAreaProvider>
       <PaperProvider>

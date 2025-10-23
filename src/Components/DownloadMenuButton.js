@@ -6,17 +6,18 @@ import { useTheme } from "../Constants/Theme";
 import{useDownloadReferralBooking} from "../Util/useDownloadReferralBooking"
 import { API_BASE_URL } from "../Util/UtilApi";
 import UserDataContext from "../Store/UserDataContext";
-const DownloadMenuButton = ({buildApiUrl,mode}) => {
+const DownloadMenuButton = ({buildApiUrl,mode,filterAdded}) => {
   const [visible, setVisible] = useState(false);
     const{colors}=useTheme()
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
-    const {downloadPdfHandler, downloadExcelHandler }=useDownloadReferralBooking()
+    const {downloadPdfHandler, downloadExcelHandler,DownloadLoading }=useDownloadReferralBooking()
     const {userData} =useContext(UserDataContext)
   const handleSelect = async (type) => {
     try{
+
          let url= buildApiUrl(1,true)
-    url+=`type=${type}`
+    url+= filterAdded?`&type=${type}`:`&type=${type}`
     console.log(url,"url")
     if(type==="pdf"){
     downloadPdfHandler(`${API_BASE_URL}${url}`,mode,userData?.token)
@@ -32,6 +33,7 @@ const DownloadMenuButton = ({buildApiUrl,mode}) => {
     }
    
   };
+  
 
   return (
     <View style={styles.container}>

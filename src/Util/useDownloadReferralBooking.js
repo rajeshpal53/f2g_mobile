@@ -18,7 +18,7 @@ export const useDownloadReferralBooking = () => {
   const { saveFolderUri, setSaveFolderUri, saveFileUri, setSaveFileUri } =
     useStorageLocationContext();
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [DownloadLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     Notifications.setNotificationCategoryAsync("DOWNLOAD_CATEGORY", [
@@ -180,7 +180,7 @@ export const useDownloadReferralBooking = () => {
   };
 
   return {
-    isLoading,
+    DownloadLoading,
     downloadPdfHandler,
     downloadExcelHandler,
   };

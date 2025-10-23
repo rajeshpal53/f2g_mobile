@@ -1,88 +1,175 @@
 // src/notificationService.js
-// import messaging from '@react-native-firebase/messaging'; // 🔒 Disabled for now
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert, Platform } from 'react-native';
+import {
+  getMessaging,
+  getToken,
+  requestPermission,
+  AuthorizationStatus,
+  onTokenRefresh,
+  setBackgroundMessageHandler,
+  onMessage,
+} from "@react-native-firebase/messaging";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 
-const STORAGE_KEY = 'counter_value';
+/* ----------------------------
+   🔢 COUNTER STORAGE FUNCTIONS
+----------------------------- */
+const STORAGE_KEY = "counter_value";
 
-// Increment counter
 export const incrementValue = async () => {
   try {
     const storedValue = await AsyncStorage.getItem(STORAGE_KEY);
-    const newValue = storedValue ? parseInt(storedValue, 10) + 1 : 1;
+    let newValue = storedValue ? parseInt(storedValue, 10) + 1 : 1;
+
     await AsyncStorage.setItem(STORAGE_KEY, newValue.toString());
+    console.log("Updated Value:", newValue);
     return newValue;
   } catch (error) {
-    console.error('Error incrementing value:', error);
+    console.error("Error updating value:", error);
   }
 };
 
-// Get current counter
 export const getValue = async () => {
   try {
     const value = await AsyncStorage.getItem(STORAGE_KEY);
     return value ? parseInt(value, 10) : 0;
   } catch (error) {
-    console.error('Error fetching value:', error);
+    console.error("Error fetching value:", error);
     return 0;
   }
 };
 
-// Reset counter
 export const resetValue = async () => {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, '0');
+    await AsyncStorage.setItem(STORAGE_KEY, "0");
+    console.log("Value reset to 0");
     return 0;
   } catch (error) {
-    console.error('Error resetting value:', error);
+    console.error("Error resetting value:", error);
   }
 };
 
-// Stub for request permission (no Firebase)
+/* ----------------------------
+   🔔 NOTIFICATION PERMISSIONS
+----------------------------- */
 export const requestUserPermission = async () => {
-  console.log('🔔 Notifications disabled (Firebase messaging not configured).');
-  // Alert.alert('Notification Info', 'Notifications are currently disabled.');
-  return null;
+  try {
+    const messaging = getMessaging();
+    const authStatus = await requestPermission(messaging);
+
+    const enabled =
+      authStatus === AuthorizationStatus.AUTHORIZED ||
+      authStatus === AuthorizationStatus.PROVISIONAL;
+
+    if (enabled) {
+      console.log("Authorization status:", authStatus);
+      await getFcmToken(); // Request the token if permission is granted
+    } else {
+      Alert.alert("Notification Permission Denied");
+    }
+  } catch (error) {
+    console.error("Error requesting permission:", error);
+  }
 };
 
-// Stub for FCM token
+/* ----------------------------
+   🔑 FCM TOKEN MANAGEMENT
+----------------------------- */
 export const getFcmToken = async () => {
-  console.log('⚠️ getFcmToken called but Firebase is not active.');
-  return null;
-};
+  try {
+    const messaging = getMessaging();
+    const token = await getToken(messaging);
 
-// Stub for token refresh
-export const setupTokenRefreshListener = () => {
-  console.log('⚠️ setupTokenRefreshListener skipped (Firebase disabled).');
-  return null;
-};
-
-// Stub for foreground handler
-export const foregroundHandler = async (player) => {
-  console.log('⚠️ foregroundHandler disabled (Firebase not active).');
-  if (player) {
-    player.seekTo?.(0);
-    player.play?.();
+    if (token) {
+      await AsyncStorage.setItem("FCMToken", JSON.stringify(token));
+      console.log("FCM Token:", token);
+      return token;
+    } else {
+      console.log("Failed to get FCM token");
+    }
+  } catch (error) {
+    console.log("Error in getting FCM token:", error);
   }
 };
 
-// Stub for background handler
-export const setupBackgroundHandler = async (player) => {
-  console.log('⚠️ setupBackgroundHandler disabled (Firebase not active).');
-  if (player) {
-    player.seekTo?.(0);
-    player.play?.();
+/* ----------------------------
+   🔄 TOKEN REFRESH LISTENER
+----------------------------- */
+export const setupTokenRefreshListener = (setFcmToken) => {
+  const messaging = getMessaging();
+
+  // Return unsubscribe to clean up properly in useEffect
+  const unsubscribe = onTokenRefresh(messaging, async (token) => {
+    console.log("FCM Token refreshed:", token);
+    setFcmToken(token);
+    await AsyncStorage.setItem("FCMToken", JSON.stringify(token));
+  });
+
+  return unsubscribe;
+};
+
+/* ----------------------------
+   🔊 PLAY NOTIFICATION SOUND
+----------------------------- */
+export const playNotificationSound = async (player) => {
+  try {
+    console.log("Playing notification sound...");
+    if (player) {
+      player.seekTo(0);
+      player.play();
+    }
+  } catch (error) {
+    console.error("Error playing notification sound:", error);
   }
 };
 
-// Store incoming messages (local only)
+/* ----------------------------
+   💾 STORE INCOMING MESSAGES
+----------------------------- */
 export const storeMessage = async (message) => {
   try {
-    const existingMessages = await AsyncStorage.getItem('remoteMessages');
+    const existingMessages = await AsyncStorage.getItem("remoteMessages");
     const messages = existingMessages ? JSON.parse(existingMessages) : [];
-    messages.unshift(message);
-    await AsyncStorage.setItem('remoteMessages', JSON.stringify(messages));
+    messages.unshift(message); // Add to start
+    await AsyncStorage.setItem("remoteMessages", JSON.stringify(messages));
+    console.log("Message stored successfully");
   } catch (error) {
-    console.error('Error storing message:', error);
+    console.error("Failed to store message:", error);
   }
+};
+
+/* ----------------------------
+   💤 BACKGROUND HANDLER
+----------------------------- */
+export const setupBackgroundHandler = (player) => {
+  const messaging = getMessaging();
+
+  // Background messages can’t return unsubscribe (they persist globally)
+  setBackgroundMessageHandler(messaging, async (remoteMessage) => {
+    console.log("Background message received:", remoteMessage);
+
+    if (remoteMessage) {
+      await playNotificationSound(player);
+      await storeMessage(remoteMessage);
+      await incrementValue();
+    }
+  });
+};
+
+/* ----------------------------
+   🟢 FOREGROUND HANDLER
+----------------------------- */
+export const foregroundHandler = (storeMessageCallback, player) => {
+  const messaging = getMessaging();
+
+  // Handle messages when the app is in the foreground
+  const unsubscribe = onMessage(messaging, async (remoteMessage) => {
+    console.log("Foreground message received:", remoteMessage);
+
+    await playNotificationSound(player);
+    await storeMessageCallback(remoteMessage);
+    await incrementValue();
+  });
+
+  return unsubscribe;
 };

@@ -15,6 +15,7 @@ import { useSnackbar } from "../../Store/SnackbarContext";
 import Loader from "../../UI/Loader"; // ✅ add your loader component
 import OpenMicModal from "../../Components/Modal/Openmicmodal";
 import DownloadMenuButton from "../../Components/DownloadMenuButton";
+import { useDownloadReferralBooking } from "../../Util/useDownloadReferralBooking";
 
 const ViewBookingScreen = ({ navigation,route }) => {
   const searchBarRef = useRef();
@@ -43,14 +44,14 @@ const ViewBookingScreen = ({ navigation,route }) => {
   const [searchCalled, setSearchCalled] = useState(false);
   const [transcript, setTranscript] = useState("");
     const [searchmodal, setsearchmodal] = useState(false);
-
-
+const [filterAdded,setFilterAdded]=useState(false)
+const{DownloadLoading}= useDownloadReferralBooking();
   const buildApiUrl = (pageNum = 1, downloadUrl = false) => {
   let url = "";
 
   if (downloadUrl) {
     // Download endpoint
-    url = `booking/downloadBookings?`;
+    url = `booking/downloadBookings?page=1`;
   } else if (isAdmin) {
     // Admin view
     url = `booking?page=${pageNum}&limit=5`;
@@ -175,14 +176,36 @@ useEffect(() => {
     }
   };
 
+
+
+  useEffect(() => {
+  const hasFilters =
+    (sortBy && sortBy !== "datewise") ||
+    (dateRange?.startDate && dateRange?.endDate) ||
+    !!statusFilter ||
+    !!loanTypeFilter ||
+    !!typeFilter ||
+    (searchQuery && searchQuery.trim() !== "");
+
+  setFilterAdded(hasFilters);
+}, [sortBy, dateRange, statusFilter, loanTypeFilter, typeFilter, searchQuery]);
+
+
   return (
     <View style={styles.container}>
-      {
-          isAdmin&&(
-      <DownloadMenuButton buildApiUrl={buildApiUrl} mode={"bookings"}/>
-
-          )
-        }
+       <View style={{ backgroundColor: "red" }}>
+  {isAdmin && (
+    DownloadLoading ? (
+      <ActivityIndicator />
+    ) : (
+      <DownloadMenuButton
+        buildApiUrl={buildApiUrl}
+        mode={"referral"}
+        filterAdded={filterAdded}
+      />
+    )
+  )}
+</View>
       {/* 🔍 Search Bar */}
       <Searchbarwithmic
         searchQuery={searchQuery}
@@ -265,6 +288,7 @@ useEffect(() => {
           setLoanTypeFilter={setLoanTypeFilter}
           loanTypeFilter={loanTypeFilter}
           statusFilter={statusFilter}
+          setFilterAdded={setFilterAdded}
         />
       )}
       {searchmodal && (

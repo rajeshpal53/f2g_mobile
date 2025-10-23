@@ -24,7 +24,8 @@ const FilterModal = ({
   setStatusFilter,
   setLoanTypeFilter,
   statusFilter,
-  loanTypeFilter
+  loanTypeFilter,
+  setFilterAdded
 }) => {
   const [selectedValue, setSelectedValue] = useState(sortBy || "");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -47,6 +48,7 @@ const FilterModal = ({
     setSelectedStatus("");
     setSelectedLoanType("");
     setDateRange({ startDate: null, endDate: null });
+    setFilterAdded(false)
   };
 
    useEffect(() => {

@@ -5,13 +5,13 @@ import axios from 'axios';
 
 // "enableProguardInReleaseBuilds": true
 
-export const API_BASE_URL = "https://reservemyevent.com/fapi/";
+export const API_BASE_URL = "https://f2gfinance.com/fapi/";
 // export const API_BASE_URL = "http://192.168.1.35:2235/";
 
 //for preview:>  eas build --platform android  --profile preview
 // for development:> eas build --platform android  --profile development
 // for production:> eas build --platform android  --profile production
-export const NORM_URL="https://qwikbill.in/qapp/"
+export const NORM_URL="https://f2gfinance.in/"
 const apiRequest = async (method, url, data = null, customHeaders = {}) => {
   try {
     const userDataString = await AsyncStorage.getItem('userData');

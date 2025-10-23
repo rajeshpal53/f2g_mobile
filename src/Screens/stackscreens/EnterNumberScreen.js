@@ -105,10 +105,11 @@ export default function EnterNumberScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isForgetPasswordState, setIsForgetPasswordState] = useState(false)
-
+  const [fcmToken,setFcmToken]=useState("")
 
   useEffect(()=>{
      const token=getFcmToken()
+     setFcmToken(token)
      console.log(token,"token in enter Number Screen")
   },[])
   
@@ -182,9 +183,9 @@ const handleVerifyOtp = async () => {
         mobile:mobileNumber,
         password,
         idToken,
-        fcmtokens: FCMToken ? [FCMToken] : [],
+        fcmtokens: FCMToken ? [FCMToken] : [fcmToken],
       };
-      console.log(payload)
+      console.log(payload,"payload")
       const result = await createApi("users/signUp", payload);
       if (result?.user)
         await AsyncStorage.setItem("userData", JSON.stringify(result.user));

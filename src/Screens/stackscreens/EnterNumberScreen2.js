@@ -250,7 +250,7 @@ const EnterNumberScreen = ({ navigation, route, setIsForgetPasswordState }) => {
                   <View>
                     <Image
                       style={{ height: height * 0.4, width: "100%" }}
-                      source={require("../../../assets/create_account_image.png")}
+                      source={require("../../../assets/createaccountimage.png")}
                     />
                     {isLoading && <Loader />}
                   </View>

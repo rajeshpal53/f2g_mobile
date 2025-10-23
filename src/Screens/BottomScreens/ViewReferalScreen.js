@@ -12,6 +12,7 @@ import NoDataFound from "../../UI/NoDataFound";
 import FilterModal from "../../Components/Modal/FilterModal";
 import OpenMicModal from "../../Components/Modal/Openmicmodal";
 import DownloadMenuButton from "../../Components/DownloadMenuButton";
+import { useDownloadReferralBooking } from "../../Util/useDownloadReferralBooking";
 const ViewReferralScreen = ({ navigation,route }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [referral, setReferral] = useState([]);
@@ -24,6 +25,8 @@ const ViewReferralScreen = ({ navigation,route }) => {
   const {isAdmin}=route?.params||false
 const [transcript, setTranscript] = useState("");
   const [searchmodal, setsearchmodal] = useState(false);
+  const [filterAdded,setFilterAdded]=useState(false)
+  const {DownloadLoading}=useDownloadReferralBooking()
   // pagination states
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +38,7 @@ const [transcript, setTranscript] = useState("");
   const { userData } = useContext(UserDataContext);
   const isFocused = useIsFocused();
   const { colors } = useTheme();
+  
 
   // Build API URL dynamically
  const buildApiUrl = (pageNum = 1, downloadUrl = false) => {
@@ -42,7 +46,7 @@ const [transcript, setTranscript] = useState("");
 
   if (downloadUrl) {
     // Download endpoint
-    url = `refferal/downloadRefferals?`;
+    url = `refferal/downloadRefferals?page=1`;
   } else if (isAdmin) {
     // Admin view
     url = `refferal?page=${pageNum}&limit=5`;
@@ -99,6 +103,18 @@ const [transcript, setTranscript] = useState("");
       setMainLoading(false);
     }
   };
+   useEffect(() => {
+    const hasFilters =
+      (sortBy && sortBy !== "datewise") ||
+      (dateRange?.startDate && dateRange?.endDate) ||
+      !!statusFilter ||
+      !!loanTypeFilter ||
+      !!typeFilter ||
+      (searchQuery && searchQuery.trim() !== "");
+  
+    setFilterAdded(hasFilters);
+  }, [sortBy, dateRange, statusFilter, loanTypeFilter, typeFilter, searchQuery]);
+  
 
   // 🔹 Initial or filter change load
   useEffect(() => {
@@ -136,16 +152,23 @@ const [transcript, setTranscript] = useState("");
     }
   };
 
+  
+
   return (
     <View style={styles.container}>
-      <View style={{backgroundColor:"red"}}>
-        {
-          isAdmin&&(
-      <DownloadMenuButton buildApiUrl={buildApiUrl} mode={"referral"}/>
-
-          )
-        }
-      </View>
+     <View style={{ backgroundColor: "red" }}>
+  {isAdmin && (
+    DownloadLoading ? (
+      <ActivityIndicator />
+    ) : (
+      <DownloadMenuButton
+        buildApiUrl={buildApiUrl}
+        mode={"referral"}
+        filterAdded={filterAdded}
+      />
+    )
+  )}
+</View>
       {/* <Button style={{position:"absolute" ,top:-50 , right:5, zIndex:120, height:100}}> <MaterialIcons name="download" size={35} /></Button> */}
       <Searchbarwithmic
         searchQuery={searchQuery}
@@ -218,6 +241,7 @@ const [transcript, setTranscript] = useState("");
           setLoanTypeFilter={setLoanTypeFilter}
           statusFilter={statusFilter}
           loanTypeFilter={loanTypeFilter}
+          setFilterAdded={setFilterAdded}
         />
       )}
       {searchmodal && (

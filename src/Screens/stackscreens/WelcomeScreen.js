@@ -38,7 +38,7 @@ export default function WelcomeScreen({ navigation }) {
       <View style={styles.mainContent}>
         <View style={styles.illustrationWrapper}>
           <Image
-            source={require('../../../assets/coinpay_credit_cards.png')}
+            source={require('../../../assets/coinpayCreditCards.png')}
             style={styles.illustration}
             resizeMode="contain"
           />

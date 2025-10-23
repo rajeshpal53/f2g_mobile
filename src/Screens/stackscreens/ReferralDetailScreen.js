@@ -27,13 +27,13 @@ const ReferralDetailScreen = ({ route, navigation }) => {
       <Card style={styles.headerCard}>
         <Card.Content style={styles.headerContent}>
           <Avatar.Icon
-            size={50}
+            size={40}
             icon="account-arrow-right"
             color="white"
             style={{ backgroundColor: theme.colors.primary }}
           />
           <View style={{ marginLeft: 15 }}>
-            <Text variant="titleLarge" style={styles.headerTitle}>
+            <Text variant="titleMedium" style={styles.headerTitle}>
               Referral ID: {referral.refId}
             </Text>
             <Text variant="bodyMedium" style={[styles.statusText,{color:statusColors[status]}]}>
@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontWeight: "700",
     color: "#333",
+    flexWrap:"wrap"
   },
   statusText: {
     marginTop: 3,

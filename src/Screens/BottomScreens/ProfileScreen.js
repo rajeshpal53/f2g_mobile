@@ -121,7 +121,7 @@ export default function ProfileScreen({ navigation }) {
   const handlePress = (value) => {
     if (value === "needMoreHelp") {
       navigation.navigate("FeedbackandHelp", {
-        webUri: `${NORM_URL}qapp/helpandsupport?view=mobile`,
+        webUri: `${NORM_URL}/helpandsupport?view=mobile`,
         headerTitle: "Help & Support",
       });
     } else if (value === "AdminSection") {
