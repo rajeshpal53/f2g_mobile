@@ -85,17 +85,22 @@ export default function WelcomeScreen({ navigation }) {
         >
           <Text style={[styles.buttonText, { color: colors.accent }]}>Log in</Text>
         </TouchableOpacity>
-
+        
         <Text style={[styles.termsText, { color: colors.muted }]}>
           By continuing you accept our{' '}
           <Text style={[styles.linkText, { color: colors.accent }]}>Terms of Service</Text> and{' '}
-          <Text style={[styles.linkText, { color: colors.accent }]}>Privacy Policy</Text>
+          <Text style={[styles.linkText, { color: colors.accent }] } onPress={()=>{ navigation.navigate("Policies", {
+          webUri: "https://qwikbill.in/qapp/privacy-policy?view=desktop",
+          headerTitle: "Privacy and Policies",
+        })}}
+>Privacy Policy</Text>
         </Text>
       </View>
     </SafeAreaView>
   );
 }
 
+ 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,

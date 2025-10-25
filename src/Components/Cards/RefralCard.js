@@ -1,40 +1,76 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Card, Text } from "react-native-paper";
-import { selectLoanFromId,statusById,colorByStatusFk} from  "../../Util/UtilApi"
+import { selectLoanFromId, statusById, colorByStatusFk } from "../../Util/UtilApi";
+import { useTheme } from "../../Constants/Theme";
 
-
-const ReferralCard = ({ referral,navigation,isAdmin }) => {
-  // const statusColor = statusColors[referral.status] || "#9CA3AF";
+const ReferralCard = ({ referral, navigation, isAdmin }) => {
+  const { colors, dark } = useTheme();
 
   return (
-    <Card style={styles.card} onPress={()=>{ navigation.navigate("ReferralDetailScreen",{referral:referral,isAdmin})}}>
+    <Card
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.outline },
+      ]}
+      onPress={() => {
+        navigation.navigate("ReferralDetailScreen", { referral, isAdmin });
+      }}
+    >
       <Card.Content style={styles.content}>
+        {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.name}>{referral.name}</Text>
-            <Text style={styles.refId}>Ref ID: {referral.refId}</Text>
-            <Text  style={styles.loanType}> {referral?.user?.mobile} </Text>
+            <Text style={[styles.name, { color: colors.text }]}>{referral.name}</Text>
+            <Text style={[styles.refId, { color: colors.textSecondary }]}>
+              Ref ID: {referral.refId}
+            </Text>
+            <Text style={[styles.loanType, { color: colors.primary }]}>
+              {referral?.user?.mobile}
+            </Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: colorByStatusFk(referral?.statusfk) }]}>
-            <Text style={styles.statusText}>{statusById[referral.statusfk]}</Text>
+
+          {/* Status */}
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: colorByStatusFk(referral?.statusfk) },
+            ]}
+          >
+            <Text style={styles.statusText}>
+              {statusById[referral.statusfk]}
+            </Text>
           </View>
         </View>
 
+        {/* Loan Info */}
         <View style={styles.infoRow}>
-          <Text style={styles.loanType}>{selectLoanFromId[referral.loantypefk]}</Text>
-          <Text style={styles.loanAmount}>₹{referral.loanAmount.toLocaleString()}</Text>
+          <Text style={[styles.loanType, { color: colors.primary }]}>
+            {selectLoanFromId[referral.loantypefk]}
+          </Text>
+          <Text style={[styles.loanAmount, { color: colors.text }]}>
+            ₹{referral.loanAmount.toLocaleString()}
+          </Text>
         </View>
 
-        <Text style={styles.address} numberOfLines={2}>
+        {/* Address */}
+        <Text
+          style={[styles.address, { color: colors.text }]}
+          numberOfLines={2}
+        >
           {referral.address}
         </Text>
 
-        <Text style={styles.remark} numberOfLines={2}>
+        {/* Remark */}
+        <Text
+          style={[styles.remark, { color: colors.text }]}
+          numberOfLines={2}
+        >
           {referral.remark}
         </Text>
 
-        <Text style={styles.date}>
+        {/* Date */}
+        <Text style={[styles.date, { color: colors.textSecondary }]}>
           {new Date(referral.createdAt).toLocaleDateString()}
         </Text>
       </Card.Content>
@@ -47,7 +83,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginVertical: 6,
     borderRadius: 10,
-    backgroundColor: "#fff",
+    borderWidth: 1,
     elevation: 2,
     paddingVertical: 6,
   },
@@ -62,10 +98,8 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#111827",
   },
   refId: {
-    color: "#6B7280",
     fontSize: 12,
   },
   statusBadge: {
@@ -85,28 +119,23 @@ const styles = StyleSheet.create({
   },
   loanType: {
     fontSize: 14,
-    color: "#1E3A8A",
     fontWeight: "500",
   },
   loanAmount: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#111827",
   },
   address: {
     marginTop: 4,
     fontSize: 13,
-    color: "#374151",
   },
   remark: {
     marginTop: 2,
     fontSize: 13,
-    color: "#6B7280",
   },
   date: {
     marginTop: 4,
     fontSize: 12,
-    color: "#9CA3AF",
     textAlign: "right",
   },
 });

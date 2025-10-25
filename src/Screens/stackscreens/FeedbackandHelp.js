@@ -327,22 +327,38 @@ const FeedbackandHelp = ({navigation}) => {
             )}
 
             {/* Upload Screenshot */}
-            <TouchableOpacity style={styles.uploadBox} onPress={pickFile}>
-              {fileUri?.uri ? (
-                <Image source={{ uri: fileUri.uri }} style={styles.preview} />
-              ) : (
-                <View style={{ alignItems: "center", justifyContent: "center" }}>
-                  <MaterialCommunityIcons
-                    name="file-upload-outline"
-                    size={40}
-                    color="#007BFF"
-                  />
-                  <Text style={[styles.uploadText, { color: "#007BFF" }]}>
-                    Upload a Screenshot (Optional)
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            <View style={styles.uploadBox}>
+  {fileUri?.uri ? (
+    <View style={{ width: "100%", height: "100%" }}>
+      {/* Uploaded Image */}
+      <Image source={{ uri: fileUri.uri }} style={styles.preview} />
+
+      {/* ❌ Cross Icon */}
+      <TouchableOpacity
+        style={styles.removeIcon}
+        onPress={() => setFileUri(null)}
+      >
+        <MaterialCommunityIcons name="close-circle" size={26} color="#FF3B30" />
+      </TouchableOpacity>
+    </View>
+  ) : (
+    <TouchableOpacity
+      style={styles.uploadContent}
+      onPress={pickFile}
+      activeOpacity={0.8}
+    >
+      <MaterialCommunityIcons
+        name="file-upload-outline"
+        size={40}
+        color="#007BFF"
+      />
+      <Text style={[styles.uploadText, { color: "#007BFF" }]}>
+        Upload a Screenshot (Optional)
+      </Text>
+    </TouchableOpacity>
+  )}
+</View>
+
 
             {/* Submit Button */}
             <Button
@@ -412,18 +428,55 @@ const feedbackStyles = (colors) =>
       borderRadius: 10,
     },
     uploadBox: {
-      borderWidth: 1,
-      borderStyle: "dashed",
-      borderRadius: 10,
-      height: 150,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 25,
-      borderColor: colors.border,
-      backgroundColor: colors.helpBackground,
-    },
-    uploadText: { fontWeight: "500", fontSize: 15 },
-    preview: { width: "100%", height: "100%", borderRadius: 10 },
+  borderWidth: 1,
+  borderStyle: "dashed",
+  borderRadius: 10,
+  height: 160,
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: 25,
+  borderColor: colors.border,
+  backgroundColor: colors.helpBackground,
+  overflow: "hidden",
+  position: "relative",
+},
+
+uploadContent: {
+  alignItems: "center",
+  justifyContent: "center",
+  height: "100%",
+  width: "100%",
+},
+
+preview: {
+  width: "100%",
+  height: "100%",
+  borderRadius: 10,
+  resizeMode: "cover",
+},
+
+removeIcon: {
+  position: "absolute",
+  top: 8,
+  right: 8,
+  backgroundColor: "#FFF",
+  borderRadius: 50,
+  padding: 2,
+  elevation: 4,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.25,
+  shadowRadius: 2,
+},
+
+uploadText: {
+  fontWeight: "500",
+  fontSize: 15,
+  marginTop: 6,
+  textAlign: "center",
+},
+
+    
     submitButton: {
       borderRadius: 10,
       paddingVertical: 8,
@@ -447,6 +500,8 @@ const feedbackStyles = (colors) =>
       borderBottomWidth: 0.5,
       borderBottomColor: colors.border,
     },
+   
+    
   });
 
 export default FeedbackandHelp;

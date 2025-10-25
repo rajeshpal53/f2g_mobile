@@ -51,7 +51,7 @@ const LoginScreen = ({ navigation }) => {
       resetForm();
       }
     } catch (err) {
-       showSnackbar(`Login failed ${err?.err}`,"error")
+       showSnackbar(`Login failed ${err?.data?.message}`,"error")
       console.log(err);
     }
   };
@@ -66,7 +66,7 @@ const LoginScreen = ({ navigation }) => {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
           contentContainerStyle={{
@@ -172,7 +172,7 @@ const LoginScreen = ({ navigation }) => {
                   )}
 
                   {/* FORGOT PASSWORD */}
-                  <TouchableOpacity style={styles.linkButton}>
+                  <TouchableOpacity style={styles.linkButton} onPress={()=>{navigation.navigate("EnterNumberScreen",{isForgetPassword:true})}}>
                     <Text style={[styles.linkText, { color: colors.accent }]}>
                       Forgot Password?
                     </Text>

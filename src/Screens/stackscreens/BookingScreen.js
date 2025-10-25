@@ -99,7 +99,7 @@ const BookingScreen = ({navigation,route}) => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
@@ -297,7 +297,9 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                   mode="outlined"
                   style={styles.input}
                   activeOutlineColor={colors.primary}
-                  onChangeText={handleChange("city")}
+                 onChangeText={(text) => {
+    if (text.length <= 100) setFieldValue("city", text);
+  }}
                   onBlur={handleBlur("city")}
                   value={values.city}
                   error={touched.city && errors.city}
@@ -312,7 +314,11 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                   style={styles.input}
                   keyboardType="numeric"
                   activeOutlineColor={colors.primary}
-                  onChangeText={handleChange("pincode")}
+                 onChangeText={(text) => {
+                    // only allow up to 6 digits and no letters
+                    const cleaned = text.replace(/[^0-9]/g, "").slice(0, 6);
+                    setFieldValue("pincode", cleaned);
+                  }}
                   onBlur={handleBlur("pincode")}
                   value={values.pincode}
                   error={touched.pincode && errors.pincode}

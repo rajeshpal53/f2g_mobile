@@ -46,6 +46,9 @@ const ViewBookingScreen = ({ navigation,route }) => {
     const [searchmodal, setsearchmodal] = useState(false);
 const [filterAdded,setFilterAdded]=useState(false)
 const{DownloadLoading}= useDownloadReferralBooking();
+
+
+const styles=Bookingstyles(colors)
   const buildApiUrl = (pageNum = 1, downloadUrl = false) => {
   let url = "";
 
@@ -192,7 +195,7 @@ useEffect(() => {
 
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{backgroundColor:colors?.background}]}>
        <View style={{ backgroundColor: "red" }}>
   {isAdmin && (
     DownloadLoading ? (
@@ -302,17 +305,17 @@ useEffect(() => {
   );
 };
 
-const styles = StyleSheet.create({
+const Bookingstyles =(colors)=> StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors?.backgroundColor,
     paddingVertical: 10,
   },
   addFab: {
     position: "absolute",
     bottom: 30,
     right: 16,
-    backgroundColor: "#007BFF",
+    backgroundColor: colors?.main,
     borderRadius: 13,
     elevation: 5,
   },
@@ -321,7 +324,7 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 3,
     bottom: 90,
-    backgroundColor: "#26a0df",
+    backgroundColor: colors?.fab,
   },
 });
 

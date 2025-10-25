@@ -1,17 +1,21 @@
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Card, Text, Divider, Avatar, Button } from "react-native-paper";
+import { Card, Text, Divider, Avatar, Button, useTheme as usePaperTheme } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useTheme } from "../../Constants/Theme";
+import { useTheme } from "../../Constants/Theme"; // your custom theme hook
 import { selectLoanFromId } from "../../Util/UtilApi";
-const BookingDetailsScreen = ({ route,navigation }) => {
-  const { booking,isAdmin } = route.params;
-  const theme = useTheme();
+
+const BookingDetailsScreen = ({ route, navigation }) => {
+  const { booking, isAdmin } = route.params;
+  const { colors, isDark } = useTheme();
+  const paperTheme = usePaperTheme();
 
   if (!booking) {
     return (
-      <View style={styles.center}>
-        <Text variant="titleMedium">No booking data found</Text>
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Text variant="titleMedium" style={{ color: colors.text }}>
+          No booking data found
+        </Text>
       </View>
     );
   }
@@ -20,24 +24,24 @@ const BookingDetailsScreen = ({ route,navigation }) => {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={{ paddingBottom: 40 }}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <Card style={styles.headerCard}>
+      <Card style={[styles.headerCard, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
         <Card.Content style={styles.headerContent}>
           <Avatar.Icon
             size={50}
             icon="file-document-outline"
             color="white"
-            style={{ backgroundColor: theme.colors.primary }}
+            style={{ backgroundColor: colors.primary }}
           />
           <View style={{ marginLeft: 15 }}>
-            <Text variant="titleMedium" style={styles.headerTitle}>
+            <Text variant="titleMedium" style={[styles.headerTitle, { color: colors.text }]}>
               Booking ID: {booking.bookId}
             </Text>
-            <Text variant="bodyMedium" style={styles.statusText}>
+            <Text variant="bodyMedium" style={[styles.statusText, { color: colors.success }]}>
               Status: {booking.status?.status || "Pending"}
             </Text>
           </View>
@@ -45,87 +49,93 @@ const BookingDetailsScreen = ({ route,navigation }) => {
       </Card>
 
       {/* Customer Info */}
-      <Card style={styles.sectionCard}>
+      <Card style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
         <Card.Title
           title="Customer Details"
+          titleStyle={{ color: colors.text }}
           left={(props) => (
-            <MaterialIcons name="person" size={26} color={theme.colors.primary} />
+            <MaterialIcons name="person" size={26} color={colors.primary} />
           )}
         />
-        <Divider />
+        <Divider style={{ backgroundColor: colors.border }} />
         <Card.Content>
-          <DetailRow label="Name" value={booking.user?.name} />
-          <DetailRow label="Mobile" value={booking.user?.mobile} />
-          <DetailRow label="Address" value={booking.user?.address} />
+          <DetailRow label="Name" value={booking.user?.name} colors={colors} />
+          <DetailRow label="Mobile" value={booking.user?.mobile} colors={colors} />
+          <DetailRow label="Address" value={booking.user?.address} colors={colors} />
         </Card.Content>
       </Card>
 
       {/* Booking Info */}
-      <Card style={styles.sectionCard}>
+      <Card style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
         <Card.Title
           title="Booking Information"
+          titleStyle={{ color: colors.text }}
           left={(props) => (
-            <MaterialIcons name="event-note" size={26} color={theme.colors.primary} />
+            <MaterialIcons name="event-note" size={26} color={colors.primary} />
           )}
         />
-        <Divider />
+        <Divider style={{ backgroundColor: colors.border }} />
         <Card.Content>
-          <DetailRow label="Loan Type" value={selectLoanFromId[booking.loantypefk]} />
-          <DetailRow label="Loan Account Number" value={booking.loanAccountNumber} />
-          <DetailRow label="Booking Amount" value={`₹${booking.bookingAmount}`} />
-          <DetailRow label="Tentative Bill" value={`₹${booking.tentativeBillAmount}`} />
-          <DetailRow label="Booked By" value={booking.bookedBy || "N/A"} />
-          <DetailRow label="Address" value={booking.address} />
+          <DetailRow label="Loan Type" value={selectLoanFromId[booking.loantypefk]} colors={colors} />
+          <DetailRow label="Loan Account Number" value={booking.loanAccountNumber} colors={colors} />
+          <DetailRow label="Booking Amount" value={`₹${booking.bookingAmount}`} colors={colors} />
+          <DetailRow label="Tentative Bill" value={`₹${booking.tentativeBillAmount}`} colors={colors} />
+          <DetailRow label="Booked By" value={booking.bookedBy || "N/A"} colors={colors} />
+          <DetailRow label="Address" value={booking.address} colors={colors} />
         </Card.Content>
       </Card>
 
       {/* Booked By User Info */}
       {bookedByUser && (
-        <Card style={styles.sectionCard}>
+        <Card style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
           <Card.Title
-            title="Booked By "
+            title="Booked By"
+            titleStyle={{ color: colors.text }}
             left={(props) => (
-              <MaterialIcons name="supervisor-account" size={26} color={theme.colors.primary} />
+              <MaterialIcons name="supervisor-account" size={26} color={colors.primary} />
             )}
           />
-          <Divider />
+          <Divider style={{ backgroundColor: colors.border }} />
           <Card.Content>
-            <DetailRow label="Mobile" value={bookedByUser.mobile} />
-            {bookedByUser.name && <DetailRow label="Name" value={bookedByUser.name} />}
-            {bookedByUser.email && <DetailRow label="Email" value={bookedByUser.email} />}
-            {bookedByUser.address && <DetailRow label="Address" value={bookedByUser.address} />}
+            <DetailRow label="Mobile" value={bookedByUser.mobile} colors={colors} />
+            {bookedByUser.name && <DetailRow label="Name" value={bookedByUser.name} colors={colors} />}
+            {bookedByUser.email && <DetailRow label="Email" value={bookedByUser.email} colors={colors} />}
+            {bookedByUser.address && <DetailRow label="Address" value={bookedByUser.address} colors={colors} />}
           </Card.Content>
         </Card>
-        
       )}
-      {
-        
-     <Button 
-            disabled={!isAdmin&&booking?.statusfk>2?true:false}
-     onPress={()=>{navigation.navigate("BookingScreen",{editBooking:booking,isAdmin})}}
-     mode="contained" 
-     labelStyle={{fontSize:16}} 
-     icon={"pencil"}
-     style={{width:"80%",
-                opacity:!isAdmin&&booking?.statusfk>2?0.8:1,
-      alignSelf:"center",backgroundColor:theme?.colors?.main,borderRadius:8}} >Edit Booking</Button>
-        
-        }
+
+      {/* Edit Button */}
+      <Button
+        disabled={!isAdmin && booking?.statusfk > 2}
+        onPress={() => navigation.navigate("BookingScreen", { editBooking: booking, isAdmin })}
+        mode="contained"
+        labelStyle={{ fontSize: 16 }}
+        icon="pencil"
+        style={{
+          width: "80%",
+          alignSelf: "center",
+          borderRadius: 8,
+          opacity: !isAdmin && booking?.statusfk > 2 ? 0.6 : 1,
+          backgroundColor: colors.main,
+        }}
+      >
+        Edit Booking
+      </Button>
     </ScrollView>
   );
 };
 
-const DetailRow = ({ label, value }) => (
+const DetailRow = ({ label, value, colors }) => (
   <View style={styles.detailRow}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.value}>{value || "-"}</Text>
+    <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
+    <Text style={[styles.value, { color: colors.text }]}>{value || "-"}</Text>
   </View>
 );
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAFAFA",
     paddingHorizontal: 12,
     paddingTop: 16,
   },
@@ -137,7 +147,6 @@ const styles = StyleSheet.create({
   headerCard: {
     borderRadius: 16,
     marginBottom: 18,
-    backgroundColor: "#fff",
     elevation: 3,
   },
   headerContent: {
@@ -146,18 +155,15 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontWeight: "700",
-    color: "#333",
-    flexWrap:"wrap"
+    flexWrap: "wrap",
   },
   statusText: {
     marginTop: 3,
-    color: "#4CAF50",
     fontWeight: "600",
   },
   sectionCard: {
     borderRadius: 16,
     marginBottom: 16,
-    backgroundColor: "#fff",
     elevation: 2,
   },
   detailRow: {
@@ -167,11 +173,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: "600",
-    color: "#555",
   },
   value: {
     fontWeight: "500",
-    color: "#222",
     maxWidth: "55%",
     textAlign: "right",
   },

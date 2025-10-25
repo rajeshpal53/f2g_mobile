@@ -17,13 +17,14 @@ import {
 
 } from "./src/Util/NotificationHandler";
 import { useAudioPlayer } from 'expo-audio';
+import { useTheme } from "./src/Constants/Theme";
 
 
 SplashScreen.preventAutoHideAsync(); // 👈 Keep splash visible until ready
 
 export default function App() {
   const [fcmToken,setFcmToken]=useState('')
-
+  const {theme}=useTheme();
   const audioSource = require('./assets/notification.mp3');
   const player = useAudioPlayer(audioSource);
   
@@ -48,7 +49,7 @@ export default function App() {
   }, []);
   return (
     <SafeAreaProvider>
-      <PaperProvider>
+      <PaperProvider theme={theme} >
         <StorageLocationProvider>
                   <SnackbarProvider>
           <UserDataProvider>

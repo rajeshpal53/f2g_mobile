@@ -123,7 +123,7 @@ const [transcript, setTranscript] = useState("");
       setHasMore(true);
       fetchReferrals(1, true);
     }
-  }, [sortBy, typeFilter, statusFilter, dateRange, isFocused]);
+  }, [sortBy, typeFilter, statusFilter, dateRange, isFocused,loanTypeFilter]);
 
   // 🔹 Pagination loader
   useEffect(() => {
@@ -155,7 +155,7 @@ const [transcript, setTranscript] = useState("");
   
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{backgroundColor:colors?.background}]}>
      <View style={{ backgroundColor: "red" }}>
   {isAdmin && (
     DownloadLoading ? (

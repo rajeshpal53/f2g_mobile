@@ -14,6 +14,7 @@ import {
 import { Searchbar } from "react-native-paper";
 import { fontSize } from "../Util/UtilApi";
 import { useSnackbar } from "../Store/SnackbarContext";
+import { useTheme } from "../Constants/Theme";
 
 const Searchbarwithmic = ({
   searchQuery,
@@ -33,7 +34,7 @@ const Searchbarwithmic = ({
   const [stopPlaceHolder, setStopPlaceHolder] = useState(false);
   const { showSnackbar } = useSnackbar();
   const isArray = Array.isArray(placeholderText);
-
+  const {colors}=useTheme()
   // ✅ Request microphone permission
   const requestMicrophonePermission = async () => {
     if (Platform.OS === "android") {
@@ -151,7 +152,7 @@ const Searchbarwithmic = ({
       <View style={styles.container}>
         <Searchbar
           ref={refuser || null}
-          style={styles.searchbar}
+          style={[styles.searchbar,{backgroundColor:colors?.background}]}
           numberOfLines={1}
           placeholder={SelectedPlaceholderText || "Search for ..."}
           onFocus={() => setStopPlaceHolder(true)}

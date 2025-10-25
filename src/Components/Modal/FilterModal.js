@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,8 @@ import {
 import { AntDesign } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
-import { statusOptions, loanTypes } from "../../Util/UtilApi"; // Import your options
+import { useTheme } from "../../Constants/Theme";
+import { statusOptions, loanTypes } from "../../Util/UtilApi";
 
 const FilterModal = ({
   isModalVisible,
@@ -25,8 +26,10 @@ const FilterModal = ({
   setLoanTypeFilter,
   statusFilter,
   loanTypeFilter,
-  setFilterAdded
+  setFilterAdded,
 }) => {
+  const { colors, isDark } = useTheme();
+
   const [selectedValue, setSelectedValue] = useState(sortBy || "");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedLoanType, setSelectedLoanType] = useState("");
@@ -48,10 +51,10 @@ const FilterModal = ({
     setSelectedStatus("");
     setSelectedLoanType("");
     setDateRange({ startDate: null, endDate: null });
-    setFilterAdded(false)
+    setFilterAdded(false);
   };
 
-   useEffect(() => {
+  useEffect(() => {
     if (isModalVisible) {
       setSelectedStatus(statusFilter || "");
       setSelectedLoanType(loanTypeFilter || "");
@@ -91,38 +94,64 @@ const FilterModal = ({
   return (
     <Modal
       animationType="slide"
-      transparent={true}
+      transparent
       visible={isModalVisible}
       onRequestClose={() => setModalVisible(false)}
     >
       <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-        <View style={styles.modalContainer}>
+        <View
+          style={[
+            styles.modalContainer,
+            { backgroundColor: colors.modalBackground },
+          ]}
+        >
           <TouchableWithoutFeedback>
-            <View style={styles.modalContent}>
+            <View
+              style={[
+                styles.modalContent,
+                { backgroundColor: colors.surface, shadowColor: colors.shadow },
+              ]}
+            >
               {/* Close Button */}
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setModalVisible(false)}
               >
-                <AntDesign name="close" size={24} color="black" />
+                <AntDesign name="close" size={24} color={colors.text} />
               </TouchableOpacity>
 
               {/* Remove Filter Button */}
               <TouchableOpacity
-                style={styles.removeFilterButton}
+                style={[
+                  styles.removeFilterButton,
+                  { backgroundColor: colors.danger },
+                ]}
                 onPress={handleRemoveFilter}
               >
-                <Text style={styles.removeFilterText}>Remove Filter</Text>
+                <Text style={[styles.removeFilterText, { color: colors.surface }]}>
+                  Remove Filter
+                </Text>
               </TouchableOpacity>
 
-              <Text style={styles.modalTitle}>Select Filter</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                Select Filter
+              </Text>
 
               {/* Date Filters */}
               <View style={styles.optionList}>
                 {dateFilters.map((option, index) => (
                   <TouchableOpacity
                     key={index}
-                    style={styles.optionItem}
+                    style={[
+                      styles.optionItem,
+                      {
+                        backgroundColor:
+                          selectedValue === option.value
+                            ? colors.selected
+                            : colors.itemBackground,
+                        borderColor: colors.border,
+                      },
+                    ]}
                     onPress={() => {
                       setSelectedValue(option.value);
                       if (option.value === "datewise") setShowStartDatePicker(true);
@@ -136,9 +165,11 @@ const FilterModal = ({
                     <Text
                       style={[
                         styles.optionText,
-                        selectedValue === option.value && {
-                          fontWeight: "bold",
-                          color: "#6200EA",
+                        {
+                          color:
+                            selectedValue === option.value
+                              ? colors.primary
+                              : colors.text,
                         },
                       ]}
                     >
@@ -149,40 +180,68 @@ const FilterModal = ({
               </View>
 
               {/* Status Filter */}
-              <View style={styles.pickerContainer}>
+              <View
+                style={[
+                  styles.pickerContainer,
+                  {
+                    borderColor: colors.border,
+                    backgroundColor: colors.itemBackground,
+                  },
+                ]}
+              >
                 <Picker
                   selectedValue={selectedStatus}
                   onValueChange={(value) => {
                     setSelectedStatus(value);
                     setStatusFilter(value);
                   }}
+                  dropdownIconColor={colors.text}
                 >
-                  <Picker.Item label="Select Status" value="" />
+                  <Picker.Item
+                    label="Select Status"
+                    value=""
+                    color={colors.textSecondary}
+                  />
                   {statusOptions.map((option, index) => (
                     <Picker.Item
                       key={index}
                       label={option.label}
                       value={option.id}
+                      color={colors.text}
                     />
                   ))}
                 </Picker>
               </View>
 
               {/* Loan Type Filter */}
-              <View style={styles.pickerContainer}>
+              <View
+                style={[
+                  styles.pickerContainer,
+                  {
+                    borderColor: colors.border,
+                    backgroundColor: colors.itemBackground,
+                  },
+                ]}
+              >
                 <Picker
                   selectedValue={selectedLoanType}
                   onValueChange={(value) => {
                     setSelectedLoanType(value);
                     setLoanTypeFilter(value);
                   }}
+                  dropdownIconColor={colors.text}
                 >
-                  <Picker.Item label="Select Loan Type" value="" />
+                  <Picker.Item
+                    label="Select Loan Type"
+                    value=""
+                    color={colors.textSecondary}
+                  />
                   {loanTypes.map((option, index) => (
                     <Picker.Item
                       key={index}
                       label={option.label}
                       value={option.id}
+                      color={colors.text}
                     />
                   ))}
                 </Picker>
@@ -216,17 +275,25 @@ const FilterModal = ({
 
                   {dateRange.startDate && dateRange.endDate && (
                     <View style={styles.dateDisplayContainer}>
-                      <Text style={styles.dateText}>
+                      <Text style={[styles.dateText, { color: colors.text }]}>
                         Start Date: {formatDate(dateRange.startDate)}
                       </Text>
-                      <Text style={styles.dateText}>
+                      <Text style={[styles.dateText, { color: colors.text }]}>
                         End Date: {formatDate(dateRange.endDate)}
                       </Text>
                     </View>
                   )}
 
-                  <TouchableOpacity style={styles.okayButton} onPress={handleSubmit}>
-                    <Text style={styles.okayButtonText}>OK</Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.okayButton,
+                      { backgroundColor: colors.primary },
+                    ]}
+                    onPress={handleSubmit}
+                  >
+                    <Text style={[styles.okayButtonText, { color: colors.surface }]}>
+                      OK
+                    </Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -242,57 +309,54 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: "white",
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    minHeight: 250,
+    minHeight: 300,
     alignItems: "center",
-    position: "relative",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 4,
   },
   closeButton: { position: "absolute", top: 15, right: 15 },
   removeFilterButton: {
     position: "absolute",
     top: 15,
     left: 15,
-    backgroundColor: "#f44336",
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 8,
   },
-  removeFilterText: { color: "white", fontWeight: "bold" },
-  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
-  optionList: { width: "100%", marginBottom: 10 },
+  removeFilterText: { fontWeight: "bold" },
+  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 15 },
+  optionList: { width: "100%", marginBottom: 12 },
   optionItem: {
     paddingVertical: 12,
     paddingHorizontal: 10,
-    backgroundColor: "#f0f0f0",
-    marginBottom: 5,
-    borderRadius: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 8,
     alignItems: "center",
   },
   optionText: { fontSize: 16 },
   pickerContainer: {
     width: "100%",
-    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 10,
     overflow: "hidden",
   },
   dateDisplayContainer: { marginTop: 10, alignItems: "center" },
-  dateText: { fontSize: 16, marginBottom: 5 },
+  dateText: { fontSize: 15, marginBottom: 4 },
   okayButton: {
     marginTop: 20,
-    backgroundColor: "#6200EA",
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
     borderRadius: 10,
   },
-  okayButtonText: { color: "white", fontSize: 16 },
+  okayButtonText: { fontSize: 16, fontWeight: "600" },
 });
 
 export default FilterModal;

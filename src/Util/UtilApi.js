@@ -11,7 +11,7 @@ export const API_BASE_URL = "https://f2gfinance.com/fapi/";
 //for preview:>  eas build --platform android  --profile preview
 // for development:> eas build --platform android  --profile development
 // for production:> eas build --platform android  --profile production
-export const NORM_URL="https://f2gfinance.in/"
+export const NORM_URL="https://f2gfinance.com/"
 const apiRequest = async (method, url, data = null, customHeaders = {}) => {
   try {
     const userDataString = await AsyncStorage.getItem('userData');

@@ -1,11 +1,12 @@
-import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import React from "react";
+import { View, Text, StyleSheet, Platform } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { useTheme } from "../../Constants/Theme";
 
 const GenericDropdown = ({
   label,
   dropDownlabelStyle,
-  options,
+  options = [],
   selectedValue,
   onValueChange,
   containerStyle,
@@ -13,17 +14,25 @@ const GenericDropdown = ({
   pickerStyle,
   fontStyles,
   placeholder = "Select an option",
-  EditMode=false
+  EditMode = false,
 }) => {
-  console.log(selectedValue)
+  const { colors, isDark } = useTheme();
+
   return (
-    <View style={containerStyle}>
+    <View style={[styles.container, containerStyle]}>
+      {/* Label */}
       {label && (
-        <Text style={[styles.label, dropDownlabelStyle]}>
-          {typeof label === 'string' && label.includes('*') ? (
+        <Text
+          style={[
+            styles.label,
+            { backgroundColor: colors.surface, color: colors.textSecondary },
+            dropDownlabelStyle,
+          ]}
+        >
+          {typeof label === "string" && label.includes("*") ? (
             <>
-              {label.replace('*', '')}
-              <Text style={{ color: 'gray' }}>*</Text>
+              {label.replace("*", "")}
+              <Text style={{ color: colors.danger }}> *</Text>
             </>
           ) : (
             label
@@ -31,30 +40,50 @@ const GenericDropdown = ({
         </Text>
       )}
 
-      <View style={[styles.outlineContainer, pickerContainerStyle]}>
+      {/* Dropdown */}
+      <View
+        style={[
+          styles.outlineContainer,
+          {
+            borderColor: colors.border,
+            backgroundColor: colors.itemBackground,
+            shadowColor: colors.shadow,
+          },
+          pickerContainerStyle,
+        ]}
+      >
         <Picker
           mode="dropdown"
           selectedValue={selectedValue}
           onValueChange={(itemValue) => onValueChange(itemValue)}
-          style={[styles.picker, pickerStyle]}
-          dropdownIconColor={pickerStyle?.color || "black"}
-          itemStyle={Platform.OS === "android" ? { height: 55, fontSize: 16 } : {}}
+          style={[
+            styles.picker,
+            { color: colors.text, backgroundColor: "transparent" },
+            pickerStyle,
+          ]}
+          dropdownIconColor={pickerStyle?.color || colors.text}
+          itemStyle={
+            Platform.OS === "android"
+              ? { height: 55, fontSize: 16, color: colors.text }
+              : { color: colors.text }
+          }
         >
-          {/* Placeholder option */}
-          {!EditMode&&(
-             <Picker.Item
-            label={placeholder}
-            value={selectedValue||""}
-            style={[fontStyles, { color: '#999' }]}
-          />
+          {/* Placeholder */}
+          {!EditMode && (
+            <Picker.Item
+              label={placeholder}
+              value=""
+              style={[fontStyles, { color: colors.textSecondary }]}
+            />
           )}
-         
+
+          {/* Options */}
           {options.map((option, index) => (
             <Picker.Item
-              style={[fontStyles, { color: 'black' }]}
               key={index}
               label={option.label}
               value={option.value}
+              style={[fontStyles, { color: colors.text }]}
             />
           ))}
         </Picker>
@@ -64,30 +93,31 @@ const GenericDropdown = ({
 };
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    marginBottom: 15,
+  },
   outlineContainer: {
-    height: 55, // matches TextInput height
-    width: '100%',
+    height: 55,
+    width: "100%",
     borderWidth: 1,
-    borderColor: 'black', // black border
-    borderRadius: 5,
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
+    borderRadius: 8,
+    justifyContent: "center",
     paddingHorizontal: 10,
+    elevation: Platform.OS === "android" ? 2 : 0,
   },
   picker: {
-    height: '100%',
-    width: '100%',
-    color: 'black',
+    height: "100%",
+    width: "100%",
   },
   label: {
-    position: 'absolute',
-    backgroundColor: 'white',
+    position: "absolute",
     top: -10,
-    left: 10,
-    zIndex: 1,
-    paddingHorizontal: 4,
-    fontSize: 14,
-    color: 'rgba(0,0,0,0.6)',
+    left: 14,
+    zIndex: 2,
+    paddingHorizontal: 6,
+    fontSize: 13,
+    fontWeight: "500",
   },
 });
 

@@ -27,13 +27,20 @@ import UserDataContext from "../../Store/UserDataContext";
 import { useSnackbar } from "../../Store/SnackbarContext";
 
 const ReferralFormSchema = Yup.object().shape({
-  name: Yup.string().required("Name is required"),
+  name: Yup.string()
+    .max(100, "Name must be less than 100 characters")
+    .required("Name is required"),
   loanAmount: Yup.number()
     .typeError("Loan Amount must be a number")
+    .positive("Loan Amount must be positive")
     .required("Loan Amount is required"),
   loanType: Yup.string().required("Loan Type is required"),
-  street: Yup.string().required("Street / Area is required"),
-  city: Yup.string().required("City is required"),
+  street: Yup.string()
+    .max(100, "Street / Area must be less than 100 words")
+    .required("Street / Area is required"),
+  city: Yup.string()
+    .max(50, "City must be less than 50 characters")
+    .required("City is required"),
   pincode: Yup.string()
     .matches(/^\d{6}$/, "Enter valid 6-digit pincode")
     .required("Pincode is required"),
@@ -42,6 +49,7 @@ const ReferralFormSchema = Yup.object().shape({
     .required("Mobile number is required")
     .matches(/^[0-9]{10}$/, "Enter a valid 10-digit number"),
 });
+
 
 const ReferralForm = ({ navigation, route }) => {
   const { colors } = useTheme();
@@ -189,7 +197,9 @@ const ReferralForm = ({ navigation, route }) => {
                   mode="outlined"
                   style={styles.input}
                   activeOutlineColor={colors.primary}
-                  onChangeText={handleChange("name")}
+                   onChangeText={(text) => {
+    if (text.length <= 100) setFieldValue("name", text);
+  }}
                   onBlur={handleBlur("name")}
                   value={values.name}
                   error={touched.name && errors.name}
@@ -223,8 +233,9 @@ const ReferralForm = ({ navigation, route }) => {
                   style={styles.input}
                   keyboardType="numeric"
                   activeOutlineColor={colors.primary}
-                  onChangeText={handleChange("loanAmount")}
-                  onBlur={handleBlur("loanAmount")}
+ onChangeText={(text) => {
+    if (/^\d*$/.test(text)) setFieldValue("loanAmount", text);
+  }}                  onBlur={handleBlur("loanAmount")}
                   value={values.loanAmount}
                   error={touched.loanAmount && errors.loanAmount}
                 />
@@ -284,7 +295,9 @@ const ReferralForm = ({ navigation, route }) => {
                   mode="outlined"
                   style={styles.input}
                   activeOutlineColor={colors.primary}
-                  onChangeText={handleChange("city")}
+                   onChangeText={(text) => {
+    if (text.length <= 50) setFieldValue("city", text);
+  }}
                   onBlur={handleBlur("city")}
                   value={values.city}
                   error={touched.city && errors.city}
@@ -299,7 +312,9 @@ const ReferralForm = ({ navigation, route }) => {
                   style={styles.input}
                   keyboardType="numeric"
                   activeOutlineColor={colors.primary}
-                  onChangeText={handleChange("pincode")}
+                  onChangeText={(text) => {
+    if (/^\d{0,6}$/.test(text)) setFieldValue("pincode", text);
+  }}
                   onBlur={handleBlur("pincode")}
                   value={values.pincode}
                   error={touched.pincode && errors.pincode}

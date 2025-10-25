@@ -2,54 +2,74 @@ import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Card, Text } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
-import {colorByStatusFk,statusById,selectLoanFromId} from "../../Util/UtilApi"
-const BookingCard = ({ booking,navigation,isAdmin }) => {
+import { colorByStatusFk, statusById, selectLoanFromId } from "../../Util/UtilApi";
+import { useTheme } from "../../Constants/Theme"; // <-- Import custom hook
+
+const BookingCard = ({ booking, navigation, isAdmin }) => {
+  const { colors } = useTheme(); // <-- Get theme colors
+
   return (
-    <TouchableOpacity style={styles.card} onPress={()=>{navigation?.navigate("BookingDetailsScreen",{booking:booking,isAdmin})}}>
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}
+      onPress={() => navigation?.navigate("BookingDetailsScreen", { booking, isAdmin })}
+    >
       <Card.Content style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.name}>{booking.name}</Text>
-            <Text style={styles.subId}>Book ID: {booking.bookId}</Text>
-            <Text style={styles.subId}>Loan No: {booking.loanAccountNumber}</Text>
-            <Text style={styles.loanValue}># {selectLoanFromId[booking.loantypefk]}</Text>
+            <Text style={[styles.name, { color: colors.text }]}>{booking.name}</Text>
+            <Text style={[styles.subId, { color: colors.textSecondary }]}>
+              Book ID: {booking.bookId}
+            </Text>
+            <Text style={[styles.subId, { color: colors.textSecondary }]}>
+              Loan No: {booking.loanAccountNumber}
+            </Text>
+            <Text style={[styles.loanValue, { color: colors.primary }]}>
+              # {selectLoanFromId[booking.loantypefk]}
+            </Text>
           </View>
-         <View style={[styles.statusBadge, { backgroundColor: colorByStatusFk(booking?.statusfk) }]}>
-                    <Text style={styles.statusText}>{statusById[booking?.statusfk]}</Text>
-                  </View>
+
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: colorByStatusFk(booking?.statusfk) },
+            ]}
+          >
+            <Text style={styles.statusText}>{statusById[booking?.statusfk]}</Text>
+          </View>
         </View>
 
         {/* Info Section */}
         <View style={styles.infoContainer}>
-
           <View style={styles.infoRow}>
-            <MaterialIcons name="account-balance-wallet" size={14} color="#2563EB" />
-            <Text style={styles.label}>BookingAmount:</Text>
-            <Text style={styles.value}>₹{booking.bookingAmount.toLocaleString()}</Text>
+            <MaterialIcons name="account-balance-wallet" size={14} color={colors.accent} />
+            <Text style={[styles.label, { color: colors.textSecondary }]}>BookingAmount:</Text>
+            <Text style={[styles.value, { color: colors.text }]}>
+              ₹{booking.bookingAmount.toLocaleString()}
+            </Text>
           </View>
 
           <View style={styles.infoRow}>
-            <MaterialIcons name="receipt-long" size={14} color="#2563EB" />
-            <Text style={styles.label}>Tentative Bill:</Text>
-            <Text style={styles.value}>₹{booking.tentativeBillAmount.toLocaleString()}</Text>
+            <MaterialIcons name="receipt-long" size={14} color={colors.accent} />
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Tentative Bill:</Text>
+            <Text style={[styles.value, { color: colors.text }]}>
+              ₹{booking.tentativeBillAmount.toLocaleString()}
+            </Text>
           </View>
         </View>
 
-
-
         {/* Address */}
-        <Text style={styles.address} numberOfLines={1}>
+        <Text style={[styles.address, { color: colors.textSecondary }]} numberOfLines={1}>
           {booking.address}
         </Text>
 
         {/* Remark */}
-        <Text style={styles.remark} numberOfLines={1}>
+        <Text style={[styles.remark, { color: colors.muted }]} numberOfLines={1}>
           {booking.remark}
         </Text>
 
         {/* Footer Date */}
-        <Text style={styles.dateText}>
+        <Text style={[styles.dateText, { color: colors.textSecondary }]}>
           {new Date(booking.createdAt).toLocaleDateString()}
         </Text>
       </Card.Content>
@@ -57,16 +77,16 @@ const BookingCard = ({ booking,navigation,isAdmin }) => {
   );
 };
 
+export default BookingCard;
+
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 10,
     marginVertical: 5,
     borderRadius: 10,
-    backgroundColor: "#fff",
     elevation: 2,
-    paddingHorizontal:5
+    paddingHorizontal: 5,
   },
-
   content: {
     paddingVertical: 8,
     paddingHorizontal: 10,
@@ -80,10 +100,8 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#111827",
   },
   subId: {
-    color: "#6B7280",
     fontSize: 11,
     marginTop: 1,
   },
@@ -108,37 +126,29 @@ const styles = StyleSheet.create({
   label: {
     marginLeft: 4,
     fontSize: 12,
-    color: "#374151",
   },
   value: {
     marginLeft: 4,
     fontWeight: "600",
-    color: "#111827",
     fontSize: 12,
   },
-  loanValue:{
-       marginLeft: 4,
+  loanValue: {
+    marginLeft: 4,
     fontWeight: "800",
-    color: "#111827",
     fontSize: 13,
-    fontStyle:"italic"
+    fontStyle: "italic",
   },
   address: {
     fontSize: 12,
-    color: "#374151",
     marginTop: 2,
   },
   remark: {
     fontSize: 12,
-    color: "#6B7280",
     marginTop: 1,
   },
   dateText: {
     marginTop: 3,
     fontSize: 11,
-    color: "#9CA3AF",
     textAlign: "right",
   },
 });
-
-export default BookingCard;

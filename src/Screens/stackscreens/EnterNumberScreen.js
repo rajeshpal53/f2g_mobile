@@ -88,7 +88,7 @@ const Checkbox1= ({ checked, onToggle, label, labelStyle, showError, errorText }
 /* -------------------------
    Main Component
 ------------------------- */
-export default function EnterNumberScreen({ navigation }) {
+export default function EnterNumberScreen({ navigation,route}) {
   const { colors, isDark } = useTheme();
   const { showSnackbar } = useSnackbar();
 
@@ -106,13 +106,14 @@ export default function EnterNumberScreen({ navigation }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isForgetPasswordState, setIsForgetPasswordState] = useState(false)
   const [fcmToken,setFcmToken]=useState("")
-
+  const {isForgetPassword}=route.params||false;
   useEffect(()=>{
      const token=getFcmToken()
      setFcmToken(token)
      console.log(token,"token in enter Number Screen")
   },[])
   
+
 
   /* ---------- Timer ---------- */
   useEffect(() => {
@@ -190,12 +191,18 @@ const handleVerifyOtp = async () => {
       if (result?.user)
         await AsyncStorage.setItem("userData", JSON.stringify(result.user));
 
+      if(isForgetPassword){
+        showSnackbar("Set New Password Successfully"|| "Account created successfully", "success");
+
+        }else{
       showSnackbar(result?.message || "Account created successfully", "success");
+
+      }
       setPasswordModalVisible(false);
       navigation.navigate("welcome");
     } catch (err) {
       console.log("Signup Error:", err);
-      showSnackbar(err.message || "Unable to sign up", "error");
+      showSnackbar(err?.data?.message || "Unable to sign up", "error");
     } finally {
       setLoading(false);
     }
@@ -295,7 +302,7 @@ const handleVerifyOtp = async () => {
               <>
                 {!otpSent ? (
                   <>
-                    <Text style={styles.title}>Create an Account</Text>
+                    <Text style={styles.title}>{isForgetPassword?"Forget password":"Create an Account"}</Text>
                     <Text style={styles.subtitle}>
                       Please enter your mobile number to proceed further
                     </Text>

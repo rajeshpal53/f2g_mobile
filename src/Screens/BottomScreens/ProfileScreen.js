@@ -129,6 +129,12 @@ export default function ProfileScreen({ navigation }) {
     } else if (value === "Logout") {
       setVisible(true);
     }
+    else if (value==="Policies"){
+      navigation.navigate("Policies", {
+          webUri: "https://qwikbill.in/qapp/privacy-policy?view=desktop",
+          headerTitle: "Privacy and Policies",
+        })
+    }
   };
 
   return (
