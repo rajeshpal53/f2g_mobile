@@ -65,6 +65,25 @@ const ReferralDetailScreen = ({ route, navigation }) => {
             >
               Status: {status}
             </Text>
+           {referral?.description && (
+  <Text
+    variant="bodyMedium"
+    style={[
+      {
+        color: theme?.colors.text,
+        flexWrap: "wrap",
+        flexShrink: 1,
+        flex: 1,
+        lineHeight: 20,
+        marginTop: 6,
+        textAlign: "justify",
+        maxWidth: '95%',
+      },
+    ]}
+  >
+    Description / Remark: {referral?.description}
+  </Text>
+)}
           </View>
         </Card.Content>
       </Card>
@@ -117,8 +136,10 @@ const ReferralDetailScreen = ({ route, navigation }) => {
       )}
 
       {/* Edit Button */}
-      <Button
-        disabled={!isAdmin && referral?.statusfk > 2}
+
+
+      {  isAdmin&&(
+         <Button
         onPress={() =>
           navigation.navigate("ReferralForm", { editReferral: referral, isAdmin })
         }
@@ -137,6 +158,8 @@ const ReferralDetailScreen = ({ route, navigation }) => {
       >
         Edit Referral
       </Button>
+      )}
+     
     </ScrollView>
   );
 };

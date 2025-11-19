@@ -41,9 +41,10 @@ const ReferralFormSchema = Yup.object().shape({
   city: Yup.string()
     .max(50, "City must be less than 50 characters")
     .required("City is required"),
-  pincode: Yup.string()
-    .matches(/^\d{6}$/, "Enter valid 6-digit pincode")
-    .required("Pincode is required"),
+    pincode: Yup
+      .string()
+      .matches(/^[1-9][0-9]{5}$/, "Enter a valid 6-digit Indian PIN code")
+      .required("Pincode is required"),
   remark: Yup.string().max(1000, "Remark should be less than 1000 characters"),
   mobile: Yup.string()
     .required("Mobile number is required")
@@ -70,6 +71,7 @@ const ReferralForm = ({ navigation, route }) => {
     remark: "",
     mobile: "",
     status: "",
+    description:""
   });
 
   // Fade In Animation
@@ -104,6 +106,7 @@ const ReferralForm = ({ navigation, route }) => {
         remark: editReferral?.remark || "",
         mobile: editReferral?.user?.mobile || "",
         status: valuesByStatusfk[editReferral?.statusfk] || "",
+        description:editReferral?.description||"",
       });
     }
   }, [editReferral]);
@@ -138,10 +141,9 @@ const ReferralForm = ({ navigation, route }) => {
                 refferedBy: editReferral
                   ? editReferral?.refferedBy
                   : userData?.user?.id,
-                statusfk: values.status
-                  ? statusfkByValues[values.status]
-                  : 2,
+                statusfk: values.status? statusfkByValues[values.status] : 12,
                 mobile: values.mobile,
+                description:values.description||"",
               };
 
               try {
@@ -259,7 +261,8 @@ const ReferralForm = ({ navigation, route }) => {
 
                 {/* Admin Status Dropdown */}
                 {userData?.user?.roles === "admin" && isAdmin && (
-                  <GenericDropdown
+                  <View>
+                     <GenericDropdown
                     placeholder="Select Status"
                     options={statusOptions}
                     selectedValue={values.status}
@@ -271,6 +274,26 @@ const ReferralForm = ({ navigation, route }) => {
                      EditMode={editReferral ? true :false}
 
                   />
+                     <TextInput
+  label="Description / Remark"
+  mode="outlined"
+  style={[styles.input, { textAlignVertical: "top" }]} // Keeps multiline text aligned at top
+  activeOutlineColor={colors.primary}
+  onChangeText={handleChange("description")}
+  onBlur={handleBlur("description")}
+  value={values.description}
+  error={touched.description && errors.description}
+  multiline
+  numberOfLines={3}
+  maxLength={200}
+  placeholder="Enter up to 200 characters..."
+/>
+
+{touched.description && errors.description && (
+  <Text style={styles.errorText}>{errors.description}</Text>
+)}
+                  </View>
+                 
                 )}
 
                 {/* Address Section */}
@@ -295,9 +318,12 @@ const ReferralForm = ({ navigation, route }) => {
                   mode="outlined"
                   style={styles.input}
                   activeOutlineColor={colors.primary}
-                   onChangeText={(text) => {
-    if (text.length <= 50) setFieldValue("city", text);
-  }}
+                    onChangeText={(text) => {
+  if (text.length <= 200) {
+    const cleaned = text.replace(/[^a-zA-Z\s]/g, ""); // allow letters & spaces
+    setFieldValue("city", cleaned); // use cleaned value
+  }
+}}
                   onBlur={handleBlur("city")}
                   value={values.city}
                   error={touched.city && errors.city}

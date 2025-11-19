@@ -22,10 +22,10 @@ export default function WelcomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <StatusBar
+      {/* <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}
         backgroundColor={colors.background}
-      />
+      /> */}
 
       {/* Header */}
       <View style={styles.header}>

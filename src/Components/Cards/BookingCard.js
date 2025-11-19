@@ -10,7 +10,7 @@ const BookingCard = ({ booking, navigation, isAdmin }) => {
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}
+      style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.muted }]}
       onPress={() => navigation?.navigate("BookingDetailsScreen", { booking, isAdmin })}
     >
       <Card.Content style={styles.content}>
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     marginVertical: 5,
     borderRadius: 10,
-    elevation: 2,
+    elevation: 3,
     paddingHorizontal: 5,
   },
   content: {

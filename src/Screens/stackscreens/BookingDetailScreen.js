@@ -44,6 +44,19 @@ const BookingDetailsScreen = ({ route, navigation }) => {
             <Text variant="bodyMedium" style={[styles.statusText, { color: colors.success }]}>
               Status: {booking.status?.status || "Pending"}
             </Text>
+            {booking?.description&&(
+                <Text variant="bodyMedium" style={[styles.statusText,{  color: colors.text,
+      flexWrap: "wrap",
+        flexShrink: 1,
+        flex: 1,
+        lineHeight: 20,
+        marginTop: 6,
+        textAlign: "justify",
+        maxWidth: '95%',
+        }]}>
+              Description/Remark: {booking?.description }
+            </Text>
+            )}
           </View>
         </Card.Content>
       </Card>
@@ -76,6 +89,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
         />
         <Divider style={{ backgroundColor: colors.border }} />
         <Card.Content>
+           <DetailRow label="Bank/ NBFC Name" value={`${booking.bankOrNBFCName}`} colors={colors} />
           <DetailRow label="Loan Type" value={selectLoanFromId[booking.loantypefk]} colors={colors} />
           <DetailRow label="Loan Account Number" value={booking.loanAccountNumber} colors={colors} />
           <DetailRow label="Booking Amount" value={`₹${booking.bookingAmount}`} colors={colors} />
@@ -106,8 +120,9 @@ const BookingDetailsScreen = ({ route, navigation }) => {
       )}
 
       {/* Edit Button */}
-      <Button
-        disabled={!isAdmin && booking?.statusfk > 2}
+      {
+        isAdmin&&(
+             <Button
         onPress={() => navigation.navigate("BookingScreen", { editBooking: booking, isAdmin })}
         mode="contained"
         labelStyle={{ fontSize: 16 }}
@@ -122,7 +137,10 @@ const BookingDetailsScreen = ({ route, navigation }) => {
       >
         Edit Booking
       </Button>
-    </ScrollView>
+
+        )
+      }
+         </ScrollView>
   );
 };
 

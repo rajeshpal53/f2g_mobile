@@ -78,7 +78,7 @@ const formatUrl = (url, imageDetail) => {
     const formattedUrl = `${NORM_URL.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
 
     const imageFile = {
-      uri: formattedUrl,
+      uri: `${formattedUrl}?${new Date().getTime()}`,
       name: `${imageDetail}.jpeg`,
       type: `image/jpeg`,
     };
@@ -86,7 +86,6 @@ const formatUrl = (url, imageDetail) => {
     console.log("✅ Corrected Image URL:", imageFile);
     return imageFile;
   };
-
 
 export default function EditProfileScreen({ navigation }) {
   const { showSnackbar } = useSnackbar();
@@ -100,7 +99,7 @@ export default function EditProfileScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [postData, setPostData] = useState({});
   const [showDateTimePicker, setShowDateTimePicker] = useState(false);
-
+  const [removeProfilePic, setRemoveProfilePic] = useState(false);
   const [initialData, setInitialData] = useState({
     name: "",
     mobile: "",
@@ -111,6 +110,19 @@ export default function EditProfileScreen({ navigation }) {
     pincode: "",
     profileImage: null,
   });
+
+  const handleRemove = (type) => {
+  if (type === "profileImage") {
+    setRemoveProfilePic(true);
+  } 
+  else if (type === "aadharFront") {
+    setRemoveAadharFront(true);
+  } 
+  else if (type === "aadharBack") {
+    setRemoveAadharBack(true);
+  }
+
+};
 
 
   useEffect(() => {
@@ -252,10 +264,8 @@ export default function EditProfileScreen({ navigation }) {
               formData.append("address", values.address);
               formData.append("dob", formatDate(values.dob));
               formData.append("pincode", values.pincode);
-
-              if (values.profileImage)
                 formData.append("profilePicurl", values.profileImage);
-
+                if (removeProfilePic) formData.append("removeProfilePic",removeProfilePic)
               setPostData(formData);
             }}
           >
@@ -277,6 +287,7 @@ export default function EditProfileScreen({ navigation }) {
                   setFieldValue={setFieldValue}
                   uploadFieldName={"profileImage"}
                   type={"rounded"}
+                  handleRemove={handleRemove}
                 />
 
                 {/* Name */}

@@ -80,11 +80,12 @@ const HomeScreen = ({ navigation }) => {
   if (!totalLoans && !totalReferrals) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <StatusBar
+        {/* <StatusBar
           barStyle={isDark ? "light-content" : "dark-content"}
           backgroundColor={colors.background}
-        />
-        <View style={styles.contentContainer}>
+        /> */}
+        
+        <View style={styles.contentContainer} contentContainerStyle={{}}>
           <View style={styles.illustrationContainer}>
             <Image
               source={require("../../../assets/coinpayIllustration.png")}
@@ -106,7 +107,7 @@ const HomeScreen = ({ navigation }) => {
   }
 
   const mixPieData = [
-    { name: "Loans", population: totalLoans, color: colors.primary },
+    { name: "Booking", population: totalLoans, color: colors.primary },
     { name: "Referrals", population: totalReferrals, color: colors.secondary },
   ];
 
@@ -153,9 +154,67 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, alignItems:"center", justifyContent:"center" }}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         {/* Stats Row */}
+     <Card
+  style={{
+    alignSelf: "center",
+    justifyContent: "flex-start",
+    backgroundColor: colors?.background,
+    flexDirection: "column",
+    alignItems: "flex-start",
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+    width: screenWidth - 30,
+    marginBottom: 20,
+  }}
+>
+  {/* Top Row: Logo + Title */}
+  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 0 }}>
+    <Image
+      source={require("../../../assets/logo.png")}
+      style={{ width: 70, height: 70, marginRight: 10,backgroundColor:"black", borderRadius:35 }}
+      resizeMode="contain"
+
+    />
+    <Text
+      style={[
+        styles.title,
+        {
+          color: colors.text,
+          fontSize: 22,
+          fontWeight: "700",
+          letterSpacing: 0.5,
+        },
+      ]}
+    >
+      FUNDS TO GROW
+    </Text>
+  </View>
+
+  {/* Tagline */}
+  <Text
+    style={{
+      color: colors.textSecondary,
+      fontSize: 14,
+      lineHeight: 20,
+     
+      paddingLeft: 4,
+    }}
+  >
+    Empowering your financial journey — helping you grow smarter, earn faster,
+    and achieve more together.
+  </Text>
+</Card>
+
+
+
         <View style={styles.statsRow}>
           <TouchableOpacity
             style={{ flex: 1 }}
@@ -206,7 +265,7 @@ const HomeScreen = ({ navigation }) => {
 
         {/* Pie Chart */}
         <Card style={[styles.chartCardModern, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.chartTitle, { color: colors.text }]}>Loan vs Referral Overview</Text>
+          <Text style={[styles.chartTitle, { color: colors.text }]}>Referral/Booking Overview</Text>
           <View style={{ alignItems: "center", justifyContent: "center" }}>
             <PieChart
               data={mixPieData}
@@ -248,14 +307,14 @@ const HomeScreen = ({ navigation }) => {
         </View>
 
         {/* Referral Button */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.referralButtonModern, { backgroundColor: colors.main }]}
           onPress={() => navigation.navigate("ReferralForm")}
         >
-          <Text style={[styles.referralButtonText, { color: colors.text }]}>
+          <Text style={[styles.referralButtonText, { color: "#fff" }]}>
             Refer & Earn
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -263,7 +322,7 @@ const HomeScreen = ({ navigation }) => {
 
 const getStyles = (colors) =>
   StyleSheet.create({
-    safeArea: { flex: 1 },
+    safeArea: { flex: 1, justifyContent:"center", alignItems:"center", backgroundColor: colors.background   },
     loaderContainer: {
       flex: 1,
       justifyContent: "center",
@@ -328,6 +387,8 @@ const getStyles = (colors) =>
       borderRadius: 15,
     },
     quoteModern: { fontStyle: "italic", textAlign: "center", fontSize: 14 },
+        title: { fontStyle: "italic", fontSize: 18},
+
     referralButtonModern: {
       paddingVertical: 15,
       borderRadius: 30,

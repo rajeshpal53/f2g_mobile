@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import {
   View,
-  Text,
+
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView
 } from 'react-native';
+import {Text} from "react-native-paper"
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../Constants/Theme';
@@ -20,13 +21,12 @@ import { createApi } from '../../Util/UtilApi';
 import { useSnackbar } from '../../Store/SnackbarContext';
 import UserDataContext from '../../Store/UserDataContext';
 
-
 const LoginScreen = ({ navigation }) => {
   const { colors, isDark } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
-  const{showSnackbar}=useSnackbar("")
-  const {saveUserData}=useContext(UserDataContext)
-  const[phoneFocus,setPhoneFocus]=useState(false)
+  const { showSnackbar } = useSnackbar("");
+  const { saveUserData } = useContext(UserDataContext);
+
   // ✅ Yup Validation Schema
   const validationSchema = Yup.object().shape({
     mobile: Yup.string()
@@ -37,32 +37,30 @@ const LoginScreen = ({ navigation }) => {
       .min(6, 'Password must be at least 6 characters'),
   });
 
-  const handleLogin =async (values,resetForm) => {
+  const handleLogin = async (values, resetForm) => {
     try {
-      console.log('Form Data:', values);
-      const response = await createApi("users/loginUser",values)
-      if(response){
-        showSnackbar("Login Successfully","success")
-        saveUserData(response)
-         navigation.reset({
-    index: 0,
-    routes: [{ name: "Bottom" }],
-  });
-      resetForm();
+      const response = await createApi("users/loginUser", values);
+      if (response) {
+        showSnackbar("Login Successfully", "success");
+        saveUserData(response);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Bottom" }],
+        });
+        resetForm();
       }
     } catch (err) {
-       showSnackbar(`Login failed ${err?.data?.message}`,"error")
+      showSnackbar(`Login failed  ${err?.data?.message || ''}`, "error");
       console.log(err);
     }
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: '#fff' }]}>
-  <StatusBar
-    barStyle="dark-content"
-    backgroundColor="#fff"
-  />
-
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      {/* <StatusBar/
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={colors.background}
+      /> */}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -85,13 +83,11 @@ const LoginScreen = ({ navigation }) => {
               />
             </View>
 
-      {/* PHONE INPUT */}
-
-            {/* ✅ Formik Form */}
+            {/* Formik Form */}
             <Formik
               initialValues={{ mobile: '', password: '' }}
               validationSchema={validationSchema}
-              onSubmit={(values,{resetForm})=>{ handleLogin(values,resetForm)}}
+              onSubmit={(values, { resetForm }) => handleLogin(values, resetForm)}
             >
               {({
                 handleChange,
@@ -108,17 +104,14 @@ const LoginScreen = ({ navigation }) => {
                   <View
                     style={[
                       styles.inputGroup,
-                      { backgroundColor: colors.surface, borderColor: colors.border },
-                      touched.mobile && errors.mobile && { borderColor: 'red' },
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: touched.mobile && errors.mobile ? colors.error : colors.border
+                      },
                     ]}
                   >
                     <MaterialIcons name="phone" size={22} color={colors.textSecondary} />
-                    <Text
-                      style={[
-                        styles.countryCode,
-                        { color: colors.text, borderColor: colors.border },
-                      ]}
-                    >
+                    <Text style={[styles.countryCode, { color: colors.text, borderColor: colors.border }]}>
                       +91
                     </Text>
                     <TextInput
@@ -129,15 +122,12 @@ const LoginScreen = ({ navigation }) => {
                       style={[styles.inputField, { color: colors.text }]}
                       onBlur={handleBlur('mobile')}
                       onChangeText={(text) => {
-                        // ✅ Allow only digits up to 10 characters
-                        if (/^\d{0,10}$/.test(text)) {
-                          setFieldValue('mobile', text);
-                        }
+                        if (/^\d{0,10}$/.test(text)) setFieldValue('mobile', text);
                       }}
                     />
                   </View>
                   {touched.mobile && errors.mobile && (
-                    <Text style={styles.errorText}>{errors.mobile}</Text>
+                    <Text style={[styles.errorText, { color: colors.error }]}>{errors.mobile}</Text>
                   )}
 
                   {/* PASSWORD INPUT */}
@@ -145,8 +135,10 @@ const LoginScreen = ({ navigation }) => {
                   <View
                     style={[
                       styles.inputGroup,
-                      { backgroundColor: colors.surface, borderColor: colors.border },
-                      touched.password && errors.password && { borderColor: 'red' },
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: touched.password && errors.password ? colors.error : colors.border
+                      },
                     ]}
                   >
                     <MaterialIcons name="lock" size={22} color={colors.textSecondary} />
@@ -168,14 +160,15 @@ const LoginScreen = ({ navigation }) => {
                     </TouchableOpacity>
                   </View>
                   {touched.password && errors.password && (
-                    <Text style={styles.errorText}>{errors.password}</Text>
+                    <Text style={[styles.errorText, { color: colors.error }]}>{errors.password}</Text>
                   )}
 
                   {/* FORGOT PASSWORD */}
-                  <TouchableOpacity style={styles.linkButton} onPress={()=>{navigation.navigate("EnterNumberScreen",{isForgetPassword:true})}}>
-                    <Text style={[styles.linkText, { color: colors.accent }]}>
-                      Forgot Password?
-                    </Text>
+                  <TouchableOpacity
+                    style={styles.linkButton}
+                    onPress={() => navigation.navigate("EnterNumberScreen", { isForgetPassword: true })}
+                  >
+                    <Text style={[styles.linkText, { color: colors.accent }]}>Forgot Password?</Text>
                   </TouchableOpacity>
 
                   {/* LOGIN BUTTON */}
@@ -184,9 +177,7 @@ const LoginScreen = ({ navigation }) => {
                     onPress={handleSubmit}
                     activeOpacity={0.8}
                   >
-                    <Text style={[styles.primaryButtonText, { color: colors.card }]}>
-                      Log In
-                    </Text>
+                    <Text style={[styles.primaryButtonText, { color: colors.card }]}>Log In</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -199,8 +190,8 @@ const LoginScreen = ({ navigation }) => {
               <Text style={[styles.signUpText, { color: colors.textSecondary }]}>
                 Don't have an account?{' '}
               </Text>
-              <TouchableOpacity onPress={()=>{navigation.navigate("EnterNumberScreen")}}>
-                <Text style={[styles.linkText, { color: colors.accent }]}>Sign Up</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("EnterNumberScreen")}>
+                <Text  style={[styles.linkText, { color: colors.accent }]}>Sign Up</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -215,88 +206,18 @@ const styles = StyleSheet.create({
   contentContainer: { paddingHorizontal: 32, alignItems: 'center' },
   illustrationContainer: { alignItems: 'center', marginBottom: -10 },
   illustration: { width: 340, height: 340, resizeMode: 'contain' },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    alignSelf: 'flex-start',
-    marginTop: -20,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    alignSelf: 'flex-start',
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    alignSelf: 'flex-start',
-  },
-  inputGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    height: 56,
-    width: '100%',
-    paddingHorizontal: 16,
-    marginBottom: 10,
-  },
-  countryCode: {
-    fontSize: 16,
-    fontWeight: '500',
-    paddingRight: 12,
-    marginRight: 12,
-    borderRightWidth: 1,
-  },
-  inputField: {
-    flex: 1,
-    fontSize: 16,
-  },
-  linkButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 20,
-  },
-  linkText: {
-    fontSize: 14,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-  primaryButton: {
-    height: 56,
-    width:100,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  primaryButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  footer: {
-    paddingHorizontal: 32,
-    paddingBottom: 40,
-  },
-  signUpTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  signUpText: {
-    fontSize: 14,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 12,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
+  label: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', marginBottom: 8, alignSelf: 'flex-start' },
+  inputGroup: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, height: 56, width: '100%', paddingHorizontal: 16, marginBottom: 10 },
+  countryCode: { fontSize: 16, fontWeight: '500', paddingRight: 12, marginRight: 12, borderRightWidth: 1 },
+  inputField: { flex: 1, fontSize: 16 },
+  linkButton: { alignSelf: 'flex-end', marginBottom: 20 },
+  linkText: { fontSize: 14, fontWeight: '600', textDecorationLine: 'underline',color:"#fff"},
+  primaryButton: {  width:150,height: 56, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginTop: 10, shadowOpacity: 0.25, shadowOffset: { width: 0, height: 4 }, shadowRadius: 6, elevation: 8 },
+  primaryButtonText: { fontSize: 18, fontWeight: '600' },
+  footer: { paddingHorizontal: 32, paddingBottom: 40 },
+  signUpTextContainer: { flexDirection: 'row', justifyContent: 'center' },
+  signUpText: { fontSize: 14 },
+  errorText: { fontSize: 12, alignSelf: 'flex-start', marginBottom: 8 },
 });
 
 export default LoginScreen;

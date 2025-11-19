@@ -16,7 +16,7 @@ const AllQuerysAndSupport = () => {
   const renderScene = ({ route }) => {
     switch (route.key) {
       case 'pending':
-        return <PendingQueries />;
+        return <PendingQueries setIndex={setIndex} />;
       case 'resolved':
         return <ResolvedQueries />;
       default:

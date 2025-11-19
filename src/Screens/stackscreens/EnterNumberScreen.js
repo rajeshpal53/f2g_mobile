@@ -28,6 +28,9 @@ import { createApi } from "../../Util/UtilApi";
 import {
   getAuth,
   signInWithPhoneNumber,
+  getIdToken,
+  onAuthStateChanged,
+  signOut
 } from "@react-native-firebase/auth";
 import SetpasswordModal from "../../Components/Modal/SetpasswordModal";
 import { getFcmToken } from "../../Util/NotificationHandler";
@@ -113,6 +116,45 @@ export default function EnterNumberScreen({ navigation,route}) {
      console.log(token,"token in enter Number Screen")
   },[])
   
+  useEffect(() => {
+    const signOutUser = async () => {
+      try {
+        setLoading(true);
+        await signOut(auth); // ✅ replaces auth().signOut()
+        console.log("User signed out successfully");
+      } catch (error) {
+        console.error("Error signing out:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    signOutUser();
+  }, []);
+
+
+
+   useEffect(() => {
+    console.log("Firebase Auth listener initialized");
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const token = await getIdToken(user);
+        setPasswordModalVisible(true);
+        console.log("User info:", user);
+        setIdToken(token);
+
+        const fcmToken = await AsyncStorage.getItem("FCMToken");
+        const phoneNumber = user.phoneNumber?.replace("+91", "");
+
+        console.log("FCM:", fcmToken, "Phone:", phoneNumber);
+      } else {
+        console.log("User signed out or not logged in");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
 
   /* ---------- Timer ---------- */
@@ -276,10 +318,10 @@ const handleVerifyOtp = async () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar
+      {/* <StatusBar
         barStyle={isDark ? "light-content" : "dark-content"}
         backgroundColor={colors.background}
-      />
+      /> */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

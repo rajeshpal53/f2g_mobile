@@ -12,22 +12,23 @@ import {
 import { Button, Card, Text } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import ConfirmModal from "../../Components/Modal/ConfirmModal";
-import { NORM_URL } from "../../Util/UtilApi";
+import { NORM_URL, readApi } from "../../Util/UtilApi";
 import { useTheme } from "../../Constants/Theme";
 import UserDataContext from "../../Store/UserDataContext";
 import { useIsFocused } from "@react-navigation/native";
-import {SafeAreaView} from "react-native-safe-area-context"
+import { SafeAreaView } from "react-native-safe-area-context";
 export default function ProfileScreen({ navigation }) {
   const { colors } = useTheme();
   const styles = profileStyle(colors);
   const isFocused = useIsFocused();
-  const { userData, clearUserData } = useContext(UserDataContext);
+  const { userData, clearUserData,saveUserData } = useContext(UserDataContext);
   console.log(userData, "userData in profile");
 
   const [imageUrl, setImageUrl] = useState(`${NORM_URL}assets/mobile/male.png`);
   const [visible, setVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [loginConfirmModalVisible, setLoginConfirmModalVisible] = useState(false);
+  const [loginConfirmModalVisible, setLoginConfirmModalVisible] =
+    useState(false);
   const [isFullImageModalVisible, setIsFullImageModalVisible] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,8 +39,24 @@ export default function ProfileScreen({ navigation }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    fetchUserData()
+    console.log("Refreshing profile data...");
     setRefreshing(false);
   };
+
+
+  const fetchUserData = async () => {
+    try{
+      const response=await readApi(`users/${userData?.user?.id}`);
+      console.log("Fetched user data:", response);
+      saveUserData(response);
+    }
+    catch(error){
+
+    }
+
+  }
+
 
   const AdminOption = [
     {
@@ -48,7 +65,6 @@ export default function ProfileScreen({ navigation }) {
       value: "AdminSection",
     },
   ];
-  
 
   useEffect(() => {
     const updatelist = () => {
@@ -56,7 +72,9 @@ export default function ProfileScreen({ navigation }) {
         const baseItem = [
           ...(userData?.user?.roles === "admin" ? AdminOption : []),
           { icon: "policy", label: "Terms and Policy", value: "Policies" },
-          ...(userData ? [{ icon: "logout", label: "Logout", value: "Logout" }] : []),
+          ...(userData
+            ? [{ icon: "logout", label: "Logout", value: "Logout" }]
+            : []),
           { label: "Need more help?", value: "needMoreHelp" },
         ];
         setMenuItems(baseItem);
@@ -96,14 +114,14 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const logoutHandler = () => {
-  clearUserData();
-  setVisible(false);
+    clearUserData();
+    setVisible(false);
 
-  navigation.reset({
-    index: 0,
-    routes: [{ name: "LoginScreen" }],
-  });
-};
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "LoginScreen" }],
+    });
+  };
 
   const openImageModal = (uri) => {
     setSelectedImageUri(uri);
@@ -128,18 +146,19 @@ export default function ProfileScreen({ navigation }) {
       navigation.navigate("AdminSection");
     } else if (value === "Logout") {
       setVisible(true);
-    }
-    else if (value==="Policies"){
+    } else if (value === "Policies") {
       navigation.navigate("Policies", {
-          webUri: "https://qwikbill.in/qapp/privacy-policy?view=desktop",
-          headerTitle: "Privacy and Policies",
-        })
+        webUri: "https://qwikbill.in/qapp/privacy-policy?view=desktop",
+        headerTitle: "Privacy and Policies",
+      });
     }
   };
 
   return (
     <>
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.surface }]}
+      >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           refreshControl={
@@ -164,7 +183,9 @@ export default function ProfileScreen({ navigation }) {
                 <TouchableOpacity
                   onPress={() => {
                     if (userData?.user?.profilePicurl) {
-                      const freshUrl = `${NORM_URL}${userData.user.profilePicurl}?${new Date().getTime()}`;
+                      const freshUrl = `${NORM_URL}${
+                        userData.user.profilePicurl
+                      }?${new Date().getTime()}`;
                       openImageModal(freshUrl);
                     }
                   }}
@@ -188,6 +209,25 @@ export default function ProfileScreen({ navigation }) {
                     >
                       {userData?.user?.name || userData?.user?.mobile}
                     </Text>
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        fontSize: 16,
+                        fontFamily: "Poppins-Bold",
+                        marginVertical:4,
+                        letterSpacing: 1,
+                        backgroundColor: colors.surface,
+                        fontStyle:"italic"
+                      }}
+                    >
+                      {"("}#REF
+                      {(userData?.user?.name || "")
+                        .substring(0, 3)
+                        .toUpperCase()}
+                      {userData?.user?.id}
+                       {")"}
+                    </Text>
+
                     <TouchableOpacity
                       onPress={handleEditPress}
                       style={{
@@ -219,7 +259,12 @@ export default function ProfileScreen({ navigation }) {
                 )}
               </View>
 
-              <Card.Content style={{ backgroundColor: colors?.surface, marginHorizontal: 10 }}>
+              <Card.Content
+                style={{
+                  backgroundColor: colors?.surface,
+                  marginHorizontal: 10,
+                }}
+              >
                 {menuItems?.map((item, index) =>
                   item.value === "needMoreHelp" ? (
                     <Pressable

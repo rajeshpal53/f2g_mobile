@@ -149,10 +149,11 @@ export const updateApi = async (endpoint, data, headers) => {
     employee:3,
     viewer:4
   }
+
 export const statusOptions = [
   { id: 1, label: 'Login Incomplete',value: 'login incomplete' },
   { id: 2, label: 'Login Done',value: 'login done' },
-  { id: 3, label: 'Post Paid Doc', label: 'post paid doc' },
+  { id: 3, label: ' Post PD Doc', value: 'pd doc' },
   { id: 4, label: 'Reject', value: 'reject' },
   { id: 5, label: 'L and T Stage',value: 'l and t stage' },
   { id: 6, label: 'Sub Approved',value: 'sub approved' },
@@ -161,13 +162,15 @@ export const statusOptions = [
   { id: 9, label: 'OTC/PDD Pending',value: 'otc/pdd pending' },
   { id: 10, label: 'Billing in Process',value: 'billing in process' },
   { id: 11, label: 'Billing Cleared',value: 'billing cleared' },
+  { id: 12, label: 'Lead Generated',value: 'lead generated' },
+  { id: 13, label: 'Booking Initiated',value: 'booking initiated' },
 ];
 
 
 export const valuesByStatusfk={
   1:"login incomplete",
   2:"login done",
-  3:"post paid doc",
+  3:"pd doc",
   4:"reject",
   5:"l and t stage",
   6:"sub approved",
@@ -175,13 +178,15 @@ export const valuesByStatusfk={
   8:"disbursed",
   9:"otc/pdd pending",
   10:"billing in process",
-  11:"billing cleared"
+  11:"billing cleared",
+  12:"lead generated",
+  13:"booking initiated"
 }
 
 export const  statusfkByValues={
  "login incomplete":1,
   "login done":2,
-  "post paid doc":3,
+  "pd doc":3,
   "reject":4,
   "l and t stage":5,
   "sub approved":6,
@@ -189,7 +194,9 @@ export const  statusfkByValues={
   "disbursed":8,
   "otc/pdd pending":9,
   "billing in process":10,
-  "billing cleared":11
+  "billing cleared":11,
+  "lead generated":12,
+  "booking initiated":13
 }
 
 
@@ -246,7 +253,7 @@ export const selectLoanFromId  = {
 export const statusById = {
   1: "login incomplete",
   2: "login done",
-  3: "post paid doc",
+  3: "pd doc",
   4: "reject",
   5: "l and t stage",
   6: "sub approved",
@@ -255,13 +262,15 @@ export const statusById = {
   9: "otc/pdd pending",
   10: "billing in process",
   11: "billing cleared",
+  12:"lead generated",
+  13:"booking initiated"
 };
 
 // ✅ Define color mapping for each status
 export const statusColors = {
   "login incomplete": "#F87171", // red-400 (attention needed)
   "login done": "#34D399", // green-400 (success)
-  "post paid doc": "#60A5FA", // blue-400 (info)
+  "pd doc": "#60A5FA", // blue-400 (info)
   "reject": "#EF4444", // red-500 (error)
   "l and t stage": "#FBBF24", // yellow-400 (in progress)
   "sub approved": "#A78BFA", // purple-400 (reviewed)
@@ -270,7 +279,10 @@ export const statusColors = {
   "otc/pdd pending": "#FACC15", // yellow-400 (pending)
   "billing in process": "#FB923C", // orange-400 (processing)
   "billing cleared": "#10B981", // emerald-500 (done)
+  "lead generated": "#8B5CF6", // violet-500
+  "booking initiated": "#06B6D4", // cyan-500
 };
+
 
 // ✅ Function to get color from statusFk (id)
 export const colorByStatusFk = (statusFk) => {

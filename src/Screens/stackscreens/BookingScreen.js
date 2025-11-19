@@ -25,8 +25,9 @@ const BookingFormSchema = Yup.object().shape({
   loanType: Yup.string().required("Loan Type is required"),
   street: Yup.string().required("Street / Area is required"),
   city: Yup.string().required("City is required"),
-  pincode: Yup.string()
-    .matches(/^\d{6}$/, "Enter a valid 6-digit pincode")
+  pincode: Yup
+    .string()
+    .matches(/^[1-9][0-9]{5}$/, "Enter a valid 6-digit Indian PIN code")
     .required("Pincode is required"),
   tentativeBill: Yup.number()
     .typeError("Tentative Bill must be a number")
@@ -35,6 +36,7 @@ const BookingFormSchema = Yup.object().shape({
   mobile: Yup.string()
           .required('Mobile number is required')
           .matches(/^[0-9]{10}$/, 'Enter a valid 10-digit number'), 
+  bankOrNBFCName: Yup.string().required("Bank/ NVFC Name is required"),
 });
 
 const BookingScreen = ({navigation,route}) => {
@@ -49,7 +51,9 @@ const BookingScreen = ({navigation,route}) => {
               tentativeBill: "",
               loanAccountNumber: "",
               mobile:"",
-              status:""
+              status:"",
+              bankOrNBFCName:"",
+              description:""
 
             });
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -88,10 +92,11 @@ const BookingScreen = ({navigation,route}) => {
               city: city||"",
               pincode: pincode||editBooking?.user?.pincode||"",
               tentativeBill: editBooking?.tentativeBillAmount||"",
+              bankOrNBFCName:editBooking?.bankOrNBFCName||"",
               loanAccountNumber: editBooking?.loanAccountNumber||"",
               mobile:editBooking?.user?.mobile||"",
-              status:valuesByStatusfk[editBooking?.statusfk]||""
-             
+              status:valuesByStatusfk[editBooking?.statusfk]||"",
+              description:editBooking?.description||""
             })
     }
   },[editBooking])
@@ -126,11 +131,13 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                 remark:values?.remark,
                 bookingAmount:values?.bookingAmount,
                 bookedBy: editBooking? editBooking?.bookedBy:userData?.user?.id,
-                statusfk:values?.status?statusfkByValues[values?.status]:2,
+                statusfk:values?.status?statusfkByValues[values?.status]:13,
                 mobile:values?.mobile,
                 loanAccountNumber:values?.loanAccountNumber,
                 tentativeBillAmount:values?.tentativeBill,
-                 pincode:values?.pincode
+                 pincode:values?.pincode,
+                bankOrNBFCName:values?.bankOrNBFCName,
+                description:values?.description||""
 
               }
               console.log("Booking Form Submitted: ", payload);
@@ -255,7 +262,8 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
 
       {
         userData?.user?.roles==="admin"&& isAdmin&&(
-         < GenericDropdown
+          <View>
+             < GenericDropdown
   placeholder="Select Status"
   options={statusOptions}
   selectedValue={values.status} // "Home"
@@ -267,13 +275,35 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
     EditMode={editBooking?true:false}
 
 />
+{touched.status && errors.status && (
+                  <Text style={styles.errorText}>{errors.status}</Text>
+                )}
+
+            <TextInput
+  label="Description / Remark"
+  mode="outlined"
+  style={[styles.input, { textAlignVertical: "top" }]} // Keeps multiline text aligned at top
+  activeOutlineColor={colors.primary}
+  onChangeText={handleChange("description")}
+  onBlur={handleBlur("description")}
+  value={values.description}
+  error={touched.description && errors.description}
+  multiline
+  numberOfLines={5}
+  maxLength={400}
+
+/>
+
+{touched.description && errors.description && (
+  <Text style={styles.errorText}>{errors.description}</Text>
+)}
+          </View>
+        
 
         ) 
       }
 
-                {touched.status && errors.status && (
-                  <Text style={styles.errorText}>{errors.status}</Text>
-                )}
+
 
                 {/* Customer Address */}
                 <Text style={styles.sectionTitle}>Customer Address</Text>
@@ -298,8 +328,11 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                   style={styles.input}
                   activeOutlineColor={colors.primary}
                  onChangeText={(text) => {
-    if (text.length <= 100) setFieldValue("city", text);
-  }}
+  if (text.length <= 200) {
+    const cleaned = text.replace(/[^a-zA-Z\s]/g, ""); // allow letters & spaces
+    setFieldValue("city", cleaned); // use cleaned value
+  }
+}}
                   onBlur={handleBlur("city")}
                   value={values.city}
                   error={touched.city && errors.city}
@@ -327,6 +360,22 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                   <Text style={styles.errorText}>{errors.pincode}</Text>
                 )}
 
+                 {/* Bank/ NVFC Name  */}
+                <TextInput
+                  label="Bank/ NBFC Name *"
+                  mode="outlined"
+                  style={styles.input}
+                  activeOutlineColor={colors.primary}
+                  onChangeText={handleChange("bankOrNBFCName")}
+                  onBlur={handleBlur("bankOrNBFCName")}
+                  value={values.bankOrNBFCName}
+                  error={touched.bankOrNBFCName && errors.bankOrNBFCName}
+                />
+                {touched.bankOrNBFCName && errors.bankOrNBFCName && (
+                  <Text style={styles.errorText}>{errors.bankOrNBFCName}</Text>
+                )}
+
+
                 {/* Tentative Bill Amount */}
                 <TextInput
                   label="Tentative Bill Amount *"
@@ -349,7 +398,13 @@ address: [values?.street, values?.city, values?.pincode].filter(Boolean).join(",
                   mode="outlined"
                   style={styles.input}
                   activeOutlineColor={colors.primary}
-                  onChangeText={handleChange("loanAccountNumber")}
+                  onChangeText={(text)=>{
+                  const cleaned= text.replace(/[^a-zA-Z0-9]/g, ''); // allow only alphanumeric characters    
+                handleChange("loanAccountNumber")
+                     setFieldValue("loanAccountNumber",cleaned)
+              }
+
+              }
                   onBlur={handleBlur("loanAccountNumber")}
                   value={values.loanAccountNumber}
                   error={touched.loanAccountNumber && errors.loanAccountNumber}

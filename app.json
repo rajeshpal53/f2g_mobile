@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "F2G",
-    "slug": "f2g",
+    "slug": "ftog",
     "version": "1.0.2",
     "newArchEnabled": true,
     "orientation": "portrait",
@@ -48,7 +48,7 @@
         "NSSpeechRecognitionUsageDescription": "Allow ${PRODUCT_NAME} to use speech recognition.",
         "NSMicrophoneUsageDescription": "Allow ${PRODUCT_NAME} to use the microphone."
       },
-      "bundleIdentifier": "com.wertone.f2g"
+      "bundleIdentifier": "com.wertone.ftog"
     },
     "android": {
       "versionCode": 1,
@@ -64,14 +64,14 @@
         "android.permission.USE_FINGERPRINT",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.wertone.f2g"
+      "package": "com.wertone.ftog"
     },
     "web": {
       "favicon": "./assets/logo.png"
     },
     "extra": {
       "eas": {
-        "projectId": "cffd3585-3c9c-4c05-b8e2-f7bfb13be248"
+        "projectId": "01439db2-0137-418c-9acf-63575c79bb53"
       }
     },
     "owner": "wertone"

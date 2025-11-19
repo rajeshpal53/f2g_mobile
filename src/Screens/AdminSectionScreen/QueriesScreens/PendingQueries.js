@@ -65,22 +65,23 @@ const PendingQueries = ({ pendingRefresh, setPendingRefresh, setIndex }) => {
       fetchData(nextPage);
     }
   };
-
   // ✅ Handle mark as resolved with modal loading
   const handleQueryResolved = async () => {
     try {
       setModalLoading(true);
+      console.log("Resolved payload:",  { isResolved: true, resolvedMessage: resolvedMessage },);
       await updateApi(
         `feedback/updateFeedback/${resolvedQuery?.id}`,
-        { isResolved: true },
+        { isResolved: true, resolvedMessage: resolvedMessage },
         { Authorization: `Bearer ${userData?.token}` }
       );
       setConfirmModalVisible(false);
       setResolvedQuery(null);
       setIndex(1);
-      setPendingRefresh((prev) => !prev);
+      // setPendingRefresh((prev) => !prev);
       showSnackbar("Query marked as resolved", "success");
     } catch (error) {
+      console.error("error of resolved",error);
       showSnackbar("Failed to resolve query", "error");
     } finally {
       setModalLoading(false);

@@ -30,6 +30,7 @@ export default function ServiceImagePicker({
   format = "JPEG",
   camera = true,
   gallary = true,
+  handleRemove 
 }) {
   console.log("profile image is the , ", image);
   console.log("format is , ", format);
@@ -227,7 +228,8 @@ const getDefaultProfileImage = (gender) => {
 
   const removeImage = () => {
     setFieldValue(uploadFieldName, null);
-    setImageUrl("");
+    setImageUrl(null);
+    handleRemove(uploadFieldName);
   };
 
   const pickCameraImage = async () => {
