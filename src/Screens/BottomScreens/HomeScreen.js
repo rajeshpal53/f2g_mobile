@@ -88,7 +88,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.contentContainer} contentContainerStyle={{}}>
           <View style={styles.illustrationContainer}>
             <Image
-              source={require("../../../assets/coinpayIllustration.png")}
+              source={(require("../../../assets/coinpayIllustration.png"))}
               style={styles.illustrationImage}
               resizeMode="contain"
             />
@@ -337,12 +337,20 @@ const getStyles = (colors) =>
     },
     illustrationContainer: {
       width: "100%",
-      height: screenHeight * 0.35,
+      // height: screenHeight * 0.35,
+      height:200,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: 50,
     },
-    illustrationImage: { width: "150%", height: "150%" },
+    illustrationImage: {
+      //  width: "100%",
+      //   height: "100%"
+      width:400,
+      height:400,
+      
+      
+      },
     mainHeading: { fontSize: 28, fontWeight: "900", textAlign: "center", lineHeight: 42, marginBottom: 25 },
     subText: { fontSize: 16, textAlign: "center", lineHeight: 28 },
     container: { alignItems: "center", paddingVertical: 20, flexGrow: 1 },
